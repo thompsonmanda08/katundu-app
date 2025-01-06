@@ -1,3 +1,4 @@
+"use client";
 import { ShipmentCard } from "@/components/elements";
 import {
   Card,

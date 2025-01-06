@@ -50,7 +50,7 @@ const PROFILE_TABS = [
 ];
 
 type AccountProps = {
-  user?: User;
+  user?: Partial<User>;
 };
 
 export default function Account({ user }: AccountProps) {

@@ -1,3 +1,4 @@
+"use client";
 import { ShipmentCard } from "@/components/elements";
 import { TransportCargoForm, SendCargoForm } from "@/components/forms";
 import { Button } from "@/components/ui/button";
