@@ -1,5 +1,5 @@
-import type { Metadata } from "next";
 import "./globals.css";
+import type { Metadata } from "next";
 import Providers from "./providers";
 import { Toaster } from "@/components/ui/toaster";
 import localFont from "next/font/local";
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   description: "Transport your katundu with ease",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
