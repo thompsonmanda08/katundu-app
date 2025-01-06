@@ -213,7 +213,7 @@ function ChangePasswordField({
                     size="sm"
                     className="h-10 px-8 text-sm"
                     disabled={isLoading || isValidPassword}
-                    onClick={async () => await handleChangePassword()}
+                    onPress={async () => await handleChangePassword()}
                   >
                     Save
                   </Button>

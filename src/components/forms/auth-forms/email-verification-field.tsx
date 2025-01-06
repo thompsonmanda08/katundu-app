@@ -154,7 +154,7 @@ function EmailVerificationField({ onVerified }: EmailVerificationFieldProps) {
               size="sm"
               className="h-10 px-8 text-sm"
               disabled={isLoading || isCodeSent}
-              onClick={handleSendVerificationCode}
+              onPress={handleSendVerificationCode}
             >
               {isLoading && !isCodeSent ? "Sending..." : "Send Code"}
             </Button>
@@ -184,7 +184,7 @@ function EmailVerificationField({ onVerified }: EmailVerificationFieldProps) {
                 size="sm"
                 className="h-10 px-8 text-sm"
                 disabled={isLoading}
-                onClick={handleVerifyCode}
+                onPress={handleVerifyCode}
               >
                 {isLoading ? "Verifying..." : "Verify Code"}
               </Button>
