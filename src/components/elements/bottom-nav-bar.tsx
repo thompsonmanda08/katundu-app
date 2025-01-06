@@ -1,3 +1,4 @@
+"use client";
 import { cn } from "@/lib/utils";
 import { Tabs, Tab } from "@nextui-org/react";
 import { HomeIcon, Package2, UserIcon } from "lucide-react";

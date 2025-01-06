@@ -4,9 +4,8 @@ import React from "react";
 import { BottomNavBar, TopNavBar } from "@/components/elements";
 import useMainStore from "@/context/main-store";
 import { Account, Home, Packages } from "@/components/screens";
-import { User } from "@/lib/types";
 
-function Dashboard() {
+export default function Dashboard() {
   const { user: currentUser } = useMainStore((state) => state);
   const {
     currentTabIndex,
@@ -37,5 +36,3 @@ function Dashboard() {
     </div>
   );
 }
-
-export default Dashboard;

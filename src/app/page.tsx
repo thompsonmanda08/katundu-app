@@ -1,5 +1,5 @@
 import { verifySession } from "@/lib/session";
-import Dashboard from "./(tabs)/page";
+import Dashboard from "./(root)/page";
 import { Suspense } from "react";
 import LoadingPage from "./loading";
 import { User } from "@/lib/types";
