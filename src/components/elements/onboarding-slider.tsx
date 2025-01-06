@@ -11,7 +11,6 @@ import {
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import Autoplay from "embla-carousel-autoplay";
 import { Slide } from "@/lib/types";
 
 export default function OnboardingSlider({ slides }: { slides: Slide[] }) {
@@ -38,13 +37,13 @@ export default function OnboardingSlider({ slides }: { slides: Slide[] }) {
   return (
     <div className="flex flex-col items-center w-full flex-1 relative md:min-h-screen md:max-h-[100svh]">
       <Carousel
-        plugins={[
-          Autoplay({
-            delay: 7000 + current,
-            stopOnInteraction: true,
-            stopOnLastSnap: false,
-          }),
-        ]}
+        // plugins={[
+        //   Autoplay({
+        //     delay: 7000 + current,
+        //     stopOnInteraction: true,
+        //     stopOnLastSnap: false,
+        //   }),
+        // ]}
         setApi={setApi}
         className="w-full flex flex-1"
       >
