@@ -1,0 +1,45 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+@layer utilities {
+  /* Chrome, Safari and Opera */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"] {
+    -webkit-appearance: none;
+    -moz-appearance: textfield;
+    margin: 0;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 4px;
+  background: #dbdde4;
+  border-radius: 5px;
+  height: 8px;
+  z-index: 0 !important;
+}
+
+::-webkit-scrollbar-thumb {
+  width: 6px;
+  height: 2px;
+  background-color: #28b498;
+  border-radius: 5px;
+  z-index: 0 !important;
+}
