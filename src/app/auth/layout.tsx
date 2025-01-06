@@ -7,29 +7,36 @@ const SLIDES: Slide[] = [
     id: 1,
     title: "Welcome to Katundu",
     description:
-      "Explore thousands of properties for sale and rent. Katundu connects you with your dream home in just a few clicks.",
-    image: "/images/onboarding/image1.jpg",
+      "Simplify cargo transportation with Katundu. Whether you're shipping goods or looking for cargo to transport, we’ve got you covered.",
+    image: "/images/onboarding/cargo1.jpg",
+  },
+  {
+    id: 2,
+    title: "Find Reliable Transporters",
+    description:
+      "Easily connect with trusted transporters. Katundu ensures your cargo is in safe hands from pickup to delivery.",
+    image: "/images/onboarding/cargo2.jpg",
   },
   {
     id: 3,
-    title: "Need Help? We're Here for You",
+    title: "Manage Your Shipments",
     description:
-      "Whether you're looking for a cozy apartment or a spacious house, Katundu offers a variety of listings to suit your needs.",
-    image: "/images/onboarding/image2.jpg",
-  },
-  {
-    id: 3,
-    title: "Find the Perfect Property",
-    description:
-      "There is nothing more satisfying than finding your dream home. Katundu makes it easy to find your perfect property.",
-    image: "/images/onboarding/image3.jpg",
+      "Track, manage, and update your shipments in real-time. Stay informed every step of the way with Katundu.",
+    image: "/images/onboarding/cargo3.jpg",
   },
   {
     id: 4,
-    title: "Easily Connect with Agents",
+    title: "Earn as a Transporter",
     description:
-      "Katundu helps you connect with verified real estate agents, making the buying, renting, or selling process seamless and stress-free.",
-    image: "/images/onboarding/image4.jpg",
+      "Looking for cargo to transport? Katundu connects you with shippers, helping you maximize your earnings effortlessly.",
+    image: "/images/onboarding/cargo4.jpg",
+  },
+  {
+    id: 5,
+    title: "Seamless Payment Integration",
+    description:
+      "Pay or get paid with ease. Katundu’s secure mobile money integration makes transactions smooth and hassle-free.",
+    image: "/images/onboarding/cargo5.jpg",
   },
 ];
 
