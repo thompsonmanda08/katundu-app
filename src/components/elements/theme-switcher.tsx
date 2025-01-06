@@ -1,8 +1,9 @@
 "use client";
-import { MoonIcon, SunIcon } from "@heroicons/react/24/outline";
+
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import NavIconButton from "./nav-icon-button";
+import { MoonIcon, SunIcon } from "lucide-react";
 
 function ThemeSwitcher({ className }: { className?: string }) {
   const [mounted, setMounted] = useState(false);
