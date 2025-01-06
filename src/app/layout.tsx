@@ -3,8 +3,6 @@ import "./globals.css";
 import Providers from "./providers";
 import { Toaster } from "@/components/ui/toaster";
 import localFont from "next/font/local";
-import { Suspense } from "react";
-import LoadingPage from "./loading";
 
 const inter = localFont({
   src: "font/Inter-VariableFont_slnt,wght.ttf",
@@ -47,10 +45,8 @@ export default function RootLayout({
         <meta name="theme-color" content="#ffffff" />
       </head>
       <body className={`${inter.className} antialiased overflow-clip`}>
-        <Suspense fallback={<LoadingPage />}>
-          <Providers>{children}</Providers>
-          <Toaster />
-        </Suspense>
+        <Providers>{children}</Providers>
+        <Toaster />
       </body>
     </html>
   );
