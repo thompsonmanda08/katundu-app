@@ -3,16 +3,9 @@ import { ErrorState, ResetPasswordFormProps, User } from "@/lib/types";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import useOnBoardingStore from "@/context/onboarding-store";
-import { REGEXP_ONLY_DIGITS_AND_CHARS } from "input-otp";
+import { InputOtp } from "@nextui-org/react";
 
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSeparator,
-  InputOTPSlot,
-} from "@/components/ui/input-otp";
-import Image from "next/image";
-import { Link } from "@nextui-org/react";
+// import { InputOTP, InputOTPSlot } from "@/components/ui/input-otp";
 
 type OTPVerificationProps = ResetPasswordFormProps & {
   otp: string;
@@ -77,8 +70,19 @@ export default function OTPVerification({
         >
           Enter your One-Time-Passcode
         </label>
-
-        <InputOTP
+        <InputOtp
+          size="lg"
+          isRequired
+          variant="bordered"
+          className="mr-auto"
+          // isInvalid={error?.status}
+          // errorMessage={error?.message}
+          name={"passcode"}
+          length={6}
+          value={otp}
+          onValueChange={(code: any) => updateFormData!({ code })}
+        />
+        {/* <InputOtp
           maxLength={6}
           pattern={REGEXP_ONLY_DIGITS_AND_CHARS}
           value={otp}
@@ -110,7 +114,7 @@ export default function OTPVerification({
             index={5}
             className="w-9 md:w-16 h-9  md:h-16 text-3xl text-primary-700 font-bold"
           />
-        </InputOTP>
+        </InputOtp> */}
       </div>
 
       {isDownToZero ? (

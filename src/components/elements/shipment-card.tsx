@@ -24,9 +24,10 @@ import { cn } from "@/lib/utils";
 type CardProps = Partial<ShipmentRecord> & {
   src?: string;
   displayDetails?: boolean;
+  userHasPaid?: boolean;
 };
 
-function ShipmentCard({ src, displayDetails = false }: CardProps) {
+function ShipmentCard({ src, displayDetails = false, userHasPaid }: CardProps) {
   const [showMore, setShowMore] = React.useState(false);
   const toggleShowMore = () => setShowMore(!showMore);
 
@@ -116,9 +117,17 @@ function ShipmentCard({ src, displayDetails = false }: CardProps) {
                     <TableBody>
                       <TableRow key="shipper-name">
                         <TableCell>Shipper Name</TableCell>
-                        <TableCell className="font-bold  text-right ">
-                          John Bwalya
-                        </TableCell>
+                        {userHasPaid ? (
+                          <TableCell className="font-bold text-right ">
+                            John Zimba
+                          </TableCell>
+                        ) : (
+                          <TableCell className="font-bold text-right ">
+                            <span className="blur-sm overflow-clip">
+                              Pay4This Katundu
+                            </span>
+                          </TableCell>
+                        )}
                       </TableRow>
                       <TableRow key="shipper-phone">
                         <TableCell>Shipper Mobile Number </TableCell>
