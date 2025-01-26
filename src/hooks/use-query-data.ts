@@ -23,7 +23,7 @@ export const useAccountProfile = () =>
   });
 
 export const useAvailableDeliveries = (
-  city?: string,
+  city: string,
   page?: number,
   size?: number
 ) =>
