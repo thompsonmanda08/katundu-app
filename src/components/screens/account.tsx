@@ -1,5 +1,6 @@
 "use client";
 
+import { revokeAccessToken } from "@/app/_actions/config-actions";
 import ProfilePictureUploader from "@/components/elements/image-uploader";
 import { ChangePasswordFields } from "@/components/forms";
 import Avatar from "@/components/ui/avatar";
@@ -7,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import EmptyState from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import Loader from "@/components/ui/loader";
+import useMainStore from "@/context/main-store";
 import useCustomTabsHook from "@/hooks/use-custom-tabs";
 import { slideDownInView, whileTabInView } from "@/lib/constants";
 import { User } from "@/lib/types";
@@ -23,7 +25,8 @@ import {
   Tabs,
   useDisclosure,
   Button as NextButton,
-} from "@nextui-org/react";
+  Skeleton,
+} from "@heroui/react";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { AnimatePresence, motion } from "framer-motion";
@@ -107,8 +110,10 @@ export default function Account({ user }: AccountProps) {
   );
 }
 
-export function AccountDetails({ user }: Partial<AccountProps>) {
+export function AccountDetails() {
   const queryClient = useQueryClient();
+
+  const { user } = useMainStore((state) => state);
 
   const [isLoading, setIsLoading] = React.useState(false);
   const [changePassword, setChangePassword] = React.useState(false);
@@ -190,29 +195,29 @@ export function AccountDetails({ user }: Partial<AccountProps>) {
   return (
     <motion.div className="flex flex-col gap-8">
       <div className="flex flex-col gap-4 flex-1">
-        <div>
+        {/* <div>
           <h4>Your Account Profile</h4>
           <p className="text-foreground/60 leading-6 text-xs sm:text-sm">
             You can edit your user information here.
           </p>
-        </div>
+        </div> */}
         <div className="relative flex gap-4 flex-col max-w-max mx-auto">
           <Avatar
             isBordered
             src={String(user?.profilePhoto)}
             name={`${user?.firstName} ${user?.lastName}`}
-            className="cursor-pointer rounded-full mr-2 aspect-square w-32 h-32 text-large"
+            className="cursor-pointer rounded-full aspect-square w-24 h-24 text-large mx-auto"
           />
 
           <NextButton
             aria-label="update-profile-photo"
             color="primary"
             className={
-              "absolute rounded-full left-24 -top-2 w-12 h-12 min-h-auto min-w-max aspect-square ring-2 ring-offset-2 ring-primary"
+              "absolute rounded-full left-[65%] w-8 h-8 min-h-auto min-w-max aspect-square ring-2 ring-offset-2 ring-primary"
             }
           >
             <label htmlFor="profile-photo" className="cursor-pointer ">
-              <CameraIcon />
+              <CameraIcon className="w-5 h-5" />
             </label>
           </NextButton>
           <input
@@ -225,10 +230,15 @@ export function AccountDetails({ user }: Partial<AccountProps>) {
           />
 
           <div className="flex flex-col items-center">
-            <h3 className="font-semibold text-base text-foreground/80">
-              Thompson Manda
-            </h3>
-            <span className="text-sm text-foreground/80">+260976552560</span>
+            <Skeleton className="rounded-lg" isLoaded={!isLoading}>
+              <h3 className="font-semibold text-base text-foreground/80">
+                {`${user?.firstName} ${user?.lastName}`}
+              </h3>
+            </Skeleton>
+            <Skeleton className="rounded-lg" isLoaded={!isLoading}>
+              <span className="text-sm text-foreground/80">{`${user?.phone} `}</span>
+            </Skeleton>
+
             {!showMore && (
               <Button
                 variant="light"
@@ -236,7 +246,7 @@ export function AccountDetails({ user }: Partial<AccountProps>) {
                 onPress={toggleShowMore}
                 className="p-0 bg-transparent data-[hover=true]:bg-transparent text-sm"
               >
-                Update Profile
+                Update
               </Button>
             )}
           </div>
@@ -432,22 +442,33 @@ export function AccountDetails({ user }: Partial<AccountProps>) {
         </div>
         <div className="flex gap-4 flex-col md:flex-row md:gap-8">
           <div className="flex flex-col gap-2">
-            <Checkbox isSelected={isSelected} onValueChange={setIsSelected}>
+            <Checkbox isDisabled>SMS Notifications</Checkbox>
+            <p className="text-default-500 text-xs">
+              Get notified via SMS. [Coming Soon]
+            </p>
+          </div>
+          <div className="flex flex-col gap-2">
+            <Checkbox
+              isDisabled
+              isSelected={isSelected}
+              onValueChange={setIsSelected}
+            >
               Email Notifications
             </Checkbox>
             <p className="text-default-500 text-xs">
               Get Notifications for new listings and newsletter updates
             </p>
           </div>
-          <div className="flex flex-col gap-2">
-            <Checkbox isDisabled>SMS Notifications</Checkbox>
-            <p className="text-default-500 text-xs">
-              You will be notified via SMS when a listing you wish for is
-              available. [Coming Soon]
-            </p>
-          </div>
         </div>
       </div>
+
+      <Button
+        onPress={async () => await revokeAccessToken()}
+        className=" text-sm"
+        // variant="flat"
+      >
+        Log Out
+      </Button>
     </motion.div>
   );
 }

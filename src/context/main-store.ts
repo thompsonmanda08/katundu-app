@@ -1,14 +1,43 @@
-import { Sender, Transporter, User } from "@/lib/types";
+import { Sender, ShipmentRecord, Transporter, User } from "@/lib/types";
 import { create } from "zustand";
 
 export type MainStateStore = {
   user: Partial<User>;
-  sender: Partial<Sender>;
-  transporter: Partial<Transporter>;
+
+  sendCargoFormData: ShipmentRecord;
+  transportCargoFormData: ShipmentRecord;
+
+  selectedShipment: Partial<ShipmentRecord> | null;
 
   // SETTERS
-  setUser: (userDetails: Partial<User>) => void; // user from session
+  setUser: (user: Partial<User>) => void; // user from session
+  setSelectedShipment: (item: Partial<ShipmentRecord> | null) => void;
+
+  // ACTIONS
+  updateSendCargoFormData: (data: Partial<ShipmentRecord>) => void;
+  updateTransportCargoFormData: (data: Partial<ShipmentRecord>) => void;
+
+  // CLEAR
   resetStore: () => void;
+};
+
+const INIT_STATE = {
+  shipperName: "",
+  shipperPhone: "",
+  pickUpLocation: "",
+  deliveryLocation: "",
+  cargoDescription: "",
+  cargoMeasure: "",
+  packaging: "",
+  containerSize: "",
+  deliveryStatus: "",
+  transporterName: "",
+  transporterContact: "",
+  pickUpCity: "",
+  receiverName: "",
+  receiverAddress: "",
+  receiverPhoneOne: "",
+  receiverPhoneTwo: "",
 };
 
 const INITIAL_STATE = {
@@ -19,20 +48,27 @@ const INITIAL_STATE = {
     email: "",
     username: "",
   },
-  sender: {
-    pickUpLocation: "",
-    deliveryLocation: "",
-  },
-  transporter: {
-    transporterName: "",
-    transporterContact: "",
-  },
+  selectedShipment: null,
+  sendCargoFormData: INIT_STATE as unknown as ShipmentRecord,
+  transportCargoFormData: INIT_STATE as unknown as ShipmentRecord,
 };
 
 const useMainStore = create<MainStateStore>((set, get) => ({
   ...INITIAL_STATE,
 
   setUser: (userDetails: Partial<User>) => set({ user: userDetails }),
+  setSelectedShipment: (item: Partial<ShipmentRecord> | null) =>
+    set({ selectedShipment: item }),
+
+  updateSendCargoFormData: (data: Partial<ShipmentRecord>) =>
+    set((state) => ({
+      sendCargoFormData: { ...state.sendCargoFormData, ...data },
+    })),
+
+  updateTransportCargoFormData: (data: Partial<ShipmentRecord>) =>
+    set((state) => ({
+      transportCargoFormData: { ...state.transportCargoFormData, ...data },
+    })),
 
   // CLEAR
   resetStore: () =>

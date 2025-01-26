@@ -48,21 +48,18 @@ export default async function AuthLayout({
   children: React.ReactNode;
 }) {
   return (
-    <main className="flex min-h-[100vh] flex-col items-center relative w-screen no-scrollbar md:overflow-clip md:max-h-screen">
-      <section className="flex flex-col flex-1 lg:flex-row w-full max-w-[1920px] mx-auto no-scrollbar">
-        <div className="flex-1 md:flex-[0.75] flex flex-col no-scrollbar mb-5 md:overflow-y-auto md:max-h-screen">
-          <ThemeSwitcher className="lg:self-start self-end mx-4 my-4 " />
+    <main className="no-scrollbar relative flex min-h-[100vh] w-screen flex-col items-center md:max-h-screen md:overflow-clip">
+      <section className="no-scrollbar mx-auto flex w-full max-w-[1920px] flex-1 flex-col lg:flex-row">
+        <div className="no-scrollbar mb-5 flex max-h-screen flex-1 flex-col overflow-y-auto pb-12 md:flex-[0.75]">
+          <ThemeSwitcher className="mx-4 my-4 aspect-square h-9 w-9 self-end lg:self-start" />
           {children}
         </div>
-        <div className="bg-primary relative hidden top-0 bottom-0 lg:flex flex-col justify-center  items-center flex-1 md:min-h-[100vh] md:max-h-screen no-scrollbar">
-          <div className="flex mb-12 gap-3 z-40 absolute inset-0 bg-gradient-to-b from-black/80 via-secondary/30 to-transparent inset-x-0">
+        <div className="no-scrollbar relative bottom-0 top-0 hidden flex-1 flex-col items-center justify-center bg-primary md:max-h-screen md:min-h-[100vh] lg:flex">
+          <div className="absolute inset-0 inset-x-0 z-40 mb-12 flex gap-3 bg-gradient-to-b from-black/80 via-secondary/30 to-transparent">
             {showLogo && (
-              <div className="flex flex-col mx-auto pt-16 pb-8">
+              <div className="mx-auto flex flex-col pb-8 pt-16">
                 <span className="sr-only">Katundu Logo</span>
                 <Logo href="/" className="" src="/images/logo/logo-light.svg" />
-                {/* <p className="pl-14 tracking-wider leading-4 text-xs">
-                  Home sweet home!
-                </p> */}
               </div>
             )}
           </div>

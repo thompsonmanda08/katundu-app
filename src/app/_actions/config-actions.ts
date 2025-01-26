@@ -3,7 +3,6 @@
 import { APIResponse, OptionItem } from "@/lib/types";
 import { deleteSession, verifySession } from "@/lib/session";
 import apiClient from "@/lib/api-config";
-import { redirect } from "next/navigation";
 
 /**
  * Retrieves the current authentication session.
@@ -21,81 +20,46 @@ export const getAuthSession = async (): Promise<any> => await verifySession();
 export const revokeAccessToken = async (): Promise<void> => deleteSession();
 
 /**
- * Checks if the user is authenticated. If not, redirects to the home page.
+ * Fetches a list of cities from the API.
  *
- * @returns {Promise<boolean>} A promise that resolves to a boolean indicating the authentication status.
+ * @param {number} [size=72] - The number of cities to fetch.
+ * @param {number} [page=1] - The page number of cities to fetch.
+ * @returns {Promise<APIResponse|OptionItem[]>} A promise that resolves to an APIResponse object containing the fetched cities or an array of OptionItem objects.
  */
-export const isAuthenticated = async (): Promise<boolean> => {
-  const { isAuthenticated } = await getAuthSession();
-  if (!isAuthenticated) redirect("/");
-  return isAuthenticated;
-};
-
-/**
- * Fetches a list of universities.
- *
- * @returns {Promise<APIResponse | OptionItem[]>} A promise that resolves to an array of universities or an APIResponse object in case of failure.
- */
-export async function getUniversities(): Promise<APIResponse | OptionItem[]> {
-  try {
-    const res = await apiClient.get(`data/universities`);
-    return res.data?.data?.universities as OptionItem[];
-  } catch (error: Error | any) {
-    console.error(error?.response);
-    return [];
-  }
-}
-
-/**
- * Fetches a filtered list of countries, optionally by page.
- *
- * @param {number} [page=2] - The page number for fetching countries.
- * @returns {Promise<APIResponse | OptionItem[]>} A promise that resolves to an array of countries or an APIResponse object in case of failure.
- */
-export async function getCountries(
-  page: number = 2
+export async function getCities(
+  size: number = 72,
+  page: number = 1
 ): Promise<APIResponse | OptionItem[]> {
   try {
-    const res = await apiClient.get(`data/countries?page=${page}`);
+    const res = await apiClient.get(`/data/districts?size=${size}`, {});
 
-    const response = res.data?.data?.countries.filter((country: any) => {
-      return country.name.toLowerCase().includes("zambia");
-    });
+    const response = res.data?.data?.districts || res.data?.data?.provinces;
 
-    return response as OptionItem[];
+    return [...response] as OptionItem[] | [];
   } catch (error: Error | any) {
     console.error(error?.response);
     return [];
   }
 }
 
-/**
- * Fetches a list of user roles.
- *
- * @returns {Promise<APIResponse | OptionItem[]>} A promise that resolves to an array of user roles or an APIResponse object in case of failure.
- */
-export async function getUserRoles(): Promise<APIResponse | OptionItem[]> {
-  try {
-    const res = await apiClient.get(`data/roles`);
-    return res.data?.data?.roles as OptionItem[];
-  } catch (error: Error | any) {
-    console.error(error?.response);
-    return [];
-  }
-}
+// export async function getCities(
+//   countryCISO: string = "ZM"
+// ): Promise<APIResponse | OptionItem[]> {
+//   try {
+//     const res = await apiClient.get(
+//       `https://api.countrystatecity.in/v1/countries/${countryCISO}/cities`,
+//       {
+//         headers: {
+//           "X-CSCAPI-KEY": process.env.COUNTRY_CITY_STATE_API_KEY,
+//         },
+//       }
+//     );
 
-/**
- * Fetches a list of room types.
- *
- * @returns {Promise<APIResponse | OptionItem[]>} A promise that resolves to an array of room types or an APIResponse object in case of failure.
- */
-export async function getRoomTypes(): Promise<APIResponse | OptionItem[]> {
-  try {
-    const res = await apiClient.get(`data/rooms`);
+//     const response = res.data;
 
-    return res.data?.data?.roomTypes as OptionItem[];
-  } catch (error: Error | any) {
-    console.error(error?.response);
-    return [];
-  }
-}
+//     return [...response] as OptionItem[] | [];
+//   } catch (error: Error | any) {
+//     console.error(error?.response);
+//     return [];
+//   }
+// }

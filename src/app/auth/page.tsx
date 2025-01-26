@@ -9,11 +9,11 @@ import useCustomTabsHook from "@/hooks/use-custom-tabs";
 import { Logo, StatusMessage } from "@/components/elements";
 import { Button } from "@/components/ui/button";
 import { SignUpForm, LoginForm } from "@/components/forms";
-import { notify } from "@/lib/utils";
-import { registerNewUser } from "@/app/_actions/auth-actions";
+import { cn, notify } from "@/lib/utils";
+import { authenticateUser, registerNewUser } from "@/app/_actions/auth-actions";
 import React from "react";
-import { useSearchParams } from "next/navigation";
-import { Tab, Tabs } from "@nextui-org/react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { form, Tab, Tabs } from "@heroui/react";
 import { containerVariants } from "@/lib/constants";
 
 const AUTH_TABS = [
@@ -44,6 +44,8 @@ export default function AuthPage() {
     status: false,
     message: "",
   });
+
+  const router = useRouter();
 
   const updateFormData = (fields: Partial<AuthFormData>) => {
     setFormData((prev) => ({
@@ -78,25 +80,9 @@ export default function AuthPage() {
     setIsLoading(x);
   }
 
-  // async function handleUserLogin(e: FormEvent<HTMLFormElement>) {
-  // e.preventDefault();
-  // // const response = await logUserIn();
-
-  // if (response?.success) {
-  //   const loginUrl = urlParams.get("callbackUrl") || "/";
-  //   push(loginUrl);
-  // } else {
-  //   setError({
-  //     status: true,
-  //     message: response?.message,
-  //   });
-  // }
-  // }
-
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setIsLoading(true);
-    navigateForward();
 
     let response: APIResponse = {
       status: 200,
@@ -106,17 +92,40 @@ export default function AuthPage() {
       data: null,
     };
 
-    //********* STEP 0: ACCOUNT INITIALIZATION ************ //
+    //********* STEP 0: LOG INTO ACCOUNT************ //
     if (currentTabIndex == 0) {
-      response = await registerNewUser(formData);
+      response = await authenticateUser({
+        phone: formData?.phone,
+        password: formData?.password,
+        role: formData?.role,
+      });
+
+      if (response?.success) {
+        notify({
+          title: "Login Successful",
+          description: response?.message,
+        });
+
+        router.push("/");
+        return;
+      }
+    }
+
+    //********* STEP 1: ACCOUNT CREATION ************ //
+    if (currentTabIndex == 1) {
+      response = await registerNewUser({
+        firstName: formData?.firstName,
+        lastName: formData?.lastName,
+        password: formData?.password,
+        phone: formData?.phone,
+        role: formData?.role,
+      });
 
       if (response?.success) {
         notify({
           title: "Registration Successful",
-          description: response?.message,
+          description: "You can now login to your account",
         });
-
-        window.location.href = "/";
         return;
       }
     }
@@ -146,12 +155,17 @@ export default function AuthPage() {
       <form
         id="auth-form"
         onSubmit={onSubmit}
-        className="max-w-[412px] md:max-w-[560px] w-full flex flex-col gap-4 px-5 pt-24 mx-auto"
+        className={cn(
+          "mx-auto flex w-full max-w-[412px] flex-col gap-4 px-5 pt-12 md:max-w-[560px]"
+          // {
+          //   "pt-12": currentTabIndex == 1,
+          // }
+        )}
       >
-        <div className="flex-col flex gap-2 w-full mb-4">
+        <div className="mb-4 flex w-full flex-col gap-2">
           <span className="sr-only">Katundu Logo</span>
           <Logo href="/" />
-          {/* <h3 className="text-foreground text-[clamp(20px,1rem+1vw,1.75rem)] font-bold ">
+          {/* <h3 className="text-[clamp(20px,1rem+1vw,1.75rem)] font-bold text-foreground">
                 {AUTH_TABS[currentTabIndex].title}
               </h3>
               <p className="text-sm text-foreground/80">
@@ -166,6 +180,7 @@ export default function AuthPage() {
           classNames={{
             tabList: "w-full",
           }}
+          radius="sm"
           selectedKey={String(currentTabIndex)}
           onSelectionChange={navigateTo}
         >
@@ -182,6 +197,7 @@ export default function AuthPage() {
             initial={"initial"}
             animate={"animate"}
             exit={"exit"}
+            className=""
           >
             {/* COMPONENT TO BE RENDERED */}
             {activeTab}
@@ -198,7 +214,7 @@ export default function AuthPage() {
             )}
 
             <Button
-              className="flex-1 w-full mt-4"
+              className="mt-4 w-full flex-1"
               disabled={isLoading}
               type="submit"
               isLoading={isLoading}
@@ -206,11 +222,11 @@ export default function AuthPage() {
               {AUTH_TABS[currentTabIndex].actionButton}
             </Button>
           </motion.div>
-          <div className="flex justify-center items-center">
+          <div className="flex items-center justify-center">
             <p className="text-sm text-foreground/80">
               {isFirstTab ? "Don't have account?" : "Already have account?"}{" "}
               <span
-                className="text-primary font-semibold hover:underline underline-offset-4 cursor-pointer"
+                className="cursor-pointer font-semibold text-primary underline-offset-4 hover:underline"
                 onClick={isFirstTab ? navigateForward : navigateBackwards}
               >
                 {isFirstTab ? "Register" : "Login"}

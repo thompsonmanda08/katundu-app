@@ -26,6 +26,7 @@ type User = {
   phone: string;
   email?: string;
   username?: string;
+  role?: "SENDER" | "TRANSPORTER";
   [x: string]: unknown;
 };
 
@@ -66,12 +67,6 @@ type ResetPasswordFormProps = {
   updateFormData: (fields: { [key: string]: unknown }) => void;
 };
 
-type Coordinates = {
-  latitude: number | string;
-  longitude: number | string;
-  [x: string]: any;
-};
-
 type Address = {
   lineOne: string;
   lineTwo?: string;
@@ -80,14 +75,6 @@ type Address = {
   city: string;
   state: string;
   country: any;
-  coordinates: Coordinates;
-  [x: string]: any;
-};
-
-type Session = {
-  user: User;
-  role: string[];
-  accessToken: string;
   [x: string]: any;
 };
 
@@ -97,21 +84,76 @@ type OptionItem = {
   label?: string;
   value?: string;
   code?: string;
-  [x: string]: any;
+  [x: string]: unknown;
 };
 
 type ShipmentRecord = {
-  shipperName: string; // Name of the shipper
-  shipperPhone: string; // Shipper's contact number
+  // SHIPPER DETAILS
+
+  contacts?: {
+    sender?: {
+      firstName?: string; // First Name of the shipper
+      lastName?: string; // Last Name of the shipper
+      phone?: string; // Shipper's contact number
+      [x: string]: string | any;
+    };
+
+    receiver?: {
+      name?: string; // Name of the receiver
+      phone?: string; // Receiver's contact number
+      [x: string]: string | any;
+    };
+  };
+
+  // CARGO DETAILS
+  pickUpCity: string; // Starting point of the shipment
   pickUpLocation: string; // Starting point of the shipment
+  deliveryCity: string; // Destination of the shipment
   deliveryLocation: string; // Destination of the shipment
   cargoDescription: string; // Description of the cargo
   cargoMeasure: string; // Quantity (liters/Kgs/Tons)
   packaging: string; // Type of packaging (bags, drums, pellets, etc.)
   containerSize: string; // Size of the container
-  deliveryStatus: string; // Status of the delivery (e.g., Delivered, Pending)
-  transporterName: string; // Name of the transporter
-  transporterContact: string; // Transporter's contact number
+
+  // DELIVERY DETAILS
+  isPublished: boolean; // Indicates if the delivery is published for transporters to see
+  transportationType?: string; // Type of transportation (e.g., Air, Sea, Land)
+  transportDate?: string; // Date of transportation
+  deliveryStatus: string; // Status of the delivery (e.g., READY | IN TRANSIT | DELIVERED)
+
+  // TRANSPORTER DETAILS
+  transporterName?: string; // Name of the transporter
+  transporterContact?: string; // Transporter's contact number
+
+  // RECEIVER DETAILS
+  receiverName: string;
+  receiverAddress: string;
+  receiverPhoneOne: string;
+  receiverPhoneTwo: string;
+
+  // PAYMENT DETAILS
+  paymentPhone: string;
+  reference: string;
+
+  [x: string]: unknown;
+};
+
+type PaymentDetails = {
+  phone: string;
+  amount?: string;
+  reference?: string;
+};
+
+type Delivery = {
+  cargoDetails: ShipmentRecord;
+  paymentDetails: PaymentDetails;
+};
+
+type Transaction = {
+  status: "PENDING" | "SUCCESS" | "FAILED";
+  message: string;
+  data?: unknown;
+  [x: string]: unknown;
 };
 
 export type {
@@ -125,8 +167,10 @@ export type {
   Sender,
   Transporter,
   Cargo,
-  Session,
   OptionItem,
   passwordResetProps,
   AuthFormData,
+  Delivery,
+  Transaction,
+  PaymentDetails,
 };

@@ -10,7 +10,7 @@ const PROTECTED_ROUTES = [
   // Add more protected routes as needed
 ];
 
-const PUBLIC_ROUTE = ["/", "/login", "/auth/register", "/support"];
+const PUBLIC_ROUTE = ["/auth", "/support"];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -21,26 +21,22 @@ export async function middleware(request: NextRequest) {
   const accessToken = session?.accessToken || "";
 
   // CHECK FOR ROUTES
-  const isAuthPage =
-    pathname.startsWith("/login") || pathname.startsWith("/auth/register");
+  const isAuthPage = pathname.startsWith("/auth");
 
   const isPublicRoute = PUBLIC_ROUTE.includes(pathname);
 
-  // if (pathname == "/") return response;
-  // if (isPublicRoute && !accessToken) return response;
+  // RESTRICT ACCESS TO ALL AUTH ROUTES WHILE ACCESS TOKEN IS STILL VALID
+  if (accessToken && isAuthPage) {
+    url.pathname = `/`;
+    return NextResponse.redirect(url);
+  }
 
-  // // IF NO ACCESS TOKEN AT ALL>>> REDIRECT BACK TO AUTH PAGE
-  // if (!accessToken && !isPublicRoute) {
-  //   url.pathname = "/";
-  //   url.searchParams.set("callbackUrl", pathname);
-  //   return NextResponse.redirect(url);
-  // }
-
-  // // IF THERE IS AN ACCESS TOKEN EXISTS - REDIRECT TO DASHBOARD
-  // if (accessToken && isAuthPage) {
-  //   url.pathname = `/`;
-  //   return NextResponse.redirect(url);
-  // }
+  // RESTRICT ACCESS TO ALL PROTECTED ROUTES WHERE ACCESS TOKEN IS REQUIRED
+  if (!accessToken && !isPublicRoute) {
+    url.pathname = `/auth`;
+    url.searchParams.set("callbackUrl", pathname);
+    return NextResponse.redirect(url);
+  }
 
   return response;
 }

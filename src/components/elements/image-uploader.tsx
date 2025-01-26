@@ -16,7 +16,7 @@ import {
   ModalContent,
   ModalFooter,
   ModalHeader,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { Button } from "../ui/button";
 import { notify } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";

@@ -1,6 +1,7 @@
 "use server";
 
 import { authenticatedService } from "@/lib/api-config";
+import { updateSession } from "@/lib/session";
 import { APIResponse } from "@/lib/types";
 
 // **************** PROFILE ACTIONS IS A SERVER COMPONENT THAT CONTAINS HELPER FUNCTIONS TO FETCH, MANIPULATE ETC ANYTHING TO DO WITH THE USERS PROFILES
@@ -18,15 +19,25 @@ export async function getUserProfile(): Promise<APIResponse> {
     });
 
     const response = res.data;
+    const profile = response?.data?.profile;
+
+    await updateSession({ user: profile });
 
     return {
       success: true,
       message: response?.message,
-      data: response?.data,
+      data: profile,
       status: res.status,
     };
   } catch (error: Error | any) {
-    console.error(error?.response);
+    console.error({
+      status: error?.response?.status,
+      statusText: error?.response?.statusText,
+      headers: error?.response?.headers,
+      config: error?.response?.config,
+      data: error?.response?.data,
+      error,
+    });
     return {
       success: false,
       message:
@@ -48,9 +59,6 @@ export async function getUserProfile(): Promise<APIResponse> {
  * @param {string} [params.lastName] - The user's last name.
  * @param {string} [params.email] - The user's email address.
  * @param {string} [params.phone] - The user's phone number.
- * @param {string} [params.universityId] - The user's university ID.
- * @param {string} [params.dob] - The user's date of birth.
- * @param {string} [params.isStudent] - Whether the user is a student ("true" or "false").
  * @returns {Promise<APIResponse>} A response object containing the update result or error details.
  */
 
@@ -59,9 +67,6 @@ export async function updateUserProfile(params: {
   lastName?: string;
   email?: string;
   phone?: string;
-  universityId?: string;
-  dob?: string;
-  isStudent?: string;
 }): Promise<APIResponse> {
   try {
     const updateData = Object.fromEntries(
@@ -105,13 +110,13 @@ export async function updateUserProfile(params: {
  * @returns {Promise<APIResponse>} A response object containing the update result or error details.
  */
 export async function updateProfilePicture(
-  profilePicutre: FormData
+  profilePicture: FormData
 ): Promise<APIResponse> {
   try {
     const res = await authenticatedService({
       method: "PATCH",
       url: `/user/profile-picture`,
-      data: profilePicutre,
+      data: profilePicture,
       contentType: "multipart/form-data",
     });
     const response = res.data;
@@ -128,7 +133,7 @@ export async function updateProfilePicture(
       message:
         error?.response?.data?.message ||
         error?.response?.data?.data?.error ||
-        "Error occured while updaing the profile picture" + error,
+        "Error occurred while updating the profile picture" + error,
       data: null,
       status: error?.response?.status || 500,
     };

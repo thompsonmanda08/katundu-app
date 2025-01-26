@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 
 import { Logo } from "@/components/elements";
 import AuthLayout from "./auth/layout";
-import { Card, CardBody, CardFooter, CardHeader } from "@nextui-org/react";
+import { Card, CardBody, CardFooter, CardHeader } from "@heroui/react";
 
 export default function NotFound() {
   return (

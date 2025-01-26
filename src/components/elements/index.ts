@@ -6,3 +6,4 @@ export { default as BottomNavBar } from "./bottom-nav-bar";
 export { default as NavIconButton } from "./nav-icon-button";
 export { default as ProgressStepper } from "./progress-stepper";
 export { default as ShipmentCard } from "./shipment-card";
+export { default as StatusBox } from "./status-box";

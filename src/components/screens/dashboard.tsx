@@ -1,30 +1,31 @@
 "use client";
 import useCustomTabsHook from "@/hooks/use-custom-tabs";
-import React from "react";
+import React, { useEffect } from "react";
 import { BottomNavBar, TopNavBar } from "@/components/elements";
-import useMainStore from "@/context/main-store";
 import { Account, Home, Packages } from "@/components/screens";
+import { User } from "@/lib/types";
+import useMainStore from "@/context/main-store";
 
-export default function Dashboard() {
-  const { user: currentUser } = useMainStore((state) => state);
-  const {
-    currentTabIndex,
-    activeTab,
-    isFirstTab,
-    isLastTab,
-    navigateTo,
-    isLoading,
-    setIsLoading,
-  } = useCustomTabsHook([
-    <Home key={"home"} />,
+export default function Dashboard({ user }: { user: User }) {
+  const { setUser } = useMainStore((state) => state);
+  const { currentTabIndex, activeTab, navigateTo } = useCustomTabsHook([
+    <Home key={"home"} user={user} />,
     <Packages key={"cargo"} />,
-    <Account key={"profile"} user={currentUser} />,
+    <Account key={"profile"} user={user} />,
   ]);
-  return (
-    <div className="flex flex-col gap-4 relative flex-1 min-h-screen">
-      <TopNavBar currentPage={currentTabIndex} user={currentUser} />
 
-      <div className="pt-20 container mx-auto overflow-y-auto max-h-screen no-scrollbar pb-28">
+  useEffect(() => {
+    if (user?.phone) {
+      setUser(user);
+    }
+  }, [setUser, user]);
+
+  return (
+    <div className="relative flex min-h-screen flex-1 flex-col gap-4">
+      <div className="fixed top-16 -z-50 aspect-square w-[420px] bg-gradient-to-br from-primary/30 via-transparent via-[50%] to-transparent" />
+      <TopNavBar currentPage={currentTabIndex} />
+
+      <div className="no-scrollbar container mx-auto max-h-screen overflow-y-auto pb-28 pt-20">
         {activeTab}
       </div>
 

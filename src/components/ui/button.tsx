@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import { ButtonProps, Button as NextUIButton } from "@nextui-org/react";
+import { ButtonProps, Button as NextUIButton } from "@heroui/react";
 import { cn } from "@/lib/utils";
 
 export function Button({
@@ -17,7 +17,7 @@ export function Button({
 
   return (
     <NextUIButton
-      radius="sm"
+      radius="md"
       size={size}
       spinner={
         <svg

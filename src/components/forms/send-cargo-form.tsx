@@ -1,161 +1,200 @@
-"use client";
-import React, { useEffect, useMemo } from "react";
-import {
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  Input,
-  Button,
-  Autocomplete,
-  AutocompleteItem,
-} from "@nextui-org/react";
-import { useQuery } from "@tanstack/react-query";
-import { Sender, ShipmentRecord, User } from "@/lib/types";
+import { OptionItem, ShipmentRecord } from "@/lib/types";
+import { Autocomplete, AutocompleteItem } from "@heroui/react";
+import React from "react";
+import { Input } from "../ui/input";
+import useMainStore from "@/context/main-store";
+import { DISTRICTS } from "@/lib/constants";
+import { useCities } from "@/hooks/use-query-data";
 
-type CargoProps = {
-  isOpen: boolean;
-  isLoading: boolean;
-  onOpen: (open: boolean) => void;
-  handleSave: () => void;
-  handleClose: () => void;
-  onClose: () => void;
-};
-const INIT_STATE = {
-  shipperName: "",
-  shipperPhone: "",
-  pickUpLocation: "",
-  deliveryLocation: "",
-  cargoDescription: "",
-  cargoMeasure: "",
-  packaging: "",
-  containerSize: "",
-  deliveryStatus: "",
-  transporterName: "",
-  transporterContact: "",
-};
-
-export default function SendCargoForm({
-  isOpen,
-  onOpen,
-  onClose,
-  handleClose,
-  handleSave,
-  isLoading,
-  user,
-}: CargoProps & {
-  user: Partial<User> | Partial<Sender>;
-}) {
+export function CargoDetailsForm() {
+  const { data: DISTRICTS } = useCities(100);
   const [value, setValue] = React.useState<any>(undefined);
-  const [selectedItem, setSelectedItem] = React.useState<any>(null);
-  const [cargoFormData, setCargoFormData] =
-    React.useState<ShipmentRecord>(INIT_STATE);
-
-  const updateFormData = (field: Partial<ShipmentRecord>) => {
-    setCargoFormData((prev) => ({ ...prev, ...field }));
-  };
-
-  const CITIES = [
-    { id: 1, name: "Lusaka" },
-    { id: 2, name: "Ndola" },
-    { id: 3, name: "Kitwe" },
-  ];
-
-  // useEffect(() => {
-  //   // ID VALUE FOR OTHER IS 1
-  //   if (value != 1) {
-  //     const selectedItem = CITIES.find((item) => item.id == value);
-  //     setSelectedItem(selectedItem);
-  //     setNewUniversity(selectedItem);
-  //   } else {
-  //     updateFormData({
-  //       name: selectedItem?.name,
-  //       location: selectedItem?.location,
-  //     });
-  //   }
-  // }, [value]);
+  const { sendCargoFormData, updateSendCargoFormData } = useMainStore(
+    (state) => state
+  );
 
   return (
-    <Modal
-      isOpen={isOpen}
-      // onOpen={onOpen}
-      onClose={onClose}
-      placement="bottom"
-      classNames={{
-        base: "rounded-b-none -mb-2 sm:-mb-4 pb-4",
-      }}
-    >
-      <ModalContent>
-        <>
-          <ModalHeader className="flex flex-col gap-1">
-            Send a Package
-          </ModalHeader>
-          <ModalBody>
-            {/*  */}
-            <Autocomplete
-              label="From"
-              variant="bordered"
-              defaultItems={CITIES}
-              placeholder="Select a city"
-              className="max-w-md"
-              selectedKey={value}
-              onSelectionChange={setValue}
-            >
-              {(item) => (
-                <AutocompleteItem key={item.id}>{item.name}</AutocompleteItem>
-              )}
-            </Autocomplete>
-            <Autocomplete
-              label="To"
-              variant="bordered"
-              defaultItems={CITIES}
-              placeholder="Select a city"
-              className="max-w-md"
-              selectedKey={value}
-              onSelectionChange={setValue}
-            >
-              {(item) => (
-                <AutocompleteItem key={item.id}>{item.name}</AutocompleteItem>
-              )}
-            </Autocomplete>
+    <div className="flex w-full flex-1 flex-col gap-4">
+      <div className="-mt-2 flex w-full flex-col gap-1">
+        <h2
+          className={
+            "w-full text-[clamp(12px,12px+0.5vw,1rem)] text-foreground font-bold"
+          }
+        >
+          Cargo Details
+        </h2>
+        <p className="text-xs text-foreground">
+          Information about the package and delivery details to be sent
+        </p>
+      </div>
+      <Autocomplete
+        label="From"
+        variant="bordered"
+        defaultItems={DISTRICTS}
+        placeholder="Select a city"
+        className="max-w-md"
+        selectedKey={String(sendCargoFormData.pickUpCity)}
+        onSelectionChange={(city) =>
+          updateSendCargoFormData({ pickUpCity: String(city) })
+        }
+      >
+        {(item) => (
+          <AutocompleteItem key={item.name}>{item.name}</AutocompleteItem>
+        )}
+      </Autocomplete>
+      <Input
+        label="Pickup point"
+        onChange={(e) => {
+          updateSendCargoFormData({ pickUpLocation: e.target.value });
+        }}
+        className="mt-px"
+      />
+      <Autocomplete
+        label="Destination"
+        variant="bordered"
+        defaultItems={DISTRICTS}
+        placeholder="Select a city"
+        className="max-w-md"
+        selectedKey={String(sendCargoFormData.deliveryCity)}
+        onSelectionChange={(city) =>
+          updateSendCargoFormData({ deliveryCity: String(city) })
+        }
+      >
+        {(item) => (
+          <AutocompleteItem key={item.id}>{item.name}</AutocompleteItem>
+        )}
+      </Autocomplete>
+      <Input
+        label="Drop Off point"
+        onChange={(e) => {
+          updateSendCargoFormData({ deliveryLocation: e.target.value });
+        }}
+      />
 
-            {
-              <Input
-                label="Mobile Number"
-                variant="bordered"
-                defaultValue={String(user?.mobile)}
-                onChange={(e) => {
-                  updateFormData({ shipperPhone: e.target.value });
-                }}
-                className="mt-px"
-              />
-            }
-          </ModalBody>
-          <ModalFooter>
-            <Button
-              color="danger"
-              isDisabled={isLoading}
-              onPress={() => handleClose()}
-            >
-              Cancel
-            </Button>
-            <Button
-              color="primary"
-              isLoading={isLoading}
-              isDisabled={isLoading}
-              onPress={() => {
-                handleSave();
-                handleClose();
-                setValue(undefined);
-                setSelectedItem(null);
-              }}
-            >
-              Next
-            </Button>
-          </ModalFooter>
-        </>
-      </ModalContent>
-    </Modal>
+      <div className="flex w-full flex-1 gap-4">
+        <Input
+          label="Package Type"
+          value={sendCargoFormData?.packaging}
+          onChange={(e) => {
+            updateSendCargoFormData({ packaging: e.target.value });
+          }}
+        />
+        <Input
+          label="Container Size"
+          value={sendCargoFormData?.containerSize}
+          onChange={(e) => {
+            updateSendCargoFormData({ containerSize: e.target.value });
+          }}
+        />
+      </div>
+      <Input
+        label="Cargo Measurement"
+        value={sendCargoFormData?.cargoMeasure}
+        onChange={(e) => {
+          updateSendCargoFormData({ cargoMeasure: e.target.value });
+        }}
+        className="mt-px"
+      />
+
+      <Input
+        label="Cargo Description"
+        value={sendCargoFormData?.cargoDescription}
+        onChange={(e) => {
+          updateSendCargoFormData({ cargoDescription: e.target.value });
+        }}
+        className="mt-px"
+      />
+    </div>
+  );
+}
+
+export function ReceiverDetailsForm() {
+  const { sendCargoFormData, updateSendCargoFormData } = useMainStore(
+    (state) => state
+  );
+
+  return (
+    <div className="flex w-full flex-1 flex-col gap-4">
+      <div className="-mt-2 flex w-full flex-col gap-1">
+        <h2
+          className={
+            "w-full text-[clamp(12px,12px+0.5vw,1rem)] text-foreground font-bold"
+          }
+        >
+          Receiver Details
+        </h2>
+        <p className="text-xs text-foreground">
+          Information about the receiving party
+        </p>
+      </div>
+      <Input
+        label="Receiver Name"
+        value={sendCargoFormData?.receiverName}
+        onChange={(e) => {
+          updateSendCargoFormData({ receiverName: e.target.value });
+        }}
+        className="mt-px"
+      />
+
+      <Input
+        label="Receiver Address"
+        value={sendCargoFormData?.receiverAddress}
+        onChange={(e) => {
+          updateSendCargoFormData({ receiverAddress: e.target.value });
+        }}
+      />
+      <Input
+        label="Receiver Phone 1"
+        value={sendCargoFormData?.receiverPhoneOne}
+        onChange={(e) => {
+          updateSendCargoFormData({ receiverPhoneOne: e.target.value });
+        }}
+      />
+      <Input
+        label="Receiver Phone 2"
+        value={sendCargoFormData?.receiverPhoneTwo}
+        onChange={(e) => {
+          updateSendCargoFormData({ receiverPhoneTwo: e.target.value });
+        }}
+      />
+    </div>
+  );
+}
+
+export function PaymentDetailsForm() {
+  const { sendCargoFormData, updateSendCargoFormData } = useMainStore(
+    (state) => state
+  );
+
+  return (
+    <div className="flex w-full flex-1 flex-col gap-4">
+      <div className="-mt-2 flex w-full flex-col gap-1">
+        <h2
+          className={
+            "w-full text-[clamp(12px,12px+0.5vw,1rem)] text-foreground font-bold"
+          }
+        >
+          Payment Details
+        </h2>
+        <p className="text-xs text-foreground">
+          Payment information required for the transaction to complete
+        </p>
+      </div>
+      <Input
+        label="Payment Phone Number"
+        value={sendCargoFormData?.paymentPhone}
+        onChange={(e) => {
+          updateSendCargoFormData({ paymentPhone: e.target.value });
+        }}
+      />
+
+      <Input
+        label="Reference"
+        value={sendCargoFormData?.reference}
+        onChange={(e) => {
+          updateSendCargoFormData({ reference: e.target.value });
+        }}
+      />
+    </div>
   );
 }

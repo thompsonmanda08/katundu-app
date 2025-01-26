@@ -3,7 +3,7 @@ import { ErrorState, ResetPasswordFormProps, User } from "@/lib/types";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import useOnBoardingStore from "@/context/onboarding-store";
-import { InputOtp } from "@nextui-org/react";
+import { InputOtp } from "@heroui/react";
 
 // import { InputOTP, InputOTPSlot } from "@/components/ui/input-otp";
 

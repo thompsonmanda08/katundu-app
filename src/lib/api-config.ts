@@ -2,19 +2,12 @@
 import axios from "axios";
 import { getAuthSession } from "@/app/_actions/config-actions";
 
+export const BASE_URL =
+  process.env.NEXT_PUBLIC_SERVER_URL || process.env.SERVER_URL;
+
 const apiClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_SERVER_URL || process.env.SERVER_URL,
+  baseURL: BASE_URL,
 });
-
-// apiClient.interceptors.request.use((request) => {
-//   // console.log("Axios Request Config:", request); // Logs all Axios request configurations
-
-//   // Log approximate request payload size
-//   // const dataString = JSON.stringify(request.data);
-//   // console.log("Request Payload Size:", new Blob([dataString]).size, "bytes");
-
-//   return request;
-// });
 
 export const authenticatedService = async (request: any) => {
   const { session } = await getAuthSession();

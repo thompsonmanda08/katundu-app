@@ -10,7 +10,7 @@ import { authenticatedService } from "@/lib/api-config";
  * and creates an authentication session upon successful login.
  *
  * @param {LoginDetails} param - An object containing login details.
- * @param {string} param.email - The email of the user.
+ * @param {string} param.phone - The phone number of the user.
  * @param {string} param.password - The password of the user.
  * @returns {Promise<APIResponse>} A promise that resolves to an APIResponse object which indicates the success or failure of the operation.
  *
@@ -18,12 +18,12 @@ import { authenticatedService } from "@/lib/api-config";
  */
 
 export async function authenticateUser({
-  email,
+  phone,
   password,
 }: Partial<AuthFormData>): Promise<APIResponse> {
   try {
     const res = await apiClient.post(`auth/login`, {
-      email,
+      phone,
       password,
     });
 
@@ -41,7 +41,13 @@ export async function authenticateUser({
       status: res.status,
     };
   } catch (error: Error | any) {
-    console.error(error?.response);
+    console.error({
+      status: error?.response?.status,
+      statusText: error?.response?.statusText,
+      headers: error?.response?.headers,
+      config: error?.response?.config,
+      data: error?.response?.data,
+    });
     return {
       success: false,
       message:
@@ -80,28 +86,27 @@ export async function registerNewUser({
     const res = await apiClient.post(`/auth/register`, {
       firstName,
       lastName,
-      role,
-      email,
       phone,
       password,
+      role,
     });
 
     const response = res.data;
-    const user = response?.data?.user || {};
-    const accessToken = response?.data?.token;
-
-    console.log(response);
-
-    await createAuthSession({ user, accessToken });
 
     return {
       success: true,
       message: response?.message,
-      data: { accessToken },
+      data: null,
       status: res.status,
     };
   } catch (error: Error | any) {
-    console.error(error?.response);
+    console.error({
+      status: error?.response?.status,
+      statusText: error?.response?.statusText,
+      headers: error?.response?.headers,
+      config: error?.response?.config,
+      data: error?.response?.data,
+    });
     return {
       success: false,
       message:
@@ -178,7 +183,7 @@ export async function verifyVerificationCode(
     };
   } catch (error: Error | any) {
     console.error(
-      "Error verifiying the reset code : \n\n",
+      "Error verifying the reset code : \n\n",
       error?.response || error
     );
     return {

@@ -4,6 +4,7 @@ import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import NavIconButton from "./nav-icon-button";
 import { MoonIcon, SunIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 function ThemeSwitcher({ className }: { className?: string }) {
   const [mounted, setMounted] = useState(false);
@@ -17,7 +18,7 @@ function ThemeSwitcher({ className }: { className?: string }) {
 
   return (
     <NavIconButton
-      className={className}
+      className={cn(className)}
       onClick={() => {
         if (theme === "light") {
           setTheme("dark");
@@ -27,9 +28,9 @@ function ThemeSwitcher({ className }: { className?: string }) {
       }}
     >
       {theme === "light" ? (
-        <MoonIcon className="p-0.5 w-6 aspect-square" />
+        <MoonIcon className="aspect-square w-6 p-0.5" />
       ) : (
-        <SunIcon className="p-0.5 w-6 aspect-square" />
+        <SunIcon className="aspect-square w-6 p-0.5" />
       )}
     </NavIconButton>
   );

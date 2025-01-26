@@ -1,7 +1,9 @@
 "use client";
 
+import { CustomRadio } from "@/components/ui/custom-radio";
 import { Input } from "@/components/ui/input";
-import { AuthFormData } from "@/lib/types";
+import { AuthFormData, User, UserRole } from "@/lib/types";
+import { Radio, RadioGroup } from "@heroui/react";
 
 type AuthFormProps = {
   formData: AuthFormData;
@@ -14,7 +16,7 @@ export default function SignUpForm({
 }: AuthFormProps) {
   return (
     <div className="flex flex-col gap-y-4">
-      <div className="flex flex-col md:flex-row gap-4">
+      <div className="flex flex-col gap-4 md:flex-row">
         <Input
           name="firstName"
           required
@@ -39,18 +41,6 @@ export default function SignUpForm({
         />
       </div>
 
-      {/* <Input
-        required
-        name="Email"
-        label="Email"
-        placeholder="example@mail.com"
-        onChange={(e) =>
-          updateFormData({
-            email: e.target.value,
-          })
-        }
-      /> */}
-
       <Input
         name="phone"
         required
@@ -62,6 +52,25 @@ export default function SignUpForm({
           })
         }
       />
+
+      <RadioGroup
+        color="default"
+        label="What best describes you?"
+        orientation="horizontal"
+        value={formData.role}
+        onValueChange={(role) =>
+          updateFormData({
+            role: role as UserRole,
+          })
+        }
+      >
+        <Radio description="Sending cargo packages" value="SENDER">
+          Sender
+        </Radio>
+        <Radio description="Transporting cargo packages" value="TRANSPORTER">
+          Transporter
+        </Radio>
+      </RadioGroup>
 
       <Input
         name="password"
@@ -79,6 +88,11 @@ export default function SignUpForm({
         required
         label="Confirm Password"
         type="password"
+        isInvalid={
+          formData.password.length > 5 &&
+          formData.password !== formData.confirmPassword
+        }
+        errorMessage="Passwords do not match"
         value={formData.confirmPassword}
         onChange={(e) =>
           updateFormData({

@@ -1,6 +1,6 @@
 "use client";
 import { cn } from "@/lib/utils";
-import { Tabs, Tab } from "@nextui-org/react";
+import { Tabs, Tab } from "@heroui/react";
 import { HomeIcon, Package2, UserIcon } from "lucide-react";
 import { motion } from "framer-motion";
 import { Key } from "react";

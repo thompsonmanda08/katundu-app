@@ -4,7 +4,7 @@ import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProviderProps } from "next-themes/dist/types";
-import { NextUIProvider } from "@nextui-org/react";
+import { HeroUIProvider } from "@heroui/react";
 import { useEffect, useState } from "react";
 
 // Create a client
@@ -25,7 +25,7 @@ function Providers({
   return (
     <QueryClientProvider client={queryClient}>
       <ReactQueryDevtools initialIsOpen={false} />
-      <NextUIProvider>
+      <HeroUIProvider>
         <NextThemesProvider
           attribute="class"
           defaultTheme="system"
@@ -35,7 +35,7 @@ function Providers({
         >
           <>{children}</>
         </NextThemesProvider>
-      </NextUIProvider>
+      </HeroUIProvider>
     </QueryClientProvider>
   );
 }
