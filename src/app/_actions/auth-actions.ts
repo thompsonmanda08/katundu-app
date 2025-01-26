@@ -29,10 +29,9 @@ export async function authenticateUser({
 
     const response = res.data;
     const user = response?.data?.user || {};
-    const role = response?.data?.role || "";
     const accessToken = response?.data?.token;
 
-    await createAuthSession({ user, role, accessToken });
+    await createAuthSession({ user, accessToken });
 
     return {
       success: true,

@@ -1,14 +1,16 @@
-import { OptionItem, ShipmentRecord } from "@/lib/types";
-import { Autocomplete, AutocompleteItem } from "@heroui/react";
+import { OptionItem } from "@/lib/types";
+import { Autocomplete, AutocompleteItem, DatePicker } from "@heroui/react";
 import React from "react";
 import { Input } from "../ui/input";
 import useMainStore from "@/context/main-store";
-import { DISTRICTS } from "@/lib/constants";
 import { useCities } from "@/hooks/use-query-data";
+import {
+  parseDate,
+} from "@internationalized/date";
 
 export function CargoDetailsForm() {
   const { data: DISTRICTS } = useCities(100);
-  const [value, setValue] = React.useState<any>(undefined);
+
   const { sendCargoFormData, updateSendCargoFormData } = useMainStore(
     (state) => state
   );
@@ -30,7 +32,7 @@ export function CargoDetailsForm() {
       <Autocomplete
         label="From"
         variant="bordered"
-        defaultItems={DISTRICTS}
+        defaultItems={DISTRICTS as OptionItem[]}
         placeholder="Select a city"
         className="max-w-md"
         selectedKey={String(sendCargoFormData.pickUpCity)}
@@ -52,7 +54,7 @@ export function CargoDetailsForm() {
       <Autocomplete
         label="Destination"
         variant="bordered"
-        defaultItems={DISTRICTS}
+        defaultItems={DISTRICTS as OptionItem[]}
         placeholder="Select a city"
         className="max-w-md"
         selectedKey={String(sendCargoFormData.deliveryCity)}
@@ -69,6 +71,19 @@ export function CargoDetailsForm() {
         onChange={(e) => {
           updateSendCargoFormData({ deliveryLocation: e.target.value });
         }}
+      />
+
+      <DatePicker
+        className=""
+        label="Transport Date"
+        variant="bordered"
+        value={parseDate(
+          String(sendCargoFormData?.transportDate || "2025-01-01")
+        )}
+        onChange={(date) =>
+          updateSendCargoFormData({ transportDate: date?.toString() })
+        }
+        description={"Date to transport your Katundu to its destination"}
       />
 
       <div className="flex w-full flex-1 gap-4">

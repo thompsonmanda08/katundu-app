@@ -121,5 +121,5 @@ export async function updateSession(fields: any) {
 export async function deleteSession() {
   (await cookies()).delete(AUTH_SESSION);
   (await cookies()).delete("theme");
-  redirect("/");
+  redirect("/auth");
 }

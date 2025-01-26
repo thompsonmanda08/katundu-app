@@ -34,6 +34,7 @@ import {
 } from "lucide-react";
 import React, { useEffect } from "react";
 import { CargoDetailsModal } from "../forms";
+import EmptyState from "../ui/empty-state";
 
 function Packages() {
   const {
@@ -127,28 +128,43 @@ function Packages() {
         </Tabs>
         <Divider />
         <div className="flex w-full flex-col gap-4">
-          {isLoaded
-            ? Array.from({ length: 3 })?.map((_, index) => (
-                <ShipmentCard key={index} isDataLoaded={isLoaded} />
-              ))
-            : allUserDeliveries?.map((item) => (
-                <ShipmentCard
-                  key={String(item?.id)}
-                  // src={item?.cargo?.image}
-                  displayDetails={true}
-                  isDataLoaded={isLoaded}
-                  handleOpenDetailsModal={() => showDetails(item)}
-                  handleViewDetails={async () =>
-                    await mutation.mutateAsync(String(item?.id))
-                  }
-                  loadingDetails={mutation?.isPending}
-                  {...item}
-                  {...mutation?.data?.data?.delivery}
+          {isLoaded ? (
+            Array.from({ length: 3 })?.map((_, index) => (
+              <ShipmentCard key={index} isDataLoaded={isLoaded} />
+            ))
+          ) : allUserDeliveries?.length == 0 ? (
+            <>
+              {" "}
+              <div className="flex items-center justify-center">
+                <EmptyState
+                  title="No Shipments"
+                  description="You have no Katundu moving to any destinations"
+                  width={380}
+                  height={380}
+                  classNames={{ image: "w-80 h-80" }}
                 />
-              ))}
+              </div>
+            </>
+          ) : (
+            allUserDeliveries?.map((item) => (
+              <ShipmentCard
+                key={String(item?.id)}
+                // src={item?.cargo?.image}
+                displayDetails={true}
+                isDataLoaded={isLoaded}
+                handleOpenDetailsModal={() => showDetails(item)}
+                handleViewDetails={async () =>
+                  await mutation.mutateAsync(String(item?.id))
+                }
+                loadingDetails={mutation?.isPending}
+                {...item}
+                {...mutation?.data?.data?.delivery}
+              />
+            ))
+          )}
         </div>
 
-        {(allUserDeliveries || currentPage > 1) && (
+        {(allUserDeliveries?.length || currentPage > 1) && (
           <div className="flex items-center gap-2 justify-center">
             <Button
               isIconOnly

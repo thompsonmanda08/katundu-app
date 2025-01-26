@@ -10,7 +10,11 @@ import { Input } from "@/components/ui/input";
 import Loader from "@/components/ui/loader";
 import useMainStore from "@/context/main-store";
 import useCustomTabsHook from "@/hooks/use-custom-tabs";
-import { slideDownInView, whileTabInView } from "@/lib/constants";
+import {
+  containerVariants,
+  slideDownInView,
+  whileTabInView,
+} from "@/lib/constants";
 import { User } from "@/lib/types";
 import { cn, compareObjects, formatDate, notify } from "@/lib/utils";
 
@@ -56,8 +60,8 @@ type AccountProps = {
   user?: Partial<User>;
 };
 
-export default function Account({ user }: AccountProps) {
-  // only fetch user profile from cookies
+export default function Account() {
+  const { user } = useMainStore();
 
   const {
     currentTabIndex,
@@ -67,8 +71,8 @@ export default function Account({ user }: AccountProps) {
     navigateBackwards,
     isLoading,
   } = useCustomTabsHook([
-    <AccountDetails key={"account-details"} user={user} />,
-    <Subscriptions user={user} key={"subscriptions-details"} />,
+    <AccountDetails key={"account-details"} />,
+    <Subscriptions key={"subscriptions-details"} />,
   ]);
 
   return (
@@ -90,10 +94,10 @@ export default function Account({ user }: AccountProps) {
       <AnimatePresence mode="wait">
         <motion.div
           key={currentTabIndex}
-          // initial={{ opacity: 0, x: 100 }}
-          // animate={{ opacity: 1, x: 0 }}
-          // exit={{ opacity: 0, x: -100 }}
-          // transition={{ duration: 0.2 }}
+          variants={containerVariants}
+          initial={"initial"}
+          animate={"animate"}
+          exit={"exit"}
           className="flex flex-col gap-4 p-5 "
         >
           {isLoading ? (
@@ -236,7 +240,7 @@ export function AccountDetails() {
               </h3>
             </Skeleton>
             <Skeleton className="rounded-lg" isLoaded={!isLoading}>
-              <span className="text-sm text-foreground/80">{`${user?.phone} `}</span>
+              <span className="text-sm text-foreground/80">{`${user?.phone} (${user?.role})`}</span>
             </Skeleton>
 
             {!showMore && (

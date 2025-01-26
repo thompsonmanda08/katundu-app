@@ -3,7 +3,7 @@ import React, { FormEvent, useEffect } from "react";
 import Link from "next/link";
 
 import useOnBoardingStore from "@/context/onboarding-store";
-import { APIResponse, AuthFormData, ErrorState, UserRole } from "@/lib/types";
+import { APIResponse, AuthFormData, ErrorState } from "@/lib/types";
 
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -44,10 +44,11 @@ function LoginForm({ formData, updateFormData }: AuthFormProps) {
         classNames={{
           wrapper: "gap-6",
         }}
+        defaultValue={"SENDER"}
         value={formData.role}
         onValueChange={(role) =>
           updateFormData({
-            role: role as UserRole,
+            role: role as "SENDER" | "TRANSPORTER",
           })
         }
       >

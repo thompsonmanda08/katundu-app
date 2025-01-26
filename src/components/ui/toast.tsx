@@ -41,6 +41,7 @@ const Toast = React.forwardRef<
           "border-none bg-primary text-white": variant == "default",
           "border-none bg-success text-white": variant == "success",
           "border-none bg-danger text-white": variant == "danger",
+          "border-none bg-warning text-white": variant == "warning",
         },
         className
       )}

@@ -61,9 +61,7 @@ export default function SendCargoModal({
 
   const queryClient = useQueryClient();
 
-  const { sendCargoFormData, updateSendCargoFormData } = useMainStore(
-    (state) => state
-  );
+  const { sendCargoFormData } = useMainStore((state) => state);
 
   const {
     currentTabIndex,
@@ -98,7 +96,9 @@ export default function SendCargoModal({
       cargoDetails: {
         pickUpCity: sendCargoFormData?.pickUpCity,
         pickUpLocation: sendCargoFormData?.pickUpLocation,
+        deliveryCity: sendCargoFormData?.deliveryCity,
         deliveryLocation: sendCargoFormData?.deliveryLocation,
+        transportDate: sendCargoFormData?.transportDate,
         cargoDescription: sendCargoFormData?.cargoDescription,
         cargoMeasure: sendCargoFormData?.cargoMeasure,
         packaging: sendCargoFormData?.packaging,
@@ -111,10 +111,12 @@ export default function SendCargoModal({
 
       paymentDetails: {
         phone: sendCargoFormData?.paymentPhone,
-        amount: "1.00",
+        amount: "1.00", // TODO: ALLOW AMOUNT TO BE SET FROM THE BACKEND
         reference: sendCargoFormData?.paymentReference,
       } as PaymentDetails,
     };
+
+    console.log("SEND CARGO", formData);
 
     const response = await createNewDelivery(formData);
 

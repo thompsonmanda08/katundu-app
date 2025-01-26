@@ -2,7 +2,7 @@
 
 import { CustomRadio } from "@/components/ui/custom-radio";
 import { Input } from "@/components/ui/input";
-import { AuthFormData, User, UserRole } from "@/lib/types";
+import { AuthFormData, User } from "@/lib/types";
 import { Radio, RadioGroup } from "@heroui/react";
 
 type AuthFormProps = {
@@ -60,7 +60,7 @@ export default function SignUpForm({
         value={formData.role}
         onValueChange={(role) =>
           updateFormData({
-            role: role as UserRole,
+            role: role as "SENDER" | "TRANSPORTER",
           })
         }
       >

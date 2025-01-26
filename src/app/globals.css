@@ -39,7 +39,20 @@
 ::-webkit-scrollbar-thumb {
   width: 6px;
   height: 2px;
-  background-color: #28b498;
+  background-color: #4d5dfa;
   border-radius: 5px;
   z-index: 0 !important;
+}
+
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* Prevent unwanted scrolling */
+  -webkit-touch-callout: none; /* Disable text selection on long press */
+  -webkit-user-select: none; /* Disable text selection */
+  -ms-user-select: none;
+  user-select: none;
+  overscroll-behavior: none; /* Prevent Overscroll (Elastic Scrolling) */
+  touch-action: manipulation;
 }

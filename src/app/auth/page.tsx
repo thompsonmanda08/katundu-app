@@ -15,6 +15,7 @@ import React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { form, Tab, Tabs } from "@heroui/react";
 import { containerVariants } from "@/lib/constants";
+import { useQueryClient } from "@tanstack/react-query";
 
 const AUTH_TABS = [
   {
@@ -46,6 +47,7 @@ export default function AuthPage() {
   });
 
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const updateFormData = (fields: Partial<AuthFormData>) => {
     setFormData((prev) => ({
@@ -103,10 +105,14 @@ export default function AuthPage() {
       if (response?.success) {
         notify({
           title: "Login Successful",
-          description: response?.message,
+          description: "You now have access to your account",
         });
 
-        router.push("/");
+        //
+        queryClient.invalidateQueries();
+        window.location.href = "/"; // HARD ROUTING - FULL PAGE RELOAD
+        // router.push("/"); // SOFT ROUTING
+
         return;
       }
     }
@@ -126,6 +132,8 @@ export default function AuthPage() {
           title: "Registration Successful",
           description: "You can now login to your account",
         });
+        setIsLoading(false);
+        navigateBackwards()
         return;
       }
     }

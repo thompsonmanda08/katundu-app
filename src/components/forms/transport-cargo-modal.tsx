@@ -9,7 +9,7 @@ import {
   Button,
 } from "@heroui/react";
 import { Transaction, Transporter, User } from "@/lib/types";
-import { StatusBox } from "../elements";
+import { NavIconButton, StatusBox } from "../elements";
 import { CargoDetailsForm } from "./send-cargo-form";
 import useCustomTabsHook from "@/hooks/use-custom-tabs";
 import useMainStore from "@/context/main-store";
@@ -17,6 +17,7 @@ import { containerVariants } from "@/lib/constants";
 
 import { AnimatePresence, motion } from "framer-motion";
 import { TransportCargoForm } from "./transport-cargo-form";
+import { ArrowLeftIcon } from "lucide-react";
 
 type CargoProps = {
   isOpen: boolean;
@@ -37,9 +38,7 @@ export default function TransportCargoModal({
     status: "PENDING",
     message: "Transaction Pending Approval",
   });
-  const { transportCargoFormData, updateTransportCargoFormData } = useMainStore(
-    (state) => state
-  );
+
   const { currentTabIndex, activeTab, isFirstTab, isLastTab, navigateForward } =
     useCustomTabsHook([<TransportCargoForm key={"form"} />]);
 
@@ -91,12 +90,15 @@ export default function TransportCargoModal({
       onClose={handleCloseModal}
       size="full"
       classNames={{
-        base: "rounded-b-none -mb-2 sm:-mb-4 pb-4",
+        base: "rounded-b-none overflow-clip",
       }}
     >
       <ModalContent>
         <>
-          <ModalHeader className="flex flex-col gap-1">
+          <ModalHeader className="flex gap-2">
+            <NavIconButton onClick={handleCloseModal}>
+              <ArrowLeftIcon className="w-5 h-5"></ArrowLeftIcon>
+            </NavIconButton>
             Transport a Package
           </ModalHeader>
           <ModalBody>
@@ -144,14 +146,14 @@ export default function TransportCargoModal({
             >
               Cancel
             </Button>
-            <Button
+            {/* <Button
               color="primary"
               isLoading={isLoading}
               isDisabled={isLoading}
               onPress={handleProceed}
             >
               {isLastTab ? "Create" : "Next"}
-            </Button>
+            </Button> */}
           </ModalFooter>
         </>
       </ModalContent>

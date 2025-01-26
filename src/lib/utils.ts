@@ -35,7 +35,7 @@ export function formatCurrency(amount: number) {
   return amount > 0 ? currencyFormat.format(amount) : "ZMW 0.00";
 }
 
-export function formatDate(inputDate: string) {
+export function formatDate(inputDate: Date | string) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const options: any = {
     day: "2-digit",

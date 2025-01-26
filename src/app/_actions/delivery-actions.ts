@@ -12,10 +12,18 @@ import { APIResponse, Delivery, ShipmentRecord } from "@/lib/types";
  * @returns {Promise<APIResponse>} A promise that resolves to an APIResponse object containing the available deliveries.
  */
 export async function getAvailableDeliveries(
-  city?: string,
+  city: string,
   page: number = 1,
   size: number = 10
 ): Promise<APIResponse> {
+  if (!city || city == "")
+    return {
+      success: false,
+      message: "City is required",
+      data: [],
+      status: 500,
+    };
+
   try {
     const res = await authenticatedService({
       url: `/deliveries?page=${page}&size=${size}&city=${city}`,
