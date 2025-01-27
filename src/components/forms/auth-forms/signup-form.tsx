@@ -1,8 +1,7 @@
 "use client";
 
-import { CustomRadio } from "@/components/ui/custom-radio";
 import { Input } from "@/components/ui/input";
-import { AuthFormData, User } from "@/lib/types";
+import { AuthFormData } from "@/lib/types";
 import { Radio, RadioGroup } from "@heroui/react";
 
 type AuthFormProps = {

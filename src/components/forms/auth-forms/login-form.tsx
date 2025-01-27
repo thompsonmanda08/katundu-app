@@ -1,17 +1,12 @@
 "use client";
-import React, { FormEvent, useEffect } from "react";
+import React, { useEffect } from "react";
 import Link from "next/link";
 
-import useOnBoardingStore from "@/context/onboarding-store";
-import { APIResponse, AuthFormData, ErrorState } from "@/lib/types";
+import { AuthFormData, ErrorState } from "@/lib/types";
 
-import { motion, AnimatePresence } from "framer-motion";
-
-import { useRouter, useSearchParams } from "next/navigation";
-import { Logo, StatusMessage } from "@/components/elements";
+import { useRouter } from "next/navigation";
+import { StatusMessage } from "@/components/elements";
 import { Input } from "@/components/ui/input";
-import Spinner from "@/components/ui/spinner";
-import { Button } from "@/components/ui/button";
 import { Radio, RadioGroup } from "@heroui/react";
 
 type AuthFormProps = {
