@@ -1,4 +1,4 @@
-import { Logo, OnboardingSlider } from "@/components/elements";
+import { Logo, OnboardingSlider, TopNavBar } from "@/components/elements";
 import ThemeSwitcher from "@/components/elements/theme-switcher";
 import { Slide } from "@/lib/types";
 
@@ -51,9 +51,16 @@ export default async function AuthLayout({
     <main className="no-scrollbar relative flex min-h-[100vh] w-screen flex-col items-center md:max-h-screen md:overflow-clip">
       <section className="no-scrollbar mx-auto flex w-full max-w-[1920px] flex-1 flex-col lg:flex-row">
         <div className="no-scrollbar mb-5 flex max-h-screen flex-1 flex-col overflow-y-auto pb-12 md:flex-[0.75]">
-          <ThemeSwitcher className="mx-4 my-4 aspect-square h-9 w-9 self-end lg:self-start" />
+          {/* <div className="flex h-max w-full justify-between gap-2 p-4 px-5">
+            <span className="sr-only">Katundu Logo</span>
+            <Logo href="/" />
+            <ThemeSwitcher className="aspect-square h-9 w-9 self-end lg:self-start" />
+          </div> */}
+          <TopNavBar currentPage={1} />
+
           {children}
         </div>
+
         <div className="no-scrollbar relative bottom-0 top-0 hidden flex-1 flex-col items-center justify-center bg-primary md:max-h-screen md:min-h-[100vh] lg:flex">
           <div className="absolute inset-0 inset-x-0 z-40 mb-12 flex gap-3 bg-gradient-to-b from-black/80 via-secondary/30 to-transparent">
             {showLogo && (

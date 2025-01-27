@@ -33,7 +33,7 @@ function LoginForm({ formData, updateFormData }: AuthFormProps) {
     <>
       <RadioGroup
         color="default"
-        label="Login as"
+        // label="Login as"
         orientation="horizontal"
         className="my-1 mb-4"
         classNames={{

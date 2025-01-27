@@ -1,6 +1,6 @@
 import { OptionItem } from "./types";
 
-export const AUTH_SESSION = "__com.katundu__";
+export const AUTH_SESSION = "__com.interwebb.dev.katundu__";
 
 export const PASSWORD_PATTERN =
   /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$/;
@@ -119,7 +119,7 @@ export const whileTabInView = {
     type: "spring",
     stiffness: 300,
     ease: "easeInOut",
-    duration: 0.2,
+    duration: 0.1,
   },
 };
 
@@ -132,7 +132,7 @@ export const containerVariants = {
       type: "spring",
       stiffness: 300,
       ease: "easeInOut",
-      duration: 0.2,
+      duration: 0.1,
     },
   },
   exit: { opacity: 0, x: 0 },
@@ -143,7 +143,7 @@ export const slideDownInView = {
     opacity: 0,
     height: 0,
     transition: {
-      duration: 0.3,
+      duration: 0.1,
       ease: "easeInOut",
     },
   },
@@ -151,7 +151,7 @@ export const slideDownInView = {
     height: "auto",
     opacity: 1,
     transition: {
-      duration: 0.3,
+      duration: 0.1,
       ease: "easeInOut",
     },
   },

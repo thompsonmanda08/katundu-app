@@ -21,13 +21,13 @@ const AUTH_TABS = [
   {
     ID: "0",
     title: "Login",
-    description: "Provide your login credentials.",
+    description: "Provide your login credentials as a: ",
     actionButton: "Login",
   },
   {
     ID: "1",
     title: "Create a new account",
-    description: "Your real estate journey begins here. Let's get you set up.",
+    description: "Let's get you set up with an account.",
     actionButton: "Register",
   },
 ];
@@ -133,7 +133,7 @@ export default function AuthPage() {
           description: "You can now login to your account",
         });
         setIsLoading(false);
-        navigateBackwards()
+        navigateBackwards();
         return;
       }
     }
@@ -164,22 +164,9 @@ export default function AuthPage() {
         id="auth-form"
         onSubmit={onSubmit}
         className={cn(
-          "mx-auto flex w-full max-w-[412px] flex-col gap-4 px-5 pt-12 md:max-w-[560px]"
-          // {
-          //   "pt-12": currentTabIndex == 1,
-          // }
+          "mx-auto flex w-full max-w-[412px] flex-col gap-4 px-5 pt-24 md:max-w-[560px]"
         )}
       >
-        <div className="mb-4 flex w-full flex-col gap-2">
-          <span className="sr-only">Katundu Logo</span>
-          <Logo href="/" />
-          {/* <h3 className="text-[clamp(20px,1rem+1vw,1.75rem)] font-bold text-foreground">
-                {AUTH_TABS[currentTabIndex].title}
-              </h3>
-              <p className="text-sm text-foreground/80">
-                {AUTH_TABS[currentTabIndex].description}
-              </p> */}
-        </div>
         <Tabs
           aria-label="auth-options"
           color="primary"
@@ -207,6 +194,14 @@ export default function AuthPage() {
             exit={"exit"}
             className=""
           >
+            <div className="mb-4 flex w-full flex-col gap-2">
+              <h3 className="text-[clamp(20px,1rem+1vw,1.75rem)] font-bold text-foreground">
+                {AUTH_TABS[currentTabIndex].title}
+              </h3>
+              <p className="text-sm text-foreground/80">
+                {AUTH_TABS[currentTabIndex].description}
+              </p>
+            </div>
             {/* COMPONENT TO BE RENDERED */}
             {activeTab}
             {/* COMPONENT TO BE RENDERED */}
