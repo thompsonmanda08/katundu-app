@@ -57,15 +57,13 @@ function LoginForm({ formData, updateFormData }: AuthFormProps) {
       </RadioGroup>
       <div className="flex flex-col gap-y-4">
         <Input
-          type="text"
+          type="tel"
           label="Mobile Number"
           value={formData.phone}
           isInvalid={Boolean(error.status)}
           onChange={(e) =>
             updateFormData({
-              username: e.target.value,
-              email: e.target.value,
-              phone: e.target.value,
+              phone: String(e.target.value),
             })
           }
         />
@@ -73,7 +71,6 @@ function LoginForm({ formData, updateFormData }: AuthFormProps) {
         <Input
           label="Password"
           type="password"
-          name="password"
           isInvalid={Boolean(error.status)}
           value={formData.password}
           onChange={(e) => updateFormData({ password: e.target.value })}

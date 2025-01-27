@@ -23,6 +23,8 @@ const Input = React.forwardRef<HTMLInputElement, UIInputProps>(
       if (type != "email" || value === "") return false;
       return validateEmail(value) ? false : true;
     }, [value, type]);
+
+    
     return (
       <NextInput
         className={cn("", className)}

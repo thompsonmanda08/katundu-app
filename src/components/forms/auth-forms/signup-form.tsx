@@ -43,12 +43,13 @@ export default function SignUpForm({
 
       <Input
         name="phone"
+        type="tel"
         required
         label="Mobile Number"
         value={formData.phone}
         onChange={(e) =>
           updateFormData({
-            phone: e.target.value,
+            phone: String(e.target.value),
           })
         }
       />
