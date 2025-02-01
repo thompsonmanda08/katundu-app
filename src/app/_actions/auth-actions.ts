@@ -46,6 +46,7 @@ export async function authenticateUser({
       headers: error?.response?.headers,
       config: error?.response?.config,
       data: error?.response?.data,
+      error,
     });
     return {
       success: false,

@@ -114,6 +114,7 @@ type ShipmentRecord = {
   cargoMeasure: string; // Quantity (liters/Kgs/Tons)
   packaging: string; // Type of packaging (bags, drums, pellets, etc.)
   containerSize: string; // Size of the container
+  quantity: string;
 
   // DELIVERY DETAILS
   isPublished: boolean; // Indicates if the delivery is published for transporters to see

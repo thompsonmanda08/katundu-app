@@ -8,19 +8,8 @@ import {
   ModalFooter,
   Button,
 } from "@heroui/react";
-import {
-  Delivery,
-  PaymentDetails,
-  Sender,
-  ShipmentRecord,
-  Transaction,
-  User,
-} from "@/lib/types";
-import {
-  CargoDetailsForm,
-  PaymentDetailsForm,
-  ReceiverDetailsForm,
-} from "./send-cargo-form";
+import { Delivery, PaymentDetails, Transaction } from "@/lib/types";
+import { PaymentDetailsForm } from "./send-cargo-form";
 import useCustomTabsHook from "@/hooks/use-custom-tabs";
 import { NavIconButton, StatusBox } from "../elements";
 import useMainStore from "@/context/main-store";
@@ -32,10 +21,8 @@ import { cn, notify } from "@/lib/utils";
 import SockJS from "sockjs-client";
 import { Client } from "@stomp/stompjs";
 import { BASE_URL } from "@/lib/api-config";
-import { createNewDelivery } from "@/app/_actions/delivery-actions";
-import { useCities } from "@/hooks/use-query-data";
+import { publishCargoListing } from "@/app/_actions/delivery-actions";
 import { useQueryClient } from "@tanstack/react-query";
-import { getLocalTimeZone, today } from "@internationalized/date";
 
 type CargoProps = {
   isOpen: boolean;
@@ -43,18 +30,19 @@ type CargoProps = {
   onClose: () => void;
 };
 
-export default function SendCargoModal({
+export default function PayToAccessModal({
   isOpen,
   onOpen,
   onClose,
 }: CargoProps) {
   const socketRef = React.useRef<any>(null);
-  const { data: cities } = useCities();
+
   const [isCompleteTransaction, setIsCompleteTransaction] =
     React.useState(false);
+
   const [isPromptSent, setIsPromptSent] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
-  const [socketResponse, setSocketResponse] = React.useState(undefined);
+
   const [transaction, setTransaction] = React.useState<Partial<Transaction>>({
     status: "PENDING",
     message: "Transaction Pending Approval",
@@ -62,7 +50,9 @@ export default function SendCargoModal({
 
   const queryClient = useQueryClient();
 
-  const { sendCargoFormData } = useMainStore((state) => state);
+  const { sendCargoFormData, selectedShipment } = useMainStore(
+    (state) => state
+  );
 
   const {
     currentTabIndex,
@@ -71,11 +61,7 @@ export default function SendCargoModal({
     isLastTab,
     navigateForward,
     navigateBackwards,
-  } = useCustomTabsHook([
-    <CargoDetailsForm key={"form"} />,
-    <ReceiverDetailsForm key="receiver" />,
-    <PaymentDetailsForm key="payment" />,
-  ]);
+  } = useCustomTabsHook([<PaymentDetailsForm key="payment" />]);
 
   function handleCloseModal() {
     setIsCompleteTransaction(false);
@@ -93,25 +79,7 @@ export default function SendCargoModal({
       return;
     }
 
-    const formData: Delivery = {
-      cargoDetails: {
-        pickUpCity: sendCargoFormData?.pickUpCity,
-        pickUpLocation: sendCargoFormData?.pickUpLocation,
-        deliveryCity: sendCargoFormData?.deliveryCity,
-        deliveryLocation: sendCargoFormData?.deliveryLocation,
-        transportDate:
-          sendCargoFormData?.transportDate ||
-          today(getLocalTimeZone().toString()),
-        cargoDescription: sendCargoFormData?.cargoDescription,
-        cargoMeasure: sendCargoFormData?.cargoMeasure,
-        packaging: sendCargoFormData?.packaging,
-        containerSize: sendCargoFormData?.containerSize,
-        receiverName: sendCargoFormData?.receiverName,
-        receiverAddress: sendCargoFormData?.receiverAddress,
-        receiverPhoneOne: sendCargoFormData?.receiverPhoneOne,
-        receiverPhoneTwo: sendCargoFormData?.receiverPhoneTwo,
-      } as ShipmentRecord,
-
+    const formData: Partial<Delivery> = {
       paymentDetails: {
         phone: sendCargoFormData?.paymentPhone,
         amount: "1.00", // TODO: ALLOW AMOUNT TO BE SET FROM THE BACKEND
@@ -119,9 +87,10 @@ export default function SendCargoModal({
       } as PaymentDetails,
     };
 
-    console.log("SEND CARGO", formData);
-
-    const response = await createNewDelivery(formData);
+    const response = await publishCargoListing(
+      formData,
+      String(selectedShipment?.id)
+    );
 
     if (response?.success) {
       notify({
@@ -211,72 +180,67 @@ export default function SendCargoModal({
       isOpen={isOpen}
       onClose={handleCloseModal}
       backdrop="blur"
-      placement="bottom"
-      classNames={{
-        base: "rounded-b-none lg:rounded-b-xl sm:mb-0 lg:my-auto pb-4 min-h-[60svh] lg:min-h-max",
-      }}
+      placement="center"
     >
       <ModalContent>
         <>
           <ModalHeader className="flex flex-col gap-1">
-            Send a Package
+            Publish a Package
           </ModalHeader>
           <ModalBody>
-            <>
-              <AnimatePresence mode="wait">
-                <motion.div
-                  variants={containerVariants}
-                  key={currentTabIndex}
-                  initial={"initial"}
-                  animate={"animate"}
-                  exit={"exit"}
-                  className="relative"
-                >
-                  {!isFirstTab && (
-                    <div className="flex w-full items-center justify-between bg-red-500">
-                      <NavIconButton
-                        className={cn(
-                          "absolute -bottom-14 left-2 border-foreground/10 max-w-40 max-h-10 aspect-video",
-                          {
-                            "bottom-0": isPromptSent,
-                          }
-                        )}
-                        onClick={
-                          isPromptSent
-                            ? () => setIsPromptSent(false)
-                            : navigateBackwards
+            <AnimatePresence mode="wait">
+              <motion.div
+                variants={containerVariants}
+                key={currentTabIndex}
+                initial={"initial"}
+                animate={"animate"}
+                exit={"exit"}
+                className="relative"
+              >
+                {!isFirstTab && (
+                  <div className="flex w-full items-center justify-between bg-red-500">
+                    <NavIconButton
+                      className={cn(
+                        "absolute -bottom-14 left-2 border-foreground/10 max-w-40 max-h-10 aspect-video",
+                        {
+                          "bottom-0": isPromptSent,
                         }
-                      >
-                        <ArrowLeft className="mr-1 aspect-square w-6" /> Back
-                      </NavIconButton>
-                    </div>
-                  )}
-                  {isPromptSent ? (
-                    <>
-                      <StatusBox
-                        status={transaction?.status?.toUpperCase() || "PENDING"}
-                        title={
-                          transaction?.status?.toUpperCase() == "SUCCESS"
-                            ? "Shipment Created Successfully!"
-                            : transaction?.status?.toUpperCase() == "FAILED"
-                            ? "Shipment creation failed!"
-                            : "Transaction Pending Approval"
-                        }
-                        description={
-                          transaction?.status == "SUCCESS"
-                            ? "You shipment has been created, transporters will now be able to see it and contact you."
-                            : transaction?.status == "FAILED"
-                            ? String(transaction?.message)
-                            : "A payment confirmation prompt has been sent to your mobile phone number for approval."
-                        }
-                      />
-                    </>
-                  ) : (
-                    activeTab
-                  )}
-                </motion.div>
-              </AnimatePresence>
-            </>
+                      )}
+                      onClick={
+                        isPromptSent
+                          ? () => setIsPromptSent(false)
+                          : navigateBackwards
+                      }
+                    >
+                      <ArrowLeft className="mr-1 aspect-square w-6" /> Back
+                    </NavIconButton>
+                  </div>
+                )}
+                {isPromptSent ? (
+                  <>
+                    <StatusBox
+                      status={transaction?.status?.toUpperCase() || "PENDING"}
+                      title={
+                        transaction?.status?.toUpperCase() == "SUCCESS"
+                          ? "Shipment Created Successfully!"
+                          : transaction?.status?.toUpperCase() == "FAILED"
+                          ? "Shipment creation failed!"
+                          : "Transaction Pending Approval"
+                      }
+                      description={
+                        transaction?.status == "SUCCESS"
+                          ? "You shipment has been created, transporters will now be able to see it and contact you."
+                          : transaction?.status == "FAILED"
+                          ? String(transaction?.message)
+                          : "A payment confirmation prompt has been sent to your mobile phone number for approval."
+                      }
+                    />
+                  </>
+                ) : (
+                  activeTab
+                )}
+              </motion.div>
+            </AnimatePresence>
           </ModalBody>
           {!isPromptSent && (
             <ModalFooter>
@@ -293,7 +257,7 @@ export default function SendCargoModal({
                 isDisabled={isLoading}
                 onPress={handleProceed}
               >
-                {isLastTab ? "Create" : "Next"}
+                {isLastTab ? "Publish" : "Next"}
               </Button>
             </ModalFooter>
           )}

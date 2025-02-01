@@ -39,6 +39,7 @@ type CardProps = Partial<ShipmentRecord> & {
   loadingDetails?: boolean;
   handleViewDetails?: () => Promise<APIResponse>;
   handleOpenDetailsModal?: () => void;
+  handlePublish?: () => void;
 };
 
 function ShipmentCard({
@@ -46,6 +47,7 @@ function ShipmentCard({
   displayDetails = false,
   isDataLoaded,
   loadingDetails,
+  handlePublish,
   handleViewDetails,
   handleOpenDetailsModal,
   ...props
@@ -59,11 +61,11 @@ function ShipmentCard({
     props?.contacts && (props?.contacts?.sender || props?.contacts?.receiver);
 
   return (
-    <Card className="flex flex-col shadow-none border border-default-100/80 p-2 ">
+    <Card className="flex flex-col border border-default-100/80 p-2 shadow-none">
       <CardHeader className="flex-row justify-between py-1">
-        <h4 className="font-semibold text-sm">Shipment Information</h4>{" "}
-        <div className="flex gap-2 items-center">
-          <div className="flex flex-row items-center text-sm gap-2">
+        <h4 className="text-sm font-semibold">Shipment Information</h4>{" "}
+        <div className="flex items-center gap-2">
+          <div className="flex flex-row items-center gap-2 text-sm">
             <Skeleton
               className={cn("max-w-max rounded-lg  capitalize", {
                 "min-w-16 h-6": isDataLoaded,
@@ -75,7 +77,7 @@ function ShipmentCard({
               </Chip>
             </Skeleton>
 
-            <ArrowRightIcon className="w-4 h-4 text-primary-400" />
+            <ArrowRightIcon className="h-4 w-4 text-primary-400" />
 
             <Skeleton
               className={cn("max-w-max rounded-lg  capitalize", {
@@ -89,21 +91,21 @@ function ShipmentCard({
             </Skeleton>
           </div>
           <NavIconButton onClick={handleOpenDetailsModal}>
-            <SquareArrowOutUpRight className="w-4 h-4"></SquareArrowOutUpRight>
+            <SquareArrowOutUpRight className="h-4 w-4"></SquareArrowOutUpRight>
           </NavIconButton>
         </div>
       </CardHeader>
       <CardBody className="flex-row gap-4 py-2">
-        <div className="w-16 aspect-square overflow-clip ">
+        <div className="aspect-square w-16 overflow-clip">
           <Skeleton className="rounded-lg" isLoaded={!isDataLoaded}>
             <Image
               alt="Cargo Image"
-              className="w-full h-full object-cover rounded-lg"
+              className="h-full w-full rounded-lg object-cover"
               src={src || "/images/fallback.svg"}
             />
           </Skeleton>
         </div>
-        <div className="flex gap-2 justify-between flex-1">
+        <div className="flex flex-1 justify-between gap-2">
           <div
             className={cn("flex flex-col text-sm", {
               "gap-2": isDataLoaded,
@@ -126,7 +128,7 @@ function ShipmentCard({
             >
               <div className="">
                 {props?.isPublished || user?.role == "TRANSPORTER" ? (
-                  <span className="text-xs font-medium flex items-center gap-1">
+                  <span className="flex items-center gap-1 text-xs font-medium">
                     Delivery Status:{" "}
                     <Chip
                       color={
@@ -153,7 +155,7 @@ function ShipmentCard({
                   <Button
                     size="sm"
                     radius="sm"
-                    onPress={toggleShowMore}
+                    onPress={handlePublish}
                     className="h-6 text-xs"
                   >
                     Publish
@@ -162,7 +164,7 @@ function ShipmentCard({
               </div>
             </Skeleton>
           </div>
-          <div className="flex flex-col gap-2 items-end text-xs">
+          <div className="flex flex-col items-end gap-2 text-xs">
             <Skeleton className="w-20 rounded-lg" isLoaded={!isDataLoaded}>
               <p className="text-right">{props?.packaging}</p>
             </Skeleton>
@@ -183,7 +185,7 @@ function ShipmentCard({
                       toggleShowMore();
                       handleViewDetails!();
                     }}
-                    className="p-0 bg-transparent data-[hover=true]:bg-transparent text-xs"
+                    className="bg-transparent p-0 text-xs data-[hover=true]:bg-transparent"
                   >
                     View Details
                   </Button>
@@ -213,8 +215,8 @@ function ShipmentCard({
                 })}
               >
                 {/* DETAILS */}
-                <div className="flex flex-col w-full">
-                  <h3 className="text-primary-900/80 dark:font-bold dark:tracking-wide font-semibold dark:bg-primary/20 bg-default-50/50 text-sm rounded-md px-4 py-2 -mt-2 mb-2">
+                <div className="flex w-full flex-col">
+                  <h3 className="-mt-2 mb-2 rounded-md bg-default-50/50 px-4 py-2 text-sm font-semibold text-primary-900/80 dark:bg-primary/20 dark:font-bold dark:tracking-wide">
                     Shipment Record Details
                   </h3>
                   <Table
@@ -234,35 +236,9 @@ function ShipmentCard({
                         </>
                       }
                     >
-                      <TableRow key="pickup-city">
-                        <TableCell>Pick-up City </TableCell>
-                        <TableCell className="font-bold text-right capitalize ">
-                          {`${props?.pickUpCity}`}
-                        </TableCell>
-                      </TableRow>
-
-                      <TableRow key="pickup-location">
-                        <TableCell>Pick-up Location </TableCell>
-                        <TableCell className="font-bold text-right capitalize ">
-                          {`${props?.pickUpLocation}`}
-                        </TableCell>
-                      </TableRow>
-
-                      <TableRow key="delivery-city">
-                        <TableCell>Delivery City </TableCell>
-                        <TableCell className="font-bold text-right capitalize ">
-                          {`${props?.deliveryCity}`}
-                        </TableCell>
-                      </TableRow>
-                      <TableRow key="delivery-location">
-                        <TableCell>Drop off Location </TableCell>
-                        <TableCell className="font-bold text-right capitalize ">
-                          {`${props?.deliveryLocation}`}
-                        </TableCell>
-                      </TableRow>
                       <TableRow key="cargo-size-measure">
                         <TableCell>Cargo Size (Measurement) </TableCell>
-                        <TableCell className="font-bold text-right capitalize ">
+                        <TableCell className="text-right font-bold capitalize">
                           {`${props?.containerSize} ${props?.cargoMeasure}`}
                         </TableCell>
                       </TableRow>
@@ -275,16 +251,10 @@ function ShipmentCard({
                   endContent={<ChevronUp className="h-6 w-6" />}
                   onPress={toggleShowMore}
                   size="sm"
-                  className="p-0 bg-transparent data-[hover=true]:bg-transparent text-xs"
+                  className="bg-transparent p-0 text-xs data-[hover=true]:bg-transparent"
                 >
                   Show less
                 </Button>
-
-                {props?.contacts && user?.role === "TRANSPORTER" && (
-                  <Button size="md" className="text-sm mt-2">
-                    Pay To See Contacts
-                  </Button>
-                )}
               </motion.div>
             )}
           </AnimatePresence>

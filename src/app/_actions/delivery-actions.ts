@@ -26,7 +26,7 @@ export async function getAvailableDeliveries(
 
   try {
     const res = await authenticatedService({
-      url: `/deliveries?page=${page}&size=${size}&city=${city}`,
+      url: `/deliveries?city=${city}&page=${page}&size=${size}`,
     });
     const response = res.data;
 
@@ -110,6 +110,45 @@ export async function createNewDelivery(data: Delivery): Promise<APIResponse> {
     const res = await authenticatedService({
       method: "POST",
       url: "/deliveries",
+      data: data,
+    });
+
+    const response = res.data;
+
+    return {
+      success: true,
+      message: response?.message,
+      data: response?.data || null,
+      status: res.status,
+    };
+  } catch (error: any) {
+    console.error({
+      status: error?.response?.status,
+      statusText: error?.response?.statusText,
+      headers: error?.response?.headers,
+      config: error?.response?.config,
+      data: error?.response?.data,
+    });
+    return {
+      success: false,
+      message:
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        "Something went wrong!",
+      data: null,
+      status: error?.response?.status || 500,
+    };
+  }
+}
+
+export async function publishCargoListing(
+  data: Partial<Delivery>,
+  deliveryId: string
+): Promise<APIResponse> {
+  try {
+    const res = await authenticatedService({
+      method: "POST",
+      url: `/deliveries/${deliveryId}/publish`,
       data: data,
     });
 
@@ -230,6 +269,14 @@ export async function updateDeliveryDetails(
   }
 }
 
+/**
+ * Deletes a delivery with the specified delivery ID.
+ *
+ * @param {string} deliveryId - The ID of the delivery to be deleted.
+ * @returns {Promise<APIResponse>} A promise that resolves to an APIResponse object containing the result
+ * of the delete operation or error details.
+ */
+
 export async function deleteDelivery(deliveryId: string): Promise<APIResponse> {
   try {
     const res = await authenticatedService({
@@ -271,6 +318,14 @@ export async function deleteDelivery(deliveryId: string): Promise<APIResponse> {
  * @returns {Promise<APIResponse>} A promise that resolves to an APIResponse object containing the result of the pick up operation or error details.
  */
 export async function pickUpDelivery(deliveryId: string): Promise<APIResponse> {
+  if (!deliveryId) {
+    return {
+      success: false,
+      message: "Delivery ID is Required!",
+      data: null,
+      status: 400,
+    };
+  }
   try {
     const res = await authenticatedService({
       url: `/deliveries/${deliveryId}/pickup`,

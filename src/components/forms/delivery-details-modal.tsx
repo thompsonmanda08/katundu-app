@@ -23,6 +23,7 @@ import {
   Tabs,
   Tab,
   Divider,
+  useDisclosure,
 } from "@heroui/react";
 import { Transaction, Transporter, User } from "@/lib/types";
 import { NavIconButton, StatusBox } from "../elements";
@@ -52,6 +53,7 @@ import Loader from "../ui/loader";
 
 import { AnimatePresence, motion } from "framer-motion";
 import { TransportCargoForm } from "./transport-cargo-form";
+import PayToAccessModal from "./pay-to-access-modal";
 
 type CargoProps = Partial<ShipmentRecord> & {
   isOpen: boolean;
@@ -94,12 +96,18 @@ export default function CargoDetailsModal({
     // />,
   ]);
 
+  const {
+    isOpen: showPaymentModal,
+    onOpen: openPaymentModal,
+    onClose: closePaymentModal,
+  } = useDisclosure();
+
   function handleCloseModal() {
     setSelectedShipment(null);
     onClose();
   }
 
-  async function handleProceed() {
+  async function handlePickupDelivery() {
     if (!isLastTab) {
       navigateForward();
       return;
@@ -119,17 +127,17 @@ export default function CargoDetailsModal({
         <>
           <ModalHeader className="flex items-center gap-2">
             <NavIconButton onClick={handleCloseModal}>
-              <ArrowLeftIcon className="w-5 h-5"></ArrowLeftIcon>
+              <ArrowLeftIcon className="h-5 w-5"></ArrowLeftIcon>
             </NavIconButton>
             <small>Shipment Details</small>
           </ModalHeader>
-          <ModalBody className="items-center p-0 ">
-            <Card className="flex flex-col shadow-none border border-default-100/20 p-2">
+          <ModalBody className="items-center p-0">
+            <Card className="flex flex-col border border-default-100/20 p-2 shadow-none">
               <CardHeader className="flex-row justify-between py-1">
                 Shipment Route
-                <div className="flex flex-row items-center text-sm gap-2">
+                <div className="flex flex-row items-center gap-2 text-sm">
                   <Skeleton
-                    className=" max-w-max rounded-lg capitalize"
+                    className="max-w-max rounded-lg capitalize"
                     isLoaded={!isDataLoaded}
                   >
                     <Chip variant="flat" size="sm" color="primary">
@@ -137,7 +145,7 @@ export default function CargoDetailsModal({
                     </Chip>
                   </Skeleton>
 
-                  <ArrowRightIcon className="w-4 h-4 text-primary-400" />
+                  <ArrowRightIcon className="h-4 w-4 text-primary-400" />
 
                   <Skeleton
                     className="max-w-max rounded-lg capitalize"
@@ -150,16 +158,16 @@ export default function CargoDetailsModal({
                 </div>
               </CardHeader>
               <CardBody className="flex-row gap-4 py-2">
-                <div className="w-16 aspect-square overflow-clip ">
+                <div className="aspect-square w-16 overflow-clip">
                   <Skeleton className="rounded-lg" isLoaded={!isDataLoaded}>
                     <Image
                       alt="Cargo Image"
-                      className="w-full h-full object-cover rounded-lg"
+                      className="h-full w-full rounded-lg object-cover"
                       src={src || "/images/fallback.svg"}
                     />
                   </Skeleton>
                 </div>
-                <div className="flex gap-2 justify-between flex-1">
+                <div className="flex flex-1 justify-between gap-2">
                   <div
                     className={cn("flex flex-col text-sm", {
                       "gap-2": isDataLoaded,
@@ -188,7 +196,7 @@ export default function CargoDetailsModal({
                     >
                       <div className="">
                         {props?.isPublished || user?.role == "TRANSPORTER" ? (
-                          <span className="text-xs font-medium flex items-center gap-1">
+                          <span className="flex items-center gap-1 text-xs font-medium">
                             Delivery Status:{" "}
                             <Chip
                               color={
@@ -224,7 +232,7 @@ export default function CargoDetailsModal({
                       </div>
                     </Skeleton>
                   </div>
-                  <div className="flex flex-col gap-2 items-end text-xs">
+                  <div className="flex flex-col items-end gap-2 text-xs">
                     <Skeleton
                       className="w-20 rounded-lg"
                       isLoaded={!isDataLoaded}
@@ -245,7 +253,7 @@ export default function CargoDetailsModal({
                   </div>
                 </div>
               </CardBody>
-              <Divider className="bg-slate-100 my-2" />
+              <Divider className="my-2 bg-slate-100" />
               <CardFooter className={cn("flex-col p-0")}>
                 <AnimatePresence>
                   <motion.div
@@ -257,11 +265,37 @@ export default function CargoDetailsModal({
                     className={cn("flex flex-col w-full")}
                   >
                     {/* DETAILS */}
-                    <div className="flex flex-col w-full">{activeTab}</div>
+                    <div className="flex w-full flex-col">{activeTab}</div>
 
-                    {props?.contacts && user?.role === "TRANSPORTER" && (
-                      <Button size="md" className="text-sm">
+                    {/* CONTACT DETAILS */}
+
+                    {!props?.contacts && user?.role === "TRANSPORTER" && (
+                      <Button
+                        size="md"
+                        className="mt-2 text-sm"
+                        onPress={openPaymentModal}
+                      >
                         Pay To See Contacts
+                      </Button>
+                    )}
+
+                    {/* **************************************************** */}
+                    <PayToAccessModal
+                      isOpen={showPaymentModal}
+                      onOpen={openPaymentModal}
+                      onClose={closePaymentModal}
+                      {...props}
+                    />
+                    {/* **************************************************** */}
+
+                    {props?.contacts && user?.role == "TRANSPORTER" && (
+                      <Button
+                        size="sm"
+                        radius="sm"
+                        onPress={handlePickupDelivery}
+                        className="h-6 text-xs"
+                      >
+                        Pick up Delivery
                       </Button>
                     )}
                   </motion.div>
@@ -299,33 +333,33 @@ export function CargoDetails({
       >
         <TableRow key="pickup-city">
           <TableCell>Pick-up City </TableCell>
-          <TableCell className="font-bold text-right capitalize ">
+          <TableCell className="text-right font-bold capitalize">
             {`${props?.pickUpCity}`}
           </TableCell>
         </TableRow>
 
         <TableRow key="pickup-location">
           <TableCell>Pick-up Location </TableCell>
-          <TableCell className="font-bold text-right capitalize ">
+          <TableCell className="text-right font-bold capitalize">
             {`${props?.pickUpLocation}`}
           </TableCell>
         </TableRow>
 
         <TableRow key="delivery-city">
           <TableCell>Delivery City </TableCell>
-          <TableCell className="font-bold text-right capitalize ">
+          <TableCell className="text-right font-bold capitalize">
             {`${props?.deliveryCity}`}
           </TableCell>
         </TableRow>
         <TableRow key="delivery-location">
           <TableCell>Drop off Location </TableCell>
-          <TableCell className="font-bold text-right capitalize ">
+          <TableCell className="text-right font-bold capitalize">
             {`${props?.deliveryLocation}`}
           </TableCell>
         </TableRow>
         <TableRow key="cargo-size-measure">
           <TableCell>Cargo Size (Measurement) </TableCell>
-          <TableCell className="font-bold text-right capitalize ">
+          <TableCell className="text-right font-bold capitalize">
             {`${props?.containerSize} ${props?.cargoMeasure}`}
           </TableCell>
         </TableRow>
@@ -337,12 +371,12 @@ export function CargoDetails({
               <TableCell>Shipper Name</TableCell>
               {/* TODO: IF USER HAS PAID */}
               {userHasAccess ? (
-                <TableCell className="font-bold text-right capitalize ">
+                <TableCell className="text-right font-bold capitalize">
                   {`${props?.contacts?.sender?.firstName} ${props?.contacts?.sender?.lastName}`}
                 </TableCell>
               ) : (
-                <TableCell className="font-bold text-right capitalize ">
-                  <span className="blur-sm overflow-clip">
+                <TableCell className="text-right font-bold capitalize">
+                  <span className="overflow-clip blur-sm">
                     Pay4This Katundu
                   </span>
                 </TableCell>
@@ -352,12 +386,12 @@ export function CargoDetails({
             <TableRow key="shipper-phone">
               <TableCell>Shipper Mobile Number </TableCell>
               {userHasAccess ? (
-                <TableCell className="font-bold text-right capitalize ">
+                <TableCell className="text-right font-bold capitalize">
                   {`${props?.contacts?.sender?.phone}`}
                 </TableCell>
               ) : (
-                <TableCell className="font-bold text-right capitalize ">
-                  <span className="blur-sm overflow-clip">
+                <TableCell className="text-right font-bold capitalize">
+                  <span className="overflow-clip blur-sm">
                     Pay4This Katundu
                   </span>
                 </TableCell>
@@ -368,13 +402,13 @@ export function CargoDetails({
           <>
             <TableRow key="transporter-name">
               <TableCell>Transporter Name </TableCell>
-              <TableCell className="font-bold text-right capitalize">
+              <TableCell className="text-right font-bold capitalize">
                 {`${props?.transporterName || "N/A"}`}
               </TableCell>
             </TableRow>
             <TableRow key="transporter-phone">
               <TableCell>Transporter Mobile Number </TableCell>
-              <TableCell className="font-bold text-right capitalize ">
+              <TableCell className="text-right font-bold capitalize">
                 {`${props?.transporterContact || "N/A"}`}
               </TableCell>
             </TableRow>

@@ -5,11 +5,12 @@ import {
   TransportCargoModal,
   SendCargoModal,
   CargoDetailsModal,
+  PayToAccessModal,
 } from "@/components/forms";
 import { Button } from "@/components/ui/button";
 import useMainStore from "@/context/main-store";
 import { useAccountProfile, useUserDeliveries } from "@/hooks/use-query-data";
-import { ShipmentRecord, User } from "@/lib/types";
+import { Delivery, ShipmentRecord, User } from "@/lib/types";
 import { cn, notify } from "@/lib/utils";
 import {
   Divider,
@@ -40,6 +41,12 @@ function Home({ user }: { user: User }) {
     isOpen: showDetailsModal,
     onOpen: openShowDetailsModal,
     onClose: closeShowDetailsModal,
+  } = useDisclosure();
+
+  const {
+    isOpen: showPublishModal,
+    onOpen: openPublishModal,
+    onClose: closePublishModal,
   } = useDisclosure();
 
   const { setSelectedShipment, selectedShipment } = useMainStore(
@@ -102,6 +109,13 @@ function Home({ user }: { user: User }) {
     openSendCargoModal();
   }
 
+  function handlePublish(item: Partial<ShipmentRecord>) {
+    openPublishModal();
+    setSelectedShipment(item);
+  }
+
+  // TODO: PAGINATION NOT WORKING
+
   return (
     <div className="flex w-full flex-col gap-2">
       <div className="flex w-full flex-col px-4">
@@ -132,7 +146,7 @@ function Home({ user }: { user: User }) {
           className="h-full flex-1 flex-col border bg-primary-50/20 p-4"
           onPress={openSenderModal}
         >
-          <div className="flex-1 overflow-clip max-h-32 max-w-32">
+          <div className="max-h-32 max-w-32 flex-1 overflow-clip">
             <Image
               alt="Cargo Image"
               className="h-full w-full rounded-lg object-contain"
@@ -148,7 +162,7 @@ function Home({ user }: { user: User }) {
           className="h-full flex-1 flex-col border bg-primary-50/20 p-4"
           onPress={openTransporterModal}
         >
-          <div className="flex-1 overflow-clip max-h-32 max-w-32">
+          <div className="max-h-32 max-w-32 flex-1 overflow-clip">
             <Image
               alt="Cargo Image"
               className="h-full w-full rounded-lg object-contain"
@@ -189,6 +203,8 @@ function Home({ user }: { user: User }) {
                 displayDetails={true}
                 isDataLoaded={isLoaded}
                 handleOpenDetailsModal={() => showDetails(item)}
+                // handlePublish={() => handlePublish(item)}
+                handlePublish={openPublishModal}
                 handleViewDetails={async () =>
                   await mutation.mutateAsync(String(item?.id))
                 }
@@ -200,7 +216,7 @@ function Home({ user }: { user: User }) {
           )}
         </div>
         {(recentDeliveries?.length || currentPage > 1) && (
-          <div className="flex items-center gap-2 justify-center">
+          <div className="flex items-center justify-center gap-2">
             <Button
               isIconOnly
               variant="flat"
@@ -231,19 +247,19 @@ function Home({ user }: { user: User }) {
         )}
       </div>
 
-      {/* ************************************************************* */}
+      {/* **************************************************** */}
       <SendCargoModal
         isOpen={isOpen}
         onOpen={openSendCargoModal}
         onClose={closeSendCargoModal}
       />
-      {/* ************************************************************* */}
+      {/* **************************************************** */}
       <TransportCargoModal
         isOpen={showTransportModal}
         onOpen={openTransportCargoModal}
         onClose={closeTransportCargoModal}
       />
-      {/* ************************************************************* */}
+      {/* **************************************************** */}
       <CargoDetailsModal
         isOpen={showDetailsModal}
         onOpen={openShowDetailsModal}
@@ -251,7 +267,14 @@ function Home({ user }: { user: User }) {
         loadingDetails={mutation?.isPending}
         {...selectedShipment}
       />
-      {/* ************************************************************* */}
+      {/* **************************************************** */}
+      <PayToAccessModal
+        isOpen={showPublishModal}
+        onOpen={openPublishModal}
+        onClose={closePublishModal}
+        {...selectedShipment}
+      />
+      {/* **************************************************** */}
     </div>
   );
 }

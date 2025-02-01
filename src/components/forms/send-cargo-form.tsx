@@ -4,9 +4,7 @@ import React from "react";
 import { Input } from "../ui/input";
 import useMainStore from "@/context/main-store";
 import { useCities } from "@/hooks/use-query-data";
-import {
-  parseDate,
-} from "@internationalized/date";
+import { getLocalTimeZone, parseDate, today } from "@internationalized/date";
 
 export function CargoDetailsForm() {
   const { data: DISTRICTS } = useCities(100);
@@ -46,6 +44,7 @@ export function CargoDetailsForm() {
       </Autocomplete>
       <Input
         label="Pickup point"
+        value={sendCargoFormData?.pickUpLocation}
         onChange={(e) => {
           updateSendCargoFormData({ pickUpLocation: e.target.value });
         }}
@@ -63,11 +62,12 @@ export function CargoDetailsForm() {
         }
       >
         {(item) => (
-          <AutocompleteItem key={item.id}>{item.name}</AutocompleteItem>
+          <AutocompleteItem key={item.name}>{item.name}</AutocompleteItem>
         )}
       </Autocomplete>
       <Input
         label="Drop Off point"
+        value={sendCargoFormData?.deliveryLocation}
         onChange={(e) => {
           updateSendCargoFormData({ deliveryLocation: e.target.value });
         }}
@@ -77,8 +77,13 @@ export function CargoDetailsForm() {
         className=""
         label="Transport Date"
         variant="bordered"
+        minValue={today(getLocalTimeZone())}
+        defaultValue={today(getLocalTimeZone().toString())}
         value={parseDate(
-          String(sendCargoFormData?.transportDate || "2025-01-01")
+          String(
+            sendCargoFormData?.transportDate ||
+              today(getLocalTimeZone().toString())
+          )
         )}
         onChange={(date) =>
           updateSendCargoFormData({ transportDate: date?.toString() })
@@ -95,21 +100,31 @@ export function CargoDetailsForm() {
           }}
         />
         <Input
-          label="Container Size"
-          value={sendCargoFormData?.containerSize}
+          label="Quantity"
+          value={sendCargoFormData?.quantity}
           onChange={(e) => {
-            updateSendCargoFormData({ containerSize: e.target.value });
+            updateSendCargoFormData({ quantity: e.target.value });
           }}
         />
       </div>
-      <Input
-        label="Cargo Measurement"
-        value={sendCargoFormData?.cargoMeasure}
-        onChange={(e) => {
-          updateSendCargoFormData({ cargoMeasure: e.target.value });
-        }}
-        className="mt-px"
-      />
+      <div className="flex w-full flex-1 gap-4">
+        <Input
+          label="Size"
+          type="number"
+          value={sendCargoFormData?.containerSize}
+          onChange={(e) => {
+            updateSendCargoFormData({ containerSize: String(e.target.value) });
+          }}
+        />
+        <Input
+          label="Measurement Units"
+          value={sendCargoFormData?.cargoMeasure}
+          onChange={(e) => {
+            updateSendCargoFormData({ cargoMeasure: String(e.target.value) });
+          }}
+          className="mt-px"
+        />
+      </div>
 
       <Input
         label="Cargo Description"

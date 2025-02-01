@@ -9,6 +9,7 @@ export { default as SignUpForm } from "./auth-forms/signup-form";
 export { default as TransportCargoModal } from "./transport-cargo-modal";
 export { default as SendCargoModal } from "./send-cargo-modal";
 export { default as CargoDetailsModal } from "./delivery-details-modal";
+export { default as PayToAccessModal } from "./pay-to-access-modal";
 export {
   CargoDetailsForm,
   ReceiverDetailsForm,

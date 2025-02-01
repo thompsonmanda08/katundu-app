@@ -50,7 +50,7 @@ export function TransportCargoForm() {
     mutationFn: (ID: string) => getDeliveryDetails(ID),
   });
 
-  const availableDeliveries = (detailsMutation?.data?.data?.deliveries ||
+  const availableDeliveries = (listData?.deliveries ||
     []) as Partial<ShipmentRecord>[];
 
   async function showDetails(item: Partial<ShipmentRecord>) {
@@ -69,10 +69,10 @@ export function TransportCargoForm() {
   useEffect(() => {
     const loadShipments = async () => await listMutation.mutateAsync();
 
-    console.log("SEARCH DATA==> ", listData);
-
     loadShipments();
   }, [city]);
+
+  console.log("SEARCH DATA==> ", listData);
 
   return (
     <div className="flex w-full flex-1 flex-col gap-4">
@@ -92,17 +92,14 @@ export function TransportCargoForm() {
           onSelectionChange={(city) => setCity(String(city))}
         >
           {(item) => (
-            <AutocompleteItem key={item.id}>{item.name}</AutocompleteItem>
+            <AutocompleteItem key={item.name}>{item.name}</AutocompleteItem>
           )}
         </Autocomplete>
       </div>
       <Divider />
       {city && (
-        <p className="text-default-500 font-medium text-sm">
-          Katundu from:{" "}
-          <span className="font-bold">
-            {(DISTRICTS as OptionItem[])?.find((c) => c.id == city)?.name}
-          </span>
+        <p className="text-sm font-medium text-default-500">
+          Katundu from: <span className="font-bold">{city}</span>
         </p>
       )}
       <div className="flex w-full flex-col gap-4">
@@ -143,7 +140,7 @@ export function TransportCargoForm() {
         )}
 
         {(availableDeliveries?.length || currentPage > 1) && (
-          <div className="flex items-center gap-2 justify-center">
+          <div className="flex items-center justify-center gap-2">
             <Button
               isIconOnly
               variant="flat"
