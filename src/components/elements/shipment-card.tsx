@@ -242,6 +242,14 @@ function ShipmentCard({
                           {`${props?.containerSize} ${props?.cargoMeasure}`}
                         </TableCell>
                       </TableRow>
+                      <TableRow key="cargo-size-measure">
+                        <TableCell>Display full details</TableCell>
+                        <TableCell className="text-right font-bold capitalize">
+                          <NavIconButton onClick={handleOpenDetailsModal}>
+                            <SquareArrowOutUpRight className="h-4 w-4"></SquareArrowOutUpRight>
+                          </NavIconButton>
+                        </TableCell>
+                      </TableRow>
                     </TableBody>
                   </Table>
                 </div>
