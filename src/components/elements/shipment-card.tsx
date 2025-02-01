@@ -231,9 +231,9 @@ function ShipmentCard({
                     <TableBody
                       isLoading={loadingDetails}
                       loadingContent={
-                        <>
+                        <Skeleton className="grid w-full flex-1 rounded-lg">
                           <Loader loadingText="Getting details..." />{" "}
-                        </>
+                        </Skeleton>
                       }
                     >
                       <TableRow key="cargo-size-measure">
@@ -242,8 +242,8 @@ function ShipmentCard({
                           {`${props?.containerSize} ${props?.cargoMeasure}`}
                         </TableCell>
                       </TableRow>
-                      <TableRow key="cargo-size-measure">
-                        <TableCell>Display full details</TableCell>
+                      <TableRow key="cargo-details-btn">
+                        <TableCell>Display Full Details</TableCell>
                         <TableCell className="text-right font-bold capitalize">
                           <NavIconButton onClick={handleOpenDetailsModal}>
                             <SquareArrowOutUpRight className="h-4 w-4"></SquareArrowOutUpRight>
