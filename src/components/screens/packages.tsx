@@ -5,19 +5,11 @@ import {
 } from "@/app/_actions/delivery-actions";
 import { ShipmentCard } from "@/components/elements";
 import useMainStore from "@/context/main-store";
-import {
-  useAvailableDeliveries,
-  useUserDeliveries,
-} from "@/hooks/use-query-data";
 import { ShipmentRecord, User } from "@/lib/types";
 import {
   Button,
-  Card,
-  CardBody,
-  CardHeader,
   Chip,
   Divider,
-  Image,
   Pagination,
   Tab,
   Tabs,
@@ -26,7 +18,6 @@ import {
 import { useMutation } from "@tanstack/react-query";
 import {
   ActivityIcon,
-  ArrowRightIcon,
   BoxIcon,
   ChevronLeft,
   ChevronRight,

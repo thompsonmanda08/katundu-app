@@ -15,15 +15,8 @@ import useMainStore from "@/context/main-store";
 import { useAccountProfile, useUserDeliveries } from "@/hooks/use-query-data";
 import { ShipmentRecord, User } from "@/lib/types";
 import { cn, notify } from "@/lib/utils";
-import {
-  Divider,
-  Image,
-  Pagination,
-  Skeleton,
-  useDisclosure,
-} from "@heroui/react";
+import { Divider, Image, Skeleton, useDisclosure } from "@heroui/react";
 import { useMutation } from "@tanstack/react-query";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import React, { useEffect } from "react";
 import EmptyState from "../ui/empty-state";
 

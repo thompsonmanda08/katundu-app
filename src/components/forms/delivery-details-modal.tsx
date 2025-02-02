@@ -5,14 +5,12 @@ import {
   ModalContent,
   ModalHeader,
   ModalBody,
-  ModalFooter,
   Card,
   CardBody,
   CardFooter,
   CardHeader,
   Chip,
   Image,
-  Link,
   Skeleton,
   Table,
   TableBody,
@@ -20,39 +18,22 @@ import {
   TableColumn,
   TableHeader,
   TableRow,
-  Tabs,
-  Tab,
   Divider,
   useDisclosure,
 } from "@heroui/react";
-import { Transaction, Transporter, User } from "@/lib/types";
-import { NavIconButton, StatusBox } from "../elements";
-import { CargoDetailsForm } from "./send-cargo-form";
+import { NavIconButton } from "../elements";
 import useCustomTabsHook from "@/hooks/use-custom-tabs";
 import { containerVariants } from "@/lib/constants";
-import { APIResponse, ShipmentRecord } from "@/lib/types";
+import { ShipmentRecord } from "@/lib/types";
 import {} from "@heroui/react";
-import {
-  ArrowLeftIcon,
-  ArrowRightIcon,
-  Box,
-  Car,
-  ChevronDown,
-  ChevronUp,
-  UserIcon,
-  Users,
-} from "lucide-react";
+import { ArrowLeftIcon, ArrowRightIcon } from "lucide-react";
 
 import { Button } from "../ui/button";
-import { slideDownInView } from "@/lib/constants";
 import { cn, formatDate } from "@/lib/utils";
 import useMainStore from "@/context/main-store";
-import { useMutation } from "@tanstack/react-query";
-import { useAvailableDeliveries } from "@/hooks/use-query-data";
 import Loader from "../ui/loader";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { TransportCargoForm } from "./transport-cargo-form";
 import PayToAccessModal from "./pay-to-access-modal";
 
 type CargoProps = Partial<ShipmentRecord> & {

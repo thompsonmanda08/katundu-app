@@ -8,11 +8,7 @@ import {
   ModalFooter,
   Button,
 } from "@heroui/react";
-import { Transaction, Transporter, User } from "@/lib/types";
-import { NavIconButton, StatusBox } from "../elements";
-import { CargoDetailsForm } from "./send-cargo-form";
-import useCustomTabsHook from "@/hooks/use-custom-tabs";
-import useMainStore from "@/context/main-store";
+import { NavIconButton } from "../elements";
 import { containerVariants } from "@/lib/constants";
 
 import { AnimatePresence, motion } from "framer-motion";
@@ -30,58 +26,8 @@ export default function TransportCargoModal({
   onOpen,
   onClose,
 }: CargoProps) {
-  const [isCompleteTransaction, setIsCompleteTransaction] =
-    React.useState(false);
-  const [isPromptSent, setIsPromptSent] = React.useState(false);
-  const [isLoading, setIsLoading] = React.useState(false);
-  const [transaction, setTransaction] = React.useState<Partial<Transaction>>({
-    status: "PENDING",
-    message: "Transaction Pending Approval",
-  });
-
-  const { currentTabIndex, activeTab, isFirstTab, isLastTab, navigateForward } =
-    useCustomTabsHook([<TransportCargoForm key={"form"} />]);
-
   function handleCloseModal() {
-    setIsCompleteTransaction(false);
-    setIsPromptSent(false);
-    setIsLoading(false);
     onClose();
-  }
-
-  async function handleProceed() {
-    setIsLoading(true);
-
-    if (!isLastTab) {
-      navigateForward();
-      setIsLoading(false);
-      return;
-    }
-
-    // const response = await createNewDelivery(formData);
-
-    // if (response?.success) {
-    //   notify({
-    //     title: "Success",
-    //     description: "Transaction completed!",
-    //     variant: "success",
-    //   });
-
-    //   //TODO: CONNECT WEBHOOK HERE TO LISTEN TO MNO
-    //   setTransaction(response?.data?.transaction);
-    //   const transactionID = response?.data?.transaction?.id;
-
-    // } else {
-    //   notify({
-    //     title: "Error",
-    //     description: String(response?.message),
-    //     variant: "danger",
-    //   });
-    //   return;
-    // }
-
-    setIsPromptSent(true);
-    setIsLoading(false);
   }
 
   return (
@@ -97,7 +43,7 @@ export default function TransportCargoModal({
         <>
           <ModalHeader className="flex gap-2">
             <NavIconButton onClick={handleCloseModal}>
-              <ArrowLeftIcon className="w-5 h-5"></ArrowLeftIcon>
+              <ArrowLeftIcon className="h-5 w-5"></ArrowLeftIcon>
             </NavIconButton>
             Transport a Package
           </ModalHeader>
@@ -105,46 +51,18 @@ export default function TransportCargoModal({
             <AnimatePresence mode="wait">
               <motion.div
                 variants={containerVariants}
-                key={currentTabIndex}
                 initial={"initial"}
                 animate={"animate"}
                 exit={"exit"}
                 className=""
               >
-                {isPromptSent ? (
-                  <>
-                    <StatusBox
-                      status={transaction?.status || "PENDING"}
-                      title={
-                        transaction?.status == "SUCCESS"
-                          ? "Shipment Created Successfully!"
-                          : transaction?.status == "FAILED"
-                          ? "Shipment creation failed!"
-                          : "Transaction Pending Approval"
-                      }
-                      description={
-                        transaction?.status == "SUCCESS"
-                          ? "You shipment has been created, transporters will now be able to see it and contact you."
-                          : transaction?.status == "FAILED"
-                          ? String(transaction?.message)
-                          : "Transaction Pending Approval"
-                      }
-                      onPress={handleCloseModal}
-                    />
-                  </>
-                ) : (
-                  activeTab
-                )}
+                <TransportCargoForm />
               </motion.div>
             </AnimatePresence>
           </ModalBody>
           <ModalFooter>
-            <Button
-              color="danger"
-              isDisabled={isLoading}
-              onPress={handleCloseModal}
-            >
-              Cancel
+            <Button color="danger" onPress={handleCloseModal}>
+              Close
             </Button>
             {/* <Button
               color="primary"

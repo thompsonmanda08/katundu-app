@@ -7,7 +7,6 @@ import {
   Chip,
   Image,
   Skeleton,
-  spacer,
   Table,
   TableBody,
   TableCell,
@@ -18,7 +17,6 @@ import {
 import {
   ArrowRightIcon,
   ChevronDown,
-  LockKeyhole,
   LockKeyholeOpen,
   PackageCheck,
   SquareArrowOutUpRight,
@@ -26,14 +24,12 @@ import {
 import React from "react";
 import { Button } from "../ui/button";
 import { AnimatePresence, motion } from "framer-motion";
-import { QUERY_KEYS, slideDownInView } from "@/lib/constants";
+import { slideDownInView } from "@/lib/constants";
 import { cn, formatDate, notify } from "@/lib/utils";
 import useMainStore from "@/context/main-store";
-import Loader from "../ui/loader";
 import NavIconButton from "./nav-icon-button";
 import { pickUpDelivery } from "@/app/_actions/delivery-actions";
 import { useQueryClient } from "@tanstack/react-query";
-import { Span } from "next/dist/trace";
 
 type CardProps = Partial<ShipmentRecord> & {
   src?: string;

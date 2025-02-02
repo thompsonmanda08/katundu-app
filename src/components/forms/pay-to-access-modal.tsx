@@ -247,7 +247,7 @@ export default function PayToAccessModal({
                       transactionStatus == "SUCCESS"
                         ? "You shipment has been created, transporters will now be able to see it and contact you."
                         : transactionStatus == "FAILED"
-                        ? String(transaction?.message)
+                        ? `${transaction?.message} - Try reloading and try again.`
                         : "A payment confirmation prompt has been sent to your mobile phone number for approval."
                     }
                   />

@@ -3,6 +3,9 @@ import React from "react";
 import { cn } from "@/lib/utils";
 import ThemeSwitcher from "./theme-switcher";
 import Logo from "./logo";
+import NavIconButton from "./nav-icon-button";
+import { CirclePowerIcon, RotateCcwIcon } from "lucide-react";
+import { revokeAccessToken } from "@/app/_actions/config-actions";
 
 function TopNavBar({
   authenticated = false,
@@ -23,14 +26,25 @@ function TopNavBar({
           <Logo href="/" />
         </div>
         {/* <div className="fixed left-[-20%] -z-50 aspect-square min-w-[420px] rounded-full bg-primary-50/40" /> */}
-        <div className="relative z-50 ml-auto flex items-center justify-center rounded-full">
+        <div className="relative z-50 ml-auto flex items-center justify-center gap-2 rounded-full">
           {/* <button
             className="absolute left-4 top-3 z-30 w-fit max-w-fit cursor-pointer p-2 text-foreground transition-all duration-200 ease-in-out hover:text-primary/80 lg:hidden"
             onClick={toggleMobileMenu}
           >
             <Bars3Icon className="h-6cursor-pointer w-6" />
           </button> */}
+
+          <NavIconButton
+            onClick={() => {
+              window.location.reload();
+            }}
+          >
+            <RotateCcwIcon className="h-4 w-4"></RotateCcwIcon>
+          </NavIconButton>
           <ThemeSwitcher />
+          <NavIconButton onClick={revokeAccessToken}>
+            <CirclePowerIcon className="h-4 w-4"></CirclePowerIcon>
+          </NavIconButton>
         </div>
       </div>
     </nav>

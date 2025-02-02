@@ -11,10 +11,8 @@ import {
 import {
   Delivery,
   PaymentDetails,
-  Sender,
   ShipmentRecord,
   Transaction,
-  User,
 } from "@/lib/types";
 import {
   CargoDetailsForm,
@@ -24,7 +22,7 @@ import {
 import useCustomTabsHook from "@/hooks/use-custom-tabs";
 import { NavIconButton, StatusBox } from "../elements";
 import useMainStore from "@/context/main-store";
-import { containerVariants, QUERY_KEYS } from "@/lib/constants";
+import { containerVariants } from "@/lib/constants";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
 import { cn, notify } from "@/lib/utils";
@@ -272,7 +270,7 @@ export default function SendCargoModal({
                         transactionStatus == "SUCCESS"
                           ? "You shipment has been created, transporters will now be able to see it and contact you."
                           : transactionStatus == "FAILED"
-                          ? String(transaction?.message)
+                          ? `${transaction?.message} - Try reloading and try again.`
                           : "A payment confirmation prompt has been sent to your mobile phone number for approval."
                       }
                     />
