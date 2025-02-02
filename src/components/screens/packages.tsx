@@ -9,7 +9,7 @@ import {
   useAvailableDeliveries,
   useUserDeliveries,
 } from "@/hooks/use-query-data";
-import { ShipmentRecord } from "@/lib/types";
+import { ShipmentRecord, User } from "@/lib/types";
 import {
   Button,
   Card,
@@ -33,10 +33,10 @@ import {
   PackageIcon,
 } from "lucide-react";
 import React, { useEffect } from "react";
-import { CargoDetailsModal } from "../forms";
+import { CargoDetailsModal, PayToAccessModal } from "../forms";
 import EmptyState from "../ui/empty-state";
 
-function Packages() {
+function Packages({ user }: { user: User }) {
   const {
     isOpen: showDetailsModal,
     onOpen: openShowDetailsModal,
@@ -48,6 +48,12 @@ function Packages() {
 
   const [currentPage, setCurrentPage] = React.useState(1);
   const [size, setSize] = React.useState(3);
+
+  const {
+    isOpen: showPaymentModal,
+    onOpen: openPaymentModal,
+    onClose: closePaymentModal,
+  } = useDisclosure();
 
   const mutation = useMutation({
     mutationFn: (ID: string) => getDeliveryDetails(ID),
@@ -83,9 +89,14 @@ function Packages() {
 
     setSelectedShipment(details);
   }
+
+  function handlePublish(item: Partial<ShipmentRecord>) {
+    openPaymentModal();
+    setSelectedShipment(item);
+  }
   return (
-    <div className="flex flex-col gap-4 w-full">
-      <div className="flex flex-col gap-4 p-4 w-full">
+    <div className="flex w-full flex-col gap-4">
+      <div className="flex w-full flex-col gap-4 p-4">
         <h3 className="font-semibold">My Packages</h3>
         <Tabs
           aria-label="Options"
@@ -149,23 +160,18 @@ function Packages() {
             allUserDeliveries?.map((item) => (
               <ShipmentCard
                 key={String(item?.id)}
-                // src={item?.cargo?.image}
                 displayDetails={true}
                 isDataLoaded={isLoaded}
+                handlePublish={() => handlePublish(item)}
                 handleOpenDetailsModal={() => showDetails(item)}
-                handleViewDetails={async () =>
-                  await mutation.mutateAsync(String(item?.id))
-                }
-                loadingDetails={mutation?.isPending}
                 {...item}
-                {...mutation?.data?.data?.delivery}
               />
             ))
           )}
         </div>
 
         {(allUserDeliveries?.length || currentPage > 1) && (
-          <div className="flex items-center gap-2 justify-center">
+          <div className="flex items-center justify-center gap-2">
             <Button
               isIconOnly
               variant="flat"
@@ -195,7 +201,12 @@ function Packages() {
           </div>
         )}
       </div>
-
+      {/* **************************************************** */}
+      <PayToAccessModal
+        isOpen={showPaymentModal}
+        onOpen={openPaymentModal}
+        onClose={closePaymentModal}
+      />
       {/* ************************************************************* */}
       <CargoDetailsModal
         isOpen={showDetailsModal}

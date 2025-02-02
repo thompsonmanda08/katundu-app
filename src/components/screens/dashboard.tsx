@@ -10,8 +10,8 @@ export default function Dashboard({ user }: { user: User }) {
   const { setUser } = useMainStore((state) => state);
   const { currentTabIndex, activeTab, navigateTo } = useCustomTabsHook([
     <Home key={"home"} user={user} />,
-    <Packages key={"katundu"} />,
-    <Account key={"profile"} />,
+    <Packages key={"katundu"} user={user} />,
+    <Account key={"profile"} user={user} />,
   ]);
 
   useEffect(() => {

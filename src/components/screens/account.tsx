@@ -60,9 +60,7 @@ type AccountProps = {
   user?: Partial<User>;
 };
 
-export default function Account() {
-  const { user } = useMainStore();
-
+export default function Account({ user }: { user?: User }) {
   const {
     currentTabIndex,
     activeTab,
@@ -76,7 +74,7 @@ export default function Account() {
   ]);
 
   return (
-    <div className="flex flex-col w-full shadow-none flex-1 h-full">
+    <div className="flex h-full w-full flex-1 flex-col shadow-none">
       <div className="flex flex-wrap gap-4 px-5">
         <Tabs
           aria-label="Tabs"
@@ -98,12 +96,12 @@ export default function Account() {
           initial={"initial"}
           animate={"animate"}
           exit={"exit"}
-          className="flex flex-col gap-4 p-5 "
+          className="flex flex-col gap-4 p-5"
         >
           {isLoading ? (
             <Loader
               removeWrapper
-              className="flex justify-center items-center my-10"
+              className="my-10 flex items-center justify-center"
             />
           ) : (
             activeTab
@@ -198,19 +196,19 @@ export function AccountDetails() {
 
   return (
     <motion.div className="flex flex-col gap-8">
-      <div className="flex flex-col gap-4 flex-1">
+      <div className="flex flex-1 flex-col gap-4">
         {/* <div>
           <h4>Your Account Profile</h4>
-          <p className="text-foreground/60 leading-6 text-xs sm:text-sm">
+          <p className="text-xs leading-6 text-foreground/60 sm:text-sm">
             You can edit your user information here.
           </p>
         </div> */}
-        <div className="relative flex gap-4 flex-col max-w-max mx-auto">
+        <div className="relative mx-auto flex max-w-max flex-col gap-4">
           <Avatar
             isBordered
             src={String(user?.profilePhoto)}
             name={`${user?.firstName} ${user?.lastName}`}
-            className="cursor-pointer rounded-full aspect-square w-24 h-24 text-large mx-auto"
+            className="mx-auto aspect-square h-24 w-24 cursor-pointer rounded-full text-large"
           />
 
           <NextButton
@@ -220,8 +218,8 @@ export function AccountDetails() {
               "absolute rounded-full left-[65%] w-8 h-8 min-h-auto min-w-max aspect-square ring-2 ring-offset-2 ring-primary"
             }
           >
-            <label htmlFor="profile-photo" className="cursor-pointer ">
-              <CameraIcon className="w-5 h-5" />
+            <label htmlFor="profile-photo" className="cursor-pointer">
+              <CameraIcon className="h-5 w-5" />
             </label>
           </NextButton>
           <input
@@ -235,7 +233,7 @@ export function AccountDetails() {
 
           <div className="flex flex-col items-center">
             <Skeleton className="rounded-lg" isLoaded={!isLoading}>
-              <h3 className="font-semibold text-base text-foreground/80">
+              <h3 className="text-base font-semibold text-foreground/80">
                 {`${user?.firstName} ${user?.lastName}`}
               </h3>
             </Skeleton>
@@ -248,7 +246,7 @@ export function AccountDetails() {
                 variant="light"
                 size="sm"
                 onPress={toggleShowMore}
-                className="p-0 bg-transparent data-[hover=true]:bg-transparent text-sm"
+                className="bg-transparent p-0 text-sm data-[hover=true]:bg-transparent"
               >
                 Update
               </Button>
@@ -263,7 +261,7 @@ export function AccountDetails() {
           />
         </div>
 
-        {/* <Divider className="my-4 lg:my-6 lg:mb-8 bg-foreground/5" /> */}
+        {/* <Divider className="my-4 bg-foreground/5 lg:my-6 lg:mb-8" /> */}
         <AnimatePresence>
           {showMore && (
             <motion.form
@@ -272,13 +270,13 @@ export function AccountDetails() {
               initial="hidden"
               animate="visible"
               exit={"hidden"}
-              className="flex flex-col gap-4 flex-1"
+              className="flex flex-1 flex-col gap-4"
             >
-              <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                <label className="flex-[0.5] font-medium text-sm">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                <label className="flex-[0.5] text-sm font-medium">
                   Full Name
                 </label>
-                <div className="flex gap-4 flex-1">
+                <div className="flex flex-1 gap-4">
                   <Input
                     required
                     placeholder={"First Name"}
@@ -288,7 +286,7 @@ export function AccountDetails() {
                       inputWrapper: "pl-0 overflow-clip",
                     }}
                     startContent={
-                      <span className="bg-gradient-to-b from-default-50 dark:from-default-300 via-default-50/20 to-default-50 px-4 text-gray-500 py-1 flex items-center text-foreground/70 h-full w-full max-w-max  justify-center ">
+                      <span className="flex h-full w-full max-w-max items-center justify-center bg-gradient-to-b from-default-50 via-default-50/20 to-default-50 px-4 py-1 text-foreground/70 text-gray-500 dark:from-default-300">
                         <UserIcon className="text-foreground/50" />
                       </span>
                     }
@@ -302,15 +300,15 @@ export function AccountDetails() {
                       inputWrapper: "pl-0 overflow-clip",
                     }}
                     startContent={
-                      <span className="bg-gradient-to-b from-default-50 dark:from-default-300 via-default-50/20 to-default-50 px-4 text-gray-500 py-1 flex items-center text-foreground/70 h-full w-full max-w-max  justify-center ">
+                      <span className="flex h-full w-full max-w-max items-center justify-center bg-gradient-to-b from-default-50 via-default-50/20 to-default-50 px-4 py-1 text-foreground/70 text-gray-500 dark:from-default-300">
                         <UserIcon className="text-foreground/50" />
                       </span>
                     }
                   />
                 </div>
               </div>
-              <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                <label className="flex-[0.5] font-medium text-sm">Email</label>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                <label className="flex-[0.5] text-sm font-medium">Email</label>
                 <div className="flex flex-1 gap-4">
                   <Input
                     required
@@ -323,7 +321,7 @@ export function AccountDetails() {
                       inputWrapper: "pl-0 overflow-clip",
                     }}
                     startContent={
-                      <span className="bg-gradient-to-b from-default-50 dark:from-default-300 via-default-50/20 to-default-50 px-4 text-gray-500 py-1 flex items-center text-foreground/70 h-full w-full max-w-max">
+                      <span className="flex h-full w-full max-w-max items-center bg-gradient-to-b from-default-50 via-default-50/20 to-default-50 px-4 py-1 text-foreground/70 text-gray-500 dark:from-default-300">
                         <MailIcon className="text-foreground/50" />
                       </span>
                     }
@@ -331,8 +329,8 @@ export function AccountDetails() {
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                <label className="flex-[0.5] font-medium text-sm">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                <label className="flex-[0.5] text-sm font-medium">
                   Mobile Number
                 </label>
                 <div className="flex flex-1 gap-4">
@@ -346,7 +344,7 @@ export function AccountDetails() {
                       inputWrapper: "pl-0 overflow-clip",
                     }}
                     startContent={
-                      <span className="bg-gradient-to-b from-default-50 dark:from-default-300 via-default-50/20 to-default-50 px-4 text-gray-500 py-1 flex items-center text-foreground/70 h-full w-full max-w-max justify-center ">
+                      <span className="flex h-full w-full max-w-max items-center justify-center bg-gradient-to-b from-default-50 via-default-50/20 to-default-50 px-4 py-1 text-foreground/70 text-gray-500 dark:from-default-300">
                         <Smartphone className="text-foreground/50" />
                       </span>
                     }
@@ -354,13 +352,13 @@ export function AccountDetails() {
                 </div>
               </div>
 
-              <div className="flex gap-2 justify-end">
+              <div className="flex justify-end gap-2">
                 <Button
                   type="button"
                   size="md"
                   color="danger"
                   // variant={"light"}
-                  className="self-end justify-self-end mt-auto"
+                  className="mt-auto self-end justify-self-end"
                   isLoading={isLoading}
                   onPress={toggleShowMore}
                 >
@@ -373,7 +371,7 @@ export function AccountDetails() {
                   color="primary"
                   variant={noChangesToSave ? "faded" : "solid"}
                   isDisabled={noChangesToSave}
-                  className="self-end justify-self-end mt-auto"
+                  className="mt-auto self-end justify-self-end"
                   isLoading={isLoading}
                   // onPress={handleUserDetailsUpdate}
                 >
@@ -388,26 +386,26 @@ export function AccountDetails() {
       <div className="flex flex-col gap-4">
         <div className="">
           <h4 className="flex-[0.5] font-medium">Security Settings</h4>
-          <p className="text-foreground/60 leading-6 text-xs sm:text-sm">
+          <p className="text-xs leading-6 text-foreground/60 sm:text-sm">
             Update your security settings to protect your account and data.
           </p>
         </div>
 
-        <div className="text-sm ">
+        <div className="text-sm">
           <div
             className={cn("items-center flex justify-between", {
               "items-start flex-col": changePassword,
             })}
           >
-            <div className="flex flex-col text-foreground text-sm">
+            <div className="flex flex-col text-sm text-foreground">
               Password
-              <span className="text-xs md:text-sm text-foreground/50">
+              <span className="text-xs text-foreground/50 md:text-sm">
                 Change your password
               </span>
             </div>
             {!changePassword ? (
               <>
-                <span className="mt-1 mx-auto">********</span>
+                <span className="mx-auto mt-1">********</span>
                 <button
                   type="button"
                   onClick={() => setChangePassword(true)}
@@ -424,11 +422,11 @@ export function AccountDetails() {
             )}
           </div>
           {/* *************************************** */}
-          <div className="items-center py-3 opacity-50 flex justify-between w-full">
-            <p className="font-medium text-foreground text-sm md:text-base sm:pr-6">
+          <div className="flex w-full items-center justify-between py-3 opacity-50">
+            <p className="text-sm font-medium text-foreground sm:pr-6 md:text-base">
               2F Authentication
             </p>
-            <div className="font-medium text-sm md:text-base text-foreground">
+            <div className="text-sm font-medium text-foreground md:text-base">
               [disabled] Coming Soon!
             </div>
             <Switch isDisabled />
@@ -437,17 +435,17 @@ export function AccountDetails() {
         </div>
       </div>
 
-      <div className="flex flex-col md:flex-row md:justify-between gap-2">
+      <div className="flex flex-col gap-2 md:flex-row md:justify-between">
         <div className="mb-4">
           <h4 className="font-medium">Notification Settings</h4>
-          <p className="text-foreground/60 leading-6 text-xs sm:text-sm">
+          <p className="text-xs leading-6 text-foreground/60 sm:text-sm">
             Update your notification and communication settings.
           </p>
         </div>
-        <div className="flex gap-4 flex-col md:flex-row md:gap-8">
+        <div className="flex flex-col gap-4 md:flex-row md:gap-8">
           <div className="flex flex-col gap-2">
             <Checkbox isDisabled>SMS Notifications</Checkbox>
-            <p className="text-default-500 text-xs">
+            <p className="text-xs text-default-500">
               Get notified via SMS. [Coming Soon]
             </p>
           </div>
@@ -459,7 +457,7 @@ export function AccountDetails() {
             >
               Email Notifications
             </Checkbox>
-            <p className="text-default-500 text-xs">
+            <p className="text-xs text-default-500">
               Get Notifications for new listings and newsletter updates
             </p>
           </div>
@@ -468,7 +466,7 @@ export function AccountDetails() {
 
       <Button
         onPress={async () => await revokeAccessToken()}
-        className=" text-sm"
+        className="text-sm"
         // variant="flat"
       >
         Log Out
@@ -482,7 +480,7 @@ export function Subscriptions({}: Partial<AccountProps>) {
     <motion.div className="flex flex-col gap-4">
       <div>
         <h4>Subscription Information</h4>
-        <p className="text-foreground/60 leading-6 text-sm ">
+        <p className="text-sm leading-6 text-foreground/60">
           Manage your subscription information.
         </p>
       </div>

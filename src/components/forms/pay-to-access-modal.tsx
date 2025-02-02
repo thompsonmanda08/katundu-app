@@ -8,7 +8,12 @@ import {
   ModalFooter,
   Button,
 } from "@heroui/react";
-import { Delivery, PaymentDetails, Transaction } from "@/lib/types";
+import {
+  APIResponse,
+  Delivery,
+  PaymentDetails,
+  Transaction,
+} from "@/lib/types";
 import { PaymentDetailsForm } from "./send-cargo-form";
 import useCustomTabsHook from "@/hooks/use-custom-tabs";
 import { NavIconButton, StatusBox } from "../elements";
@@ -21,16 +26,21 @@ import { cn, notify } from "@/lib/utils";
 import SockJS from "sockjs-client";
 import { Client } from "@stomp/stompjs";
 import { BASE_URL } from "@/lib/api-config";
-import { publishCargoListing } from "@/app/_actions/delivery-actions";
+import {
+  payToSeeContacts,
+  publishCargoListing,
+} from "@/app/_actions/delivery-actions";
 import { useQueryClient } from "@tanstack/react-query";
 
 type CargoProps = {
+  title?: string;
   isOpen: boolean;
   onOpen: (open: boolean) => void;
   onClose: () => void;
 };
 
 export default function PayToAccessModal({
+  title,
   isOpen,
   onOpen,
   onClose,
@@ -42,6 +52,8 @@ export default function PayToAccessModal({
 
   const [isPromptSent, setIsPromptSent] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
+  const [transactionId, setTransactionId] = React.useState("");
+  const [transactionStatus, setTransactionStatus] = React.useState("PENDING");
 
   const [transaction, setTransaction] = React.useState<Partial<Transaction>>({
     status: "PENDING",
@@ -50,18 +62,9 @@ export default function PayToAccessModal({
 
   const queryClient = useQueryClient();
 
-  const { sendCargoFormData, selectedShipment } = useMainStore(
+  const { sendCargoFormData, selectedShipment, user } = useMainStore(
     (state) => state
   );
-
-  const {
-    currentTabIndex,
-    activeTab,
-    isFirstTab,
-    isLastTab,
-    navigateForward,
-    navigateBackwards,
-  } = useCustomTabsHook([<PaymentDetailsForm key="payment" />]);
 
   function handleCloseModal() {
     setIsCompleteTransaction(false);
@@ -73,45 +76,61 @@ export default function PayToAccessModal({
   async function handleProceed() {
     setIsLoading(true);
 
-    if (!isLastTab) {
-      navigateForward();
-      setIsLoading(false);
-      return;
-    }
-
-    const formData: Partial<Delivery> = {
-      paymentDetails: {
-        phone: sendCargoFormData?.paymentPhone,
-        amount: "1.00", // TODO: ALLOW AMOUNT TO BE SET FROM THE BACKEND
-        reference: sendCargoFormData?.reference,
-      } as PaymentDetails,
+    // PAY TO SEE CONTACT DETAILS
+    const paymentDetails: PaymentDetails = {
+      phone: sendCargoFormData?.paymentPhone || String(user?.phone),
+      amount: "1.00", // TODO: ALLOW AMOUNT TO BE SET FROM THE BACKEND
+      // reference: sendCargoFormData?.reference,
     };
 
-    const response = await publishCargoListing(
-      formData,
-      String(selectedShipment?.id)
-    );
+    // FOR PAYMENT TO PUBLISH
+    const formData: Partial<Delivery> = {
+      paymentDetails: paymentDetails,
+    };
+
+    let response = {} as APIResponse;
+
+    if (user?.role === "TRANSPORTER") {
+      response = await payToSeeContacts(
+        paymentDetails,
+        String(selectedShipment?.id)
+      );
+    } else if (user?.role === "SENDER") {
+      response = await publishCargoListing(
+        paymentDetails,
+        String(selectedShipment?.id)
+      );
+    }
 
     if (response?.success) {
+      const transactionID = response?.data?.transactionId;
+
+      if (!transactionID) {
+        console.error("Transaction ID is required");
+        notify({
+          title: "Failed",
+          description: `Transaction ID is required`,
+          variant: "danger",
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      setIsPromptSent(true);
       notify({
         title: "Success",
         description: `Prompt sent to ${formData?.paymentDetails?.phone}`,
         variant: "success",
       });
 
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.USER_POSTS] });
+      const transactionResponse = {
+        ...response?.data?.status?.payment,
+        transactionID,
+      };
 
-      //TODO: CONNECT WEBHOOK HERE TO LISTEN TO MNO
-      const transactionID = response?.data?.transactionId;
-
-      if (!transactionID) {
-        console.error("Transaction ID is required");
-        return;
-      }
-
-      console.log("TRANSACTION ID - ", transactionID);
-      setTransaction(response?.data?.status);
       setIsPromptSent(true);
+      setTransaction(transactionResponse);
+      setTransactionId(transactionID);
       runSocket(transactionID);
     } else {
       notify({
@@ -119,15 +138,13 @@ export default function PayToAccessModal({
         description: String(response?.message),
         variant: "danger",
       });
-      return;
     }
 
-    // setIsPromptSent(true);
     setIsLoading(false);
   }
 
   function runSocket(ID: string) {
-    const transactionID = ID || transaction?.id;
+    const transactionID = ID || transactionId;
 
     if (!Boolean(transactionID)) {
       console.info("Transaction ID is required");
@@ -139,6 +156,7 @@ export default function PayToAccessModal({
       return;
     }
 
+    console.info("CONNECTING WITH ID: ", transactionID);
     socketRef.current.subscribe(
       `/notifications/transactions/${transactionID}`,
 
@@ -146,21 +164,23 @@ export default function PayToAccessModal({
       (statusUpdate: any) => {
         const response = JSON.parse(statusUpdate?.body);
         console.info("SOCKET RESPONSE: ", response);
-        setTransaction((prev) => ({ ...prev, ...response }));
+        setTransactionStatus(response.status?.toUpperCase());
         setIsCompleteTransaction(true);
+        setTransaction((prev) => ({ ...prev, ...response }));
+        queryClient.invalidateQueries();
       }
     );
   }
 
-  // WHEN TRANSACTION ID CHANGES, THE SOCKET WILL ACTIVATE
   React.useEffect(() => {
+    // const socket = new SockJS(`https://api.katundutransport.com/api/v1/ws`);
     const socket = new SockJS(`${BASE_URL}/ws`);
     const stompClient = new Client({ webSocketFactory: () => socket });
     socketRef.current = stompClient;
 
     socketRef.current.onConnect = (frame: any) => {
       console.info("Connected: " + frame);
-      runSocket(String(transaction?.id));
+      runSocket(transactionId);
     };
 
     stompClient.activate();
@@ -171,12 +191,13 @@ export default function PayToAccessModal({
         socketRef.current.deactivate();
       }
     };
-
+    // WHEN TRANSACTION ID CHANGES, THE SOCKET WILL ACTIVATE
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [transaction]);
+  }, [transactionId]);
 
   return (
     <Modal
+      key={"pay-to-access-modal"}
       isOpen={isOpen}
       onClose={handleCloseModal}
       backdrop="blur"
@@ -184,20 +205,20 @@ export default function PayToAccessModal({
     >
       <ModalContent>
         <>
-          <ModalHeader className="flex flex-col gap-1">
-            Publish a Package
+          <ModalHeader className="flex flex-col gap-1 font-bold">
+            {title}
           </ModalHeader>
           <ModalBody>
             <AnimatePresence mode="wait">
               <motion.div
                 variants={containerVariants}
-                key={currentTabIndex}
+                key={"currentTabIndex"}
                 initial={"initial"}
                 animate={"animate"}
                 exit={"exit"}
                 className="relative"
               >
-                {!isFirstTab && (
+                {isPromptSent && (
                   <div className="flex w-full items-center justify-between bg-red-500">
                     <NavIconButton
                       className={cn(
@@ -206,38 +227,32 @@ export default function PayToAccessModal({
                           "bottom-0": isPromptSent,
                         }
                       )}
-                      onClick={
-                        isPromptSent
-                          ? () => setIsPromptSent(false)
-                          : navigateBackwards
-                      }
+                      onClick={() => setIsPromptSent(false)}
                     >
                       <ArrowLeft className="mr-1 aspect-square w-6" /> Back
                     </NavIconButton>
                   </div>
                 )}
                 {isPromptSent ? (
-                  <>
-                    <StatusBox
-                      status={transaction?.status?.toUpperCase() || "PENDING"}
-                      title={
-                        transaction?.status?.toUpperCase() == "SUCCESS"
-                          ? "Shipment Created Successfully!"
-                          : transaction?.status?.toUpperCase() == "FAILED"
-                          ? "Shipment creation failed!"
-                          : "Transaction Pending Approval"
-                      }
-                      description={
-                        transaction?.status == "SUCCESS"
-                          ? "You shipment has been created, transporters will now be able to see it and contact you."
-                          : transaction?.status == "FAILED"
-                          ? String(transaction?.message)
-                          : "A payment confirmation prompt has been sent to your mobile phone number for approval."
-                      }
-                    />
-                  </>
+                  <StatusBox
+                    status={transactionStatus}
+                    title={
+                      transactionStatus == "SUCCESS"
+                        ? "Shipment Created Successfully!"
+                        : transactionStatus == "FAILED"
+                        ? "Shipment creation failed!"
+                        : "Transaction Pending Approval"
+                    }
+                    description={
+                      transactionStatus == "SUCCESS"
+                        ? "You shipment has been created, transporters will now be able to see it and contact you."
+                        : transactionStatus == "FAILED"
+                        ? String(transaction?.message)
+                        : "A payment confirmation prompt has been sent to your mobile phone number for approval."
+                    }
+                  />
                 ) : (
-                  activeTab
+                  <PaymentDetailsForm key="payment" />
                 )}
               </motion.div>
             </AnimatePresence>
@@ -257,7 +272,7 @@ export default function PayToAccessModal({
                 isDisabled={isLoading}
                 onPress={handleProceed}
               >
-                {isLastTab ? "Publish" : "Next"}
+                Pay Now
               </Button>
             </ModalFooter>
           )}

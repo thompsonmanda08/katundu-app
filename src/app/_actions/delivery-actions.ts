@@ -1,7 +1,12 @@
 "use server";
 
 import { authenticatedService } from "@/lib/api-config";
-import { APIResponse, Delivery, ShipmentRecord } from "@/lib/types";
+import {
+  APIResponse,
+  Delivery,
+  PaymentDetails,
+  ShipmentRecord,
+} from "@/lib/types";
 
 /**
  * Fetches available deliveries for a given city and page number.
@@ -42,14 +47,14 @@ export async function getAvailableDeliveries(
       statusText: error?.response?.statusText,
       headers: error?.response?.headers,
       config: error?.response?.config,
-      data: error?.response?.data,
+      data: error?.response?.data || error,
     });
     return {
       success: false,
       message:
         error?.response?.data?.message ||
         error?.response?.data?.error ||
-        "Something went wrong!",
+        "Error! See Console for more details!",
       data: null,
       status: error?.response?.status || 500,
     };
@@ -85,14 +90,14 @@ export async function getUserDeliveries(
       statusText: error?.response?.statusText,
       headers: error?.response?.headers,
       config: error?.response?.config,
-      data: error?.response?.data,
+      data: error?.response?.data || error,
     });
     return {
       success: false,
       message:
         error?.response?.data?.message ||
         error?.response?.data?.error ||
-        "Something went wrong!",
+        "Error! See Console for more details!",
       data: null,
       status: error?.response?.status || 500,
     };
@@ -127,14 +132,14 @@ export async function createNewDelivery(data: Delivery): Promise<APIResponse> {
       statusText: error?.response?.statusText,
       headers: error?.response?.headers,
       config: error?.response?.config,
-      data: error?.response?.data,
+      data: error?.response?.data || error,
     });
     return {
       success: false,
       message:
         error?.response?.data?.message ||
         error?.response?.data?.error ||
-        "Something went wrong!",
+        "Error! See Console for more details!",
       data: null,
       status: error?.response?.status || 500,
     };
@@ -142,9 +147,17 @@ export async function createNewDelivery(data: Delivery): Promise<APIResponse> {
 }
 
 export async function publishCargoListing(
-  data: Partial<Delivery>,
+  data: PaymentDetails,
   deliveryId: string
 ): Promise<APIResponse> {
+  if (!deliveryId) {
+    return {
+      success: false,
+      message: "Delivery ID is required",
+      data: null,
+      status: 500,
+    };
+  }
   try {
     const res = await authenticatedService({
       method: "POST",
@@ -166,14 +179,71 @@ export async function publishCargoListing(
       statusText: error?.response?.statusText,
       headers: error?.response?.headers,
       config: error?.response?.config,
-      data: error?.response?.data,
+      data: error?.response?.data || error,
     });
     return {
       success: false,
       message:
         error?.response?.data?.message ||
         error?.response?.data?.error ||
-        "Something went wrong!",
+        "Error! See Console for more details!",
+      data: null,
+      status: error?.response?.status || 500,
+    };
+  }
+}
+
+/**
+ * Initiates a payment transaction to unlock and view the contact details associated with a delivery.
+ * Sends a POST request to the server with the payment details and delivery ID.
+ *
+ * @param {PaymentDetails} data - An object containing the payment-related information.
+ * @param {string} deliveryId - The ID of the delivery for which contact details are being accessed.
+ * @returns {Promise<APIResponse>} A promise that resolves to an APIResponse object containing
+ * the result of the payment transaction or error details.
+ */
+
+export async function payToSeeContacts(
+  data: PaymentDetails,
+  deliveryId: string
+): Promise<APIResponse> {
+  if (!deliveryId) {
+    return {
+      success: false,
+      message: "Delivery ID is required",
+      data: null,
+      status: 500,
+    };
+  }
+  try {
+    const res = await authenticatedService({
+      method: "POST",
+      url: `/transactions/pay/${deliveryId}`,
+      data: data,
+    });
+
+    const response = res.data;
+
+    return {
+      success: true,
+      message: response?.message,
+      data: response?.data || null,
+      status: res.status,
+    };
+  } catch (error: any) {
+    console.error({
+      status: error?.response?.status,
+      statusText: error?.response?.statusText,
+      headers: error?.response?.headers,
+      config: error?.response?.config,
+      data: error?.response?.data || error,
+    });
+    return {
+      success: false,
+      message:
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        "Error! See Console for more details",
       data: null,
       status: error?.response?.status || 500,
     };
@@ -189,6 +259,14 @@ export async function publishCargoListing(
 export async function getDeliveryDetails(
   deliveryId: string
 ): Promise<APIResponse> {
+  if (!deliveryId) {
+    return {
+      success: false,
+      message: "Delivery ID is required",
+      data: null,
+      status: 500,
+    };
+  }
   try {
     const res = await authenticatedService({
       url: `/deliveries/${deliveryId}`,
@@ -207,14 +285,14 @@ export async function getDeliveryDetails(
       statusText: error?.response?.statusText,
       headers: error?.response?.headers,
       config: error?.response?.config,
-      data: error?.response?.data,
+      data: error?.response?.data || error,
     });
     return {
       success: false,
       message:
         error?.response?.data?.message ||
         error?.response?.data?.error ||
-        "Error fetching delivery!",
+        "Error! See Console for more details",
       data: null,
       status: error?.response?.status || 500,
     };
@@ -255,14 +333,14 @@ export async function updateDeliveryDetails(
       statusText: error?.response?.statusText,
       headers: error?.response?.headers,
       config: error?.response?.config,
-      data: error?.response?.data,
+      data: error?.response?.data || error,
     });
     return {
       success: false,
       message:
         error?.response?.data?.message ||
         error?.response?.data?.error ||
-        "Update delivery failed!",
+        "Error! See Console for more details",
       data: null,
       status: error?.response?.status || 500,
     };
@@ -297,14 +375,14 @@ export async function deleteDelivery(deliveryId: string): Promise<APIResponse> {
       statusText: error?.response?.statusText,
       headers: error?.response?.headers,
       config: error?.response?.config,
-      data: error?.response?.data,
+      data: error?.response?.data || error,
     });
     return {
       success: false,
       message:
         error?.response?.data?.message ||
         error?.response?.data?.error ||
-        "Delete delivery failed!",
+        "Error! See Console for more details",
       data: null,
       status: error?.response?.status || 500,
     };
@@ -344,14 +422,14 @@ export async function pickUpDelivery(deliveryId: string): Promise<APIResponse> {
       statusText: error?.response?.statusText,
       headers: error?.response?.headers,
       config: error?.response?.config,
-      data: error?.response?.data,
+      data: error?.response?.data || error,
     });
     return {
       success: false,
       message:
         error?.response?.data?.message ||
         error?.response?.data?.error ||
-        "Error picking up delivery!",
+        "Error! See Console for more details",
       data: null,
       status: error?.response?.status || 500,
     };
@@ -383,14 +461,14 @@ export async function startDelivery(deliveryId: string): Promise<APIResponse> {
       statusText: error?.response?.statusText,
       headers: error?.response?.headers,
       config: error?.response?.config,
-      data: error?.response?.data,
+      data: error?.response?.data || error,
     });
     return {
       success: false,
       message:
         error?.response?.data?.message ||
         error?.response?.data?.error ||
-        "Error picking up delivery!",
+        "Error! See Console for more details",
       data: null,
       status: error?.response?.status || 500,
     };

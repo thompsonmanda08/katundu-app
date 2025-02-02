@@ -53,7 +53,7 @@ export async function authenticateUser({
       message:
         error?.response?.data?.message ||
         error?.response?.data?.data?.error ||
-        "Oops! Something went wrong",
+        "Error! See Console for more details",
       data: null,
       status: error?.response?.status || 500,
     };
@@ -112,7 +112,7 @@ export async function registerNewUser({
       message:
         error?.response?.data?.message ||
         error?.response?.data?.data?.error ||
-        "Oops! Something went wrong",
+        "Error! See Console for more details",
       data: null,
       status: error?.response?.status || 500,
     };

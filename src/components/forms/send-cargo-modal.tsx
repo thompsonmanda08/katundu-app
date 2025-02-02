@@ -54,7 +54,9 @@ export default function SendCargoModal({
     React.useState(false);
   const [isPromptSent, setIsPromptSent] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
-  const [socketResponse, setSocketResponse] = React.useState(undefined);
+  const [transactionId, setTransactionId] = React.useState("");
+  const [transactionStatus, setTransactionStatus] = React.useState("PENDING");
+
   const [transaction, setTransaction] = React.useState<Partial<Transaction>>({
     status: "PENDING",
     message: "Transaction Pending Approval",
@@ -62,7 +64,7 @@ export default function SendCargoModal({
 
   const queryClient = useQueryClient();
 
-  const { sendCargoFormData } = useMainStore((state) => state);
+  const { sendCargoFormData, user } = useMainStore((state) => state);
 
   const {
     currentTabIndex,
@@ -113,13 +115,11 @@ export default function SendCargoModal({
       } as ShipmentRecord,
 
       paymentDetails: {
-        phone: sendCargoFormData?.paymentPhone,
+        phone: sendCargoFormData?.paymentPhone || String(user?.phone),
         amount: "1.00", // TODO: ALLOW AMOUNT TO BE SET FROM THE BACKEND
-        reference: sendCargoFormData?.reference,
+        // reference: sendCargoFormData?.reference,
       } as PaymentDetails,
     };
-
-    console.log("SEND CARGO", formData);
 
     const response = await createNewDelivery(formData);
 
@@ -130,9 +130,6 @@ export default function SendCargoModal({
         variant: "success",
       });
 
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.USER_POSTS] });
-
-      //TODO: CONNECT WEBHOOK HERE TO LISTEN TO MNO
       const transactionID = response?.data?.transactionId;
 
       if (!transactionID) {
@@ -140,25 +137,31 @@ export default function SendCargoModal({
         return;
       }
 
-      console.log("TRANSACTION ID - ", transactionID);
-      setTransaction(response?.data?.status);
+      const transactionResponse = {
+        ...response?.data?.status?.payment,
+        transactionID,
+      };
+
       setIsPromptSent(true);
+      setTransaction(transactionResponse);
+      setTransactionId(transactionID);
       runSocket(transactionID);
-    } else {
-      notify({
-        title: "Error",
-        description: String(response?.message),
-        variant: "danger",
-      });
+      setIsLoading(false);
       return;
     }
 
-    // setIsPromptSent(true);
+    notify({
+      title: "Error",
+      description: String(response?.message),
+      variant: "danger",
+    });
+
+    setIsPromptSent(false);
     setIsLoading(false);
   }
 
   function runSocket(ID: string) {
-    const transactionID = ID || transaction?.id;
+    const transactionID = ID || transactionId;
 
     if (!Boolean(transactionID)) {
       console.info("Transaction ID is required");
@@ -170,6 +173,7 @@ export default function SendCargoModal({
       return;
     }
 
+    console.info("CONNECTING WITH ID: ", transactionID);
     socketRef.current.subscribe(
       `/notifications/transactions/${transactionID}`,
 
@@ -177,21 +181,23 @@ export default function SendCargoModal({
       (statusUpdate: any) => {
         const response = JSON.parse(statusUpdate?.body);
         console.info("SOCKET RESPONSE: ", response);
-        setTransaction((prev) => ({ ...prev, ...response }));
+        setTransactionStatus(response.status?.toUpperCase());
         setIsCompleteTransaction(true);
+        setTransaction((prev) => ({ ...prev, ...response }));
+        queryClient.invalidateQueries();
       }
     );
   }
 
-  // WHEN TRANSACTION ID CHANGES, THE SOCKET WILL ACTIVATE
   React.useEffect(() => {
+    // const socket = new SockJS(`https://api.katundutransport.com/api/v1/ws`);
     const socket = new SockJS(`${BASE_URL}/ws`);
     const stompClient = new Client({ webSocketFactory: () => socket });
     socketRef.current = stompClient;
 
     socketRef.current.onConnect = (frame: any) => {
       console.info("Connected: " + frame);
-      runSocket(String(transaction?.id));
+      runSocket(transactionId);
     };
 
     stompClient.activate();
@@ -202,9 +208,9 @@ export default function SendCargoModal({
         socketRef.current.deactivate();
       }
     };
-
+    // WHEN TRANSACTION ID CHANGES, THE SOCKET WILL ACTIVATE
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [transaction]);
+  }, [transactionId]);
 
   return (
     <Modal
@@ -212,6 +218,7 @@ export default function SendCargoModal({
       onClose={handleCloseModal}
       backdrop="blur"
       placement="bottom"
+      isDismissable={false}
       classNames={{
         base: "rounded-b-none lg:rounded-b-xl sm:mb-0 lg:my-auto pb-4 min-h-[60svh] lg:min-h-max",
       }}
@@ -252,25 +259,23 @@ export default function SendCargoModal({
                     </div>
                   )}
                   {isPromptSent ? (
-                    <>
-                      <StatusBox
-                        status={transaction?.status?.toUpperCase() || "PENDING"}
-                        title={
-                          transaction?.status?.toUpperCase() == "SUCCESS"
-                            ? "Shipment Created Successfully!"
-                            : transaction?.status?.toUpperCase() == "FAILED"
-                            ? "Shipment creation failed!"
-                            : "Transaction Pending Approval"
-                        }
-                        description={
-                          transaction?.status == "SUCCESS"
-                            ? "You shipment has been created, transporters will now be able to see it and contact you."
-                            : transaction?.status == "FAILED"
-                            ? String(transaction?.message)
-                            : "A payment confirmation prompt has been sent to your mobile phone number for approval."
-                        }
-                      />
-                    </>
+                    <StatusBox
+                      status={transactionStatus}
+                      title={
+                        transactionStatus == "SUCCESS"
+                          ? "Shipment Created Successfully!"
+                          : transactionStatus == "FAILED"
+                          ? "Shipment creation failed!"
+                          : "Transaction Pending Approval"
+                      }
+                      description={
+                        transactionStatus == "SUCCESS"
+                          ? "You shipment has been created, transporters will now be able to see it and contact you."
+                          : transactionStatus == "FAILED"
+                          ? String(transaction?.message)
+                          : "A payment confirmation prompt has been sent to your mobile phone number for approval."
+                      }
+                    />
                   ) : (
                     activeTab
                   )}

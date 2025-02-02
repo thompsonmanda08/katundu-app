@@ -19,7 +19,6 @@ import {
 import { useMutation } from "@tanstack/react-query";
 import CargoDetailsModal from "./delivery-details-modal";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useDebounce } from "@/hooks/use-debounce";
 import EmptyState from "../ui/empty-state";
 
 export function TransportCargoForm() {
@@ -34,7 +33,6 @@ export function TransportCargoForm() {
   const [currentPage, setCurrentPage] = React.useState(1);
   const [size, setSize] = React.useState(3);
   const [city, setCity] = React.useState("");
-  const debouncedSearch = useDebounce(city);
 
   const { selectedShipment, setSelectedShipment } = useMainStore(
     (state) => state
@@ -71,8 +69,6 @@ export function TransportCargoForm() {
 
     loadShipments();
   }, [city]);
-
-  console.log("SEARCH DATA==> ", listData);
 
   return (
     <div className="flex w-full flex-1 flex-col gap-4">
@@ -129,12 +125,7 @@ export function TransportCargoForm() {
               displayDetails={true}
               isDataLoaded={detailsMutation?.isPending}
               handleOpenDetailsModal={() => showDetails(item)}
-              handleViewDetails={async () =>
-                await detailsMutation.mutateAsync(String(item?.id))
-              }
-              loadingDetails={detailsMutation?.isPending}
               {...item}
-              {...detailsMutation?.data?.data?.delivery}
             />
           ))
         )}

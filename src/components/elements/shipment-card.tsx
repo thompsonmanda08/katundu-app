@@ -6,8 +6,8 @@ import {
   CardHeader,
   Chip,
   Image,
-  Link,
   Skeleton,
+  spacer,
   Table,
   TableBody,
   TableCell,
@@ -18,19 +18,22 @@ import {
 import {
   ArrowRightIcon,
   ChevronDown,
-  ChevronUp,
+  LockKeyhole,
+  LockKeyholeOpen,
+  PackageCheck,
   SquareArrowOutUpRight,
 } from "lucide-react";
 import React from "react";
 import { Button } from "../ui/button";
 import { AnimatePresence, motion } from "framer-motion";
-import { slideDownInView } from "@/lib/constants";
-import { cn, formatDate } from "@/lib/utils";
+import { QUERY_KEYS, slideDownInView } from "@/lib/constants";
+import { cn, formatDate, notify } from "@/lib/utils";
 import useMainStore from "@/context/main-store";
-import { useMutation } from "@tanstack/react-query";
-import { useAvailableDeliveries } from "@/hooks/use-query-data";
 import Loader from "../ui/loader";
 import NavIconButton from "./nav-icon-button";
+import { pickUpDelivery } from "@/app/_actions/delivery-actions";
+import { useQueryClient } from "@tanstack/react-query";
+import { Span } from "next/dist/trace";
 
 type CardProps = Partial<ShipmentRecord> & {
   src?: string;
@@ -52,13 +55,43 @@ function ShipmentCard({
   handleOpenDetailsModal,
   ...props
 }: CardProps) {
+  const queryClient = useQueryClient();
   const [showMore, setShowMore] = React.useState(false);
   const toggleShowMore = () => setShowMore(!showMore);
+  const [isLoading, setIsLoading] = React.useState(false);
 
   const { user } = useMainStore((state) => state);
 
-  const userHasAccess =
-    props?.contacts && (props?.contacts?.sender || props?.contacts?.receiver);
+  const hasMoreInfo = Boolean(props?.containerSize);
+
+  async function handlePickupDelivery() {
+    if (user?.role === "TRANSPORTER") {
+      notify({
+        title: "Transporter Action",
+        description: "You are a transporter, you can't pick up a cargo",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+
+    const response = await pickUpDelivery(String(props?.id));
+
+    if (response?.success) {
+      queryClient.invalidateQueries();
+      notify({
+        title: "Success",
+        description: "Successfully picked up the cargo",
+      });
+    } else {
+      notify({
+        title: "Error",
+        description: response?.message,
+      });
+    }
+
+    setIsLoading(false);
+  }
 
   return (
     <Card className="flex flex-col border border-default-100/80 p-2 shadow-none">
@@ -90,9 +123,9 @@ function ShipmentCard({
               </Chip>
             </Skeleton>
           </div>
-          <NavIconButton onClick={handleOpenDetailsModal}>
+          {/* <NavIconButton onClick={handleOpenDetailsModal}>
             <SquareArrowOutUpRight className="h-4 w-4"></SquareArrowOutUpRight>
-          </NavIconButton>
+          </NavIconButton> */}
         </div>
       </CardHeader>
       <CardBody className="flex-row gap-4 py-2">
@@ -174,32 +207,50 @@ function ShipmentCard({
                 <span> {props?.cargoMeasure}</span>
               </p>
             </Skeleton>
-
-            {!isDataLoaded && ( // HIDE ON LOADING
-              <>
-                {displayDetails && !showMore ? (
-                  <Button
-                    variant="light"
-                    size="sm"
-                    onPress={() => {
-                      toggleShowMore();
-                      handleViewDetails!();
-                    }}
-                    className="bg-transparent p-0 text-xs data-[hover=true]:bg-transparent"
-                  >
-                    View Details
-                  </Button>
-                ) : (
-                  <span>ETA</span>
-                )}
-              </>
-            )}
+            <Skeleton className="items-end rounded-lg" isLoaded={!isDataLoaded}>
+              {user?.role === "TRANSPORTER" && !props?.hasPaid ? (
+                <Button
+                  startContent={
+                    <LockKeyholeOpen
+                      className={cn(
+                        "h-4 w-4 transition-all duration-200 ease-in-out"
+                      )}
+                    />
+                  }
+                  onPress={handleOpenDetailsModal}
+                  variant="light"
+                  size="sm"
+                  className="-mt-2 bg-transparent p-0 text-xs data-[hover=true]:bg-transparent"
+                >
+                  Request Access
+                </Button>
+              ) : user?.role === "TRANSPORTER" && props?.hasPaid ? (
+                <Button
+                  startContent={
+                    <PackageCheck
+                      className={cn(
+                        "h-4 w-4 transition-all duration-200 ease-in-out"
+                      )}
+                    />
+                  }
+                  // TODO:
+                  onPress={handlePickupDelivery}
+                  // variant="light"
+                  size="sm"
+                  className="-mt-2 bg-transparent p-0 text-xs data-[hover=true]:bg-transparent"
+                >
+                  Pickup Delivery
+                </Button>
+              ) : (
+                <span>ETA</span>
+              )}
+            </Skeleton>
           </div>
         </div>
       </CardBody>
       <CardFooter
-        className={cn("flex-col", {
-          "p-0": !showMore,
+        className={cn("flex-col -mt-1", {
+          "p-0 ": !showMore,
         })}
       >
         {displayDetails && (
@@ -216,9 +267,9 @@ function ShipmentCard({
               >
                 {/* DETAILS */}
                 <div className="flex w-full flex-col">
-                  <h3 className="-mt-2 mb-2 rounded-md bg-default-50/50 px-4 py-2 text-sm font-semibold text-primary-900/80 dark:bg-primary/20 dark:font-bold dark:tracking-wide">
-                    Shipment Record Details
-                  </h3>
+                  <div className="flex items-center justify-between rounded-md bg-default-50/50 px-4 py-2 text-sm font-semibold text-primary-900/80 dark:bg-primary/20 dark:font-bold dark:tracking-wide">
+                    <span>Shipment Record Details</span>
+                  </div>
                   <Table
                     hideHeader
                     removeWrapper
@@ -228,14 +279,7 @@ function ShipmentCard({
                       <TableColumn>KEY</TableColumn>
                       <TableColumn>VALUE</TableColumn>
                     </TableHeader>
-                    <TableBody
-                      isLoading={loadingDetails}
-                      loadingContent={
-                        <Skeleton className="grid w-full flex-1 rounded-lg">
-                          <Loader loadingText="Getting details..." />{" "}
-                        </Skeleton>
-                      }
-                    >
+                    <TableBody>
                       <TableRow key="cargo-size-measure">
                         <TableCell>Cargo Size (Measurement) </TableCell>
                         <TableCell className="text-right font-bold capitalize">
@@ -253,19 +297,32 @@ function ShipmentCard({
                     </TableBody>
                   </Table>
                 </div>
-
-                <Button
-                  variant="light"
-                  endContent={<ChevronUp className="h-6 w-6" />}
-                  onPress={toggleShowMore}
-                  size="sm"
-                  className="bg-transparent p-0 text-xs data-[hover=true]:bg-transparent"
-                >
-                  Show less
-                </Button>
               </motion.div>
             )}
           </AnimatePresence>
+        )}
+
+        {/* SEE MORE DETAILS */}
+        {displayDetails && hasMoreInfo && (
+          <Button
+            variant="light"
+            endContent={
+              <ChevronDown
+                className={cn(
+                  "h-6 w-6 transition-all duration-200 ease-in-out",
+                  {
+                    "-rotate-180": showMore,
+                  }
+                )}
+              />
+            }
+            onPress={toggleShowMore}
+            size="sm"
+            radius="sm"
+            className="w-full p-0 text-xs"
+          >
+            {!showMore ? "See more" : "Show less"}
+          </Button>
         )}
       </CardFooter>
     </Card>

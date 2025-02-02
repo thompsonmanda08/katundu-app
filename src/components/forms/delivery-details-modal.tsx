@@ -76,25 +76,19 @@ export default function CargoDetailsModal({
   const { user, setSelectedShipment, selectedShipment } = useMainStore(
     (state) => state
   );
-  const {
-    currentTabIndex,
-    activeTab,
-    isFirstTab,
-    isLastTab,
-    navigateForward,
-    navigateTo,
-  } = useCustomTabsHook([
-    <CargoDetails
-      key={"cargo-details"}
-      loadingDetails={loadingDetails}
-      {...props}
-    />,
-    // <SenderDetails
-    //   key={"cargo-details"}
-    //   loadingDetails={loadingDetails}
-    //   {...props}
-    // />,
-  ]);
+  const { currentTabIndex, activeTab, isLastTab, navigateForward } =
+    useCustomTabsHook([
+      <CargoDetails
+        key={"cargo-details"}
+        loadingDetails={loadingDetails}
+        {...props}
+      />,
+      // <SenderDetails
+      //   key={"cargo-details"}
+      //   loadingDetails={loadingDetails}
+      //   {...props}
+      // />,
+    ]);
 
   const {
     isOpen: showPaymentModal,
@@ -113,6 +107,9 @@ export default function CargoDetailsModal({
       return;
     }
   }
+
+  // console.log("selectedShipment", selectedShipment);
+  // console.log("CONTACTS", props?.contacts);
 
   return (
     <Modal
@@ -223,7 +220,7 @@ export default function CargoDetailsModal({
                           <Button
                             size="sm"
                             radius="sm"
-                            onPress={() => {}}
+                            onPress={openPaymentModal}
                             className="h-6 text-xs"
                           >
                             Publish
@@ -281,6 +278,11 @@ export default function CargoDetailsModal({
 
                     {/* **************************************************** */}
                     <PayToAccessModal
+                      title={
+                        user?.role === "TRANSPORTER"
+                          ? "Pay To See Contacts"
+                          : "Pay To Publish"
+                      }
                       isOpen={showPaymentModal}
                       onOpen={openPaymentModal}
                       onClose={closePaymentModal}
@@ -326,9 +328,11 @@ export function CargoDetails({
       <TableBody
         isLoading={loadingDetails}
         loadingContent={
-          <>
-            <Loader loadingText="Getting details..." />{" "}
-          </>
+          <div className="flex w-full flex-1 flex-col overflow-clip rounded-xl">
+            <Skeleton className="flex w-full flex-1">
+              <Loader loadingText="Getting details..." />{" "}
+            </Skeleton>
+          </div>
         }
       >
         <TableRow key="pickup-city">

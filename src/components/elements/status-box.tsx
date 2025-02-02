@@ -3,8 +3,6 @@ import React from "react";
 import { Button } from "../ui/button";
 import { motion } from "framer-motion";
 
-import { useRouter } from "next/navigation";
-
 import Lottie from "react-lottie-player";
 
 import successLottie from "../../../public/lottie/success.json";
@@ -25,9 +23,20 @@ function StatusBox({
   onPress?: any;
   buttonText?: string;
 }) {
-  const router = useRouter();
+  const [lottieFile, setLottieFile] = React.useState<any>(loadingLottie);
+
+  React.useEffect(() => {
+    if (status == "SUCCESS") {
+      setLottieFile(successLottie);
+    } else if (status == "FAILED") {
+      setLottieFile(errorLottie);
+    } else {
+      setLottieFile(loadingLottie);
+    }
+  }, [status]);
   return (
     <motion.div
+      key={status + title}
       whileInView={{
         opacity: [0, 1],
         scaleX: [0.8, 1],
@@ -45,7 +54,7 @@ function StatusBox({
           "mx-auto max-w-max rounded-full border border-primary/20 p-1 px-4 font-semibold text-primary",
           {
             "text-success border-success/20":
-              String(status)?.toUpperCase() == "SUCCESSFUL",
+              String(status)?.toUpperCase() == "SUCCESS",
             "text-danger border-danger/20":
               String(status)?.toUpperCase() == "FAILED",
           }
@@ -59,13 +68,7 @@ function StatusBox({
       <div className="mx-auto max-w-sm object-contain">
         <Lottie
           loop
-          animationData={
-            String(status)?.toUpperCase() == "SUCCESSFUL"
-              ? successLottie
-              : String(status)?.toUpperCase() == "FAILED"
-              ? errorLottie
-              : loadingLottie
-          }
+          animationData={lottieFile}
           play
           style={{ width: 220, height: 220 }}
         />

@@ -1,5 +1,8 @@
 "use client";
-import { getDeliveryDetails } from "@/app/_actions/delivery-actions";
+import {
+  getDeliveryDetails,
+  getUserDeliveries,
+} from "@/app/_actions/delivery-actions";
 import { ShipmentCard } from "@/components/elements";
 import {
   TransportCargoModal,
@@ -10,7 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import useMainStore from "@/context/main-store";
 import { useAccountProfile, useUserDeliveries } from "@/hooks/use-query-data";
-import { Delivery, ShipmentRecord, User } from "@/lib/types";
+import { ShipmentRecord, User } from "@/lib/types";
 import { cn, notify } from "@/lib/utils";
 import {
   Divider,
@@ -21,7 +24,7 @@ import {
 } from "@heroui/react";
 import { useMutation } from "@tanstack/react-query";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import React from "react";
+import React, { useEffect } from "react";
 import EmptyState from "../ui/empty-state";
 
 function Home({ user }: { user: User }) {
@@ -44,9 +47,9 @@ function Home({ user }: { user: User }) {
   } = useDisclosure();
 
   const {
-    isOpen: showPublishModal,
-    onOpen: openPublishModal,
-    onClose: closePublishModal,
+    isOpen: showPaymentModal,
+    onOpen: openPaymentModal,
+    onClose: closePaymentModal,
   } = useDisclosure();
 
   const { setSelectedShipment, selectedShipment } = useMainStore(
@@ -57,29 +60,35 @@ function Home({ user }: { user: User }) {
   const { isLoading } = useAccountProfile();
 
   const [currentPage, setCurrentPage] = React.useState(1);
-  const [size, setSize] = React.useState(2);
+  const [size, setSize] = React.useState(3);
 
   const { data: deliveriesResponse, isLoading: isLoaded } = useUserDeliveries(
     currentPage,
     size
   );
 
-  const mutation = useMutation({
+  const deliveryListMutation = useMutation({
+    mutationFn: () => getUserDeliveries(currentPage, size),
+  });
+
+  const deliveryDetailsMutation = useMutation({
     mutationFn: (ID: string) => getDeliveryDetails(ID),
   });
 
-  const listData = deliveriesResponse?.data;
-  const recentDeliveries = deliveriesResponse?.data
-    ?.deliveries as Partial<ShipmentRecord>[];
+  const listData = deliveryListMutation?.data;
+  const recentDeliveries = deliveriesResponse?.data?.deliveries?.slice(
+    0,
+    6
+  ) as Partial<ShipmentRecord>[];
 
   async function showDetails(item: Partial<ShipmentRecord>) {
     openShowDetailsModal();
 
-    await mutation.mutateAsync(String(item?.id));
+    await deliveryDetailsMutation.mutateAsync(String(item?.id));
 
     const details = {
       ...item,
-      ...mutation?.data?.data?.delivery,
+      ...deliveryDetailsMutation?.data?.data?.delivery,
     };
 
     setSelectedShipment(details);
@@ -110,11 +119,17 @@ function Home({ user }: { user: User }) {
   }
 
   function handlePublish(item: Partial<ShipmentRecord>) {
-    openPublishModal();
+    openPaymentModal();
     setSelectedShipment(item);
   }
 
   // TODO: PAGINATION NOT WORKING
+  useEffect(() => {
+    const fetchDeliveries = async () =>
+      await deliveryListMutation.mutateAsync();
+    fetchDeliveries();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage]);
 
   return (
     <div className="flex w-full flex-col gap-2">
@@ -196,26 +211,20 @@ function Home({ user }: { user: User }) {
               </div>
             </>
           ) : (
-            recentDeliveries?.map((item) => (
+            recentDeliveries?.map((item, index) => (
               <ShipmentCard
-                key={String(item?.id)}
-                // src={item?.cargo?.image}
+                key={String(item?.id || index)}
                 displayDetails={true}
                 isDataLoaded={isLoaded}
                 handleOpenDetailsModal={() => showDetails(item)}
-                // handlePublish={() => handlePublish(item)}
-                handlePublish={openPublishModal}
-                handleViewDetails={async () =>
-                  await mutation.mutateAsync(String(item?.id))
-                }
-                loadingDetails={mutation?.isPending}
+                handlePublish={() => handlePublish(item)}
+                loadingDetails={deliveryDetailsMutation?.isPending}
                 {...item}
-                {...mutation?.data?.data?.delivery}
               />
             ))
           )}
         </div>
-        {(recentDeliveries?.length || currentPage > 1) && (
+        {/* {(recentDeliveries?.length || currentPage > 1) && (
           <div className="flex items-center justify-center gap-2">
             <Button
               isIconOnly
@@ -229,7 +238,7 @@ function Home({ user }: { user: User }) {
             </Button>
             <Pagination
               page={currentPage}
-              total={listData?.totalPages}
+              total={Number(listData?.totalPages)}
               onChange={setCurrentPage}
             />
 
@@ -244,7 +253,7 @@ function Home({ user }: { user: User }) {
               <ChevronRight />
             </Button>
           </div>
-        )}
+        )} */}
       </div>
 
       {/* **************************************************** */}
@@ -264,15 +273,14 @@ function Home({ user }: { user: User }) {
         isOpen={showDetailsModal}
         onOpen={openShowDetailsModal}
         onClose={closeShowDetailsModal}
-        loadingDetails={mutation?.isPending}
+        loadingDetails={deliveryDetailsMutation?.isPending}
         {...selectedShipment}
       />
       {/* **************************************************** */}
       <PayToAccessModal
-        isOpen={showPublishModal}
-        onOpen={openPublishModal}
-        onClose={closePublishModal}
-        {...selectedShipment}
+        isOpen={showPaymentModal}
+        onOpen={openPaymentModal}
+        onClose={closePaymentModal}
       />
       {/* **************************************************** */}
     </div>

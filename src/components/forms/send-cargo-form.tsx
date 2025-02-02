@@ -192,7 +192,7 @@ export function ReceiverDetailsForm() {
 }
 
 export function PaymentDetailsForm() {
-  const { sendCargoFormData, updateSendCargoFormData } = useMainStore(
+  const { sendCargoFormData, updateSendCargoFormData, user } = useMainStore(
     (state) => state
   );
 
@@ -212,19 +212,20 @@ export function PaymentDetailsForm() {
       </div>
       <Input
         label="Payment Phone Number"
+        defaultValue={user?.phone}
         value={sendCargoFormData?.paymentPhone}
         onChange={(e) => {
           updateSendCargoFormData({ paymentPhone: e.target.value });
         }}
       />
 
-      <Input
+      {/* <Input
         label="Reference"
         value={sendCargoFormData?.reference}
         onChange={(e) => {
           updateSendCargoFormData({ reference: e.target.value });
         }}
-      />
+      /> */}
     </div>
   );
 }

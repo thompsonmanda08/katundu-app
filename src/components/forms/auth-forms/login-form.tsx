@@ -31,25 +31,6 @@ function LoginForm({ formData, updateFormData }: AuthFormProps) {
 
   return (
     <>
-      <RadioGroup
-        color="default"
-        // label="Login as"
-        orientation="horizontal"
-        className="my-1 mb-4"
-        classNames={{
-          wrapper: "gap-6",
-        }}
-        defaultValue={"SENDER"}
-        value={formData.role}
-        onValueChange={(role) =>
-          updateFormData({
-            role: role as "SENDER" | "TRANSPORTER",
-          })
-        }
-      >
-        <Radio value="SENDER">Sender</Radio>
-        <Radio value="TRANSPORTER">Transporter</Radio>
-      </RadioGroup>
       <div className="flex flex-col gap-y-4">
         <Input
           type="tel"
