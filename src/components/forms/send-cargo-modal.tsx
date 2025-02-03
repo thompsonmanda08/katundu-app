@@ -226,7 +226,7 @@ export default function SendCargoModal({
           <ModalHeader className="flex flex-col gap-1">
             Send a Package
           </ModalHeader>
-          <ModalBody>
+          <ModalBody className="p-0">
             <>
               <AnimatePresence mode="wait">
                 <motion.div

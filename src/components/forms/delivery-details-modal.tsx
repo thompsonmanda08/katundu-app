@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import {
   Modal,
   ModalContent,
@@ -26,15 +26,20 @@ import useCustomTabsHook from "@/hooks/use-custom-tabs";
 import { containerVariants } from "@/lib/constants";
 import { ShipmentRecord } from "@/lib/types";
 import {} from "@heroui/react";
-import { ArrowLeftIcon, ArrowRightIcon } from "lucide-react";
+import { ArrowLeftIcon, ArrowRightIcon, Trash2Icon } from "lucide-react";
 
 import { Button } from "../ui/button";
-import { cn, formatDate } from "@/lib/utils";
+import { cn, formatDate, notify } from "@/lib/utils";
 import useMainStore from "@/context/main-store";
 import Loader from "../ui/loader";
 
 import { AnimatePresence, motion } from "framer-motion";
 import PayToAccessModal from "./pay-to-access-modal";
+import PromptModal from "../elements/prompt-modal";
+import {
+  deleteDelivery,
+  pickUpDelivery,
+} from "@/app/_actions/delivery-actions";
 
 type CargoProps = Partial<ShipmentRecord> & {
   isOpen: boolean;
@@ -57,19 +62,15 @@ export default function CargoDetailsModal({
   const { user, setSelectedShipment, selectedShipment } = useMainStore(
     (state) => state
   );
-  const { currentTabIndex, activeTab, isLastTab, navigateForward } =
-    useCustomTabsHook([
-      <CargoDetails
-        key={"cargo-details"}
-        loadingDetails={loadingDetails}
-        {...props}
-      />,
-      // <SenderDetails
-      //   key={"cargo-details"}
-      //   loadingDetails={loadingDetails}
-      //   {...props}
-      // />,
-    ]);
+
+  const [isDelete, setIsDelete] = React.useState(false);
+  const [isPickUp, setIsPickUp] = React.useState(false);
+
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [deleteLoading, setDeleteLoading] = React.useState(false);
+
+  const toggleDelete = () => setIsDelete(!isDelete);
+  const togglePickUp = () => setIsPickUp(!isPickUp);
 
   const {
     isOpen: showPaymentModal,
@@ -83,10 +84,56 @@ export default function CargoDetailsModal({
   }
 
   async function handlePickupDelivery() {
-    if (!isLastTab) {
-      navigateForward();
+    if (!isPickUp) {
+      togglePickUp();
       return;
     }
+
+    setIsLoading(true);
+
+    const response = await pickUpDelivery(String(selectedShipment?.id));
+
+    if (response?.success) {
+      notify({
+        title: "Success!",
+        description: "Shipment picked up successfully!",
+      });
+    } else {
+      notify({
+        title: "Pick up Failed!",
+        description: `${response?.message} - Reload and try again!`,
+      });
+    }
+
+    setIsLoading(false);
+    setIsPickUp(false);
+  }
+  async function handleDeleteDelivery() {
+    if (!isDelete) {
+      toggleDelete();
+      return;
+    }
+
+    setDeleteLoading(true);
+
+    const response = await deleteDelivery(String(selectedShipment?.id));
+
+    if (response?.success) {
+      notify({
+        title: "Deleted!",
+        description: "Shipment deleted successfully!",
+        variant: "success",
+      });
+    } else {
+      notify({
+        title: "Delete Failed!",
+        description: `${response?.message} - Reload and try again!`,
+        variant: "danger",
+      });
+    }
+
+    setDeleteLoading(false);
+    setIsDelete(false);
   }
 
   // console.log("selectedShipment", selectedShipment);
@@ -111,7 +158,7 @@ export default function CargoDetailsModal({
           </ModalHeader>
           <ModalBody className="items-center p-0">
             <Card className="flex flex-col border border-default-100/20 p-2 shadow-none">
-              <CardHeader className="flex-row justify-between py-1">
+              <CardHeader className="flex-row justify-between py-1 text-sm font-semibold">
                 Shipment Route
                 <div className="flex flex-row items-center gap-2 text-sm">
                   <Skeleton
@@ -147,9 +194,12 @@ export default function CargoDetailsModal({
                 </div>
                 <div className="flex flex-1 justify-between gap-2">
                   <div
-                    className={cn("flex flex-col text-sm", {
-                      "gap-2": isDataLoaded,
-                    })}
+                    className={cn(
+                      "flex flex-col text-sm max-w-[185px] sm:max-w-max",
+                      {
+                        "gap-2": isDataLoaded,
+                      }
+                    )}
                   >
                     <Skeleton
                       className="max-w-max rounded-lg"
@@ -236,14 +286,20 @@ export default function CargoDetailsModal({
                 <AnimatePresence>
                   <motion.div
                     variants={containerVariants}
-                    key={currentTabIndex}
+                    // key={currentTabIndex}
                     initial="hidden"
                     animate="visible"
                     exit={"hidden"}
                     className={cn("flex flex-col w-full")}
                   >
                     {/* DETAILS */}
-                    <div className="flex w-full flex-col">{activeTab}</div>
+                    <div className="flex w-full flex-col">
+                      <CargoDetails
+                        key={"cargo-details"}
+                        loadingDetails={loadingDetails}
+                        {...props}
+                      />
+                    </div>
 
                     {/* CONTACT DETAILS */}
 
@@ -257,32 +313,63 @@ export default function CargoDetailsModal({
                       </Button>
                     )}
 
-                    {/* **************************************************** */}
-                    <PayToAccessModal
-                      title={
-                        user?.role === "TRANSPORTER"
-                          ? "Pay To See Contacts"
-                          : "Pay To Publish"
-                      }
-                      isOpen={showPaymentModal}
-                      onOpen={openPaymentModal}
-                      onClose={closePaymentModal}
-                      {...props}
-                    />
-                    {/* **************************************************** */}
-
                     {props?.contacts && user?.role == "TRANSPORTER" && (
                       <Button
                         size="sm"
                         radius="sm"
                         onPress={handlePickupDelivery}
-                        className="h-6 text-xs"
+                        className="mt-2 text-sm"
                       >
                         Pick up Delivery
                       </Button>
                     )}
+
+                    {/* ONLY SENDERS CAN DELETE */}
+                    {user?.role === "SENDER" && (
+                      <Button
+                        startContent={<Trash2Icon className={cn("h-4 w-4 ")} />}
+                        onPress={handleDeleteDelivery}
+                        isDisabled={isDataLoaded || isLoading || deleteLoading}
+                        isLoading={deleteLoading}
+                        size="sm"
+                        radius="sm"
+                        color="danger"
+                        className="mt- text-sm"
+                      >
+                        Delete
+                      </Button>
+                    )}
                   </motion.div>
                 </AnimatePresence>
+
+                {/* **************************************************** */}
+                <PayToAccessModal
+                  isOpen={showPaymentModal}
+                  onOpen={openPaymentModal}
+                  onClose={closePaymentModal}
+                  {...props}
+                />
+                {/* **************************************************** */}
+
+                <PromptModal
+                  isOpen={isDelete}
+                  placement="center"
+                  isLoading={deleteLoading || isLoading}
+                  title={
+                    isDelete
+                      ? "Delete Shipment"
+                      : isPickUp
+                      ? " Pick Up Delivery"
+                      : ""
+                  }
+                  onConfirm={handleDeleteDelivery}
+                >
+                  <p>
+                    Are you sure you want to{" "}
+                    {isDelete ? "delete" : isPickUp ? " pick up" : ""} this
+                    shipment?
+                  </p>
+                </PromptModal>
               </CardFooter>
             </Card>
           </ModalBody>
@@ -373,6 +460,37 @@ export function CargoDetails({
               {userHasAccess ? (
                 <TableCell className="text-right font-bold capitalize">
                   {`${props?.contacts?.sender?.phone}`}
+                </TableCell>
+              ) : (
+                <TableCell className="text-right font-bold capitalize">
+                  <span className="overflow-clip blur-sm">
+                    Pay4This Katundu
+                  </span>
+                </TableCell>
+              )}
+            </TableRow>
+
+            <TableRow key="receiver-name">
+              <TableCell>Receiver Name</TableCell>
+              {/* TODO: IF USER HAS PAID */}
+              {userHasAccess ? (
+                <TableCell className="text-right font-bold capitalize">
+                  {`${props?.contacts?.receiver?.firstName} ${props?.contacts?.receiver?.lastName}`}
+                </TableCell>
+              ) : (
+                <TableCell className="text-right font-bold capitalize">
+                  <span className="overflow-clip blur-sm">
+                    Pay4This Katundu
+                  </span>
+                </TableCell>
+              )}
+            </TableRow>
+
+            <TableRow key="receiver-phone">
+              <TableCell>Receiver Mobile Number </TableCell>
+              {userHasAccess ? (
+                <TableCell className="text-right font-bold capitalize">
+                  {`${props?.contacts?.receiver?.phone}`}
                 </TableCell>
               ) : (
                 <TableCell className="text-right font-bold capitalize">

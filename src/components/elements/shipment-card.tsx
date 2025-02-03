@@ -92,8 +92,8 @@ function ShipmentCard({
   return (
     <Card className="flex flex-col border border-default-100/80 p-2 shadow-none">
       <CardHeader className="flex-row justify-between py-1">
-        <h4 className="text-sm font-semibold">Shipment Information</h4>{" "}
-        <div className="flex items-center gap-2">
+        <h4 className="text-xs font-semibold sm:text-sm">Shipment Route</h4>{" "}
+        <div className="flex items-center">
           <div className="flex flex-row items-center gap-2 text-sm">
             <Skeleton
               className={cn("max-w-max rounded-lg  capitalize", {
@@ -119,13 +119,10 @@ function ShipmentCard({
               </Chip>
             </Skeleton>
           </div>
-          {/* <NavIconButton onClick={handleOpenDetailsModal}>
-            <SquareArrowOutUpRight className="h-4 w-4"></SquareArrowOutUpRight>
-          </NavIconButton> */}
         </div>
       </CardHeader>
-      <CardBody className="flex-row gap-4 py-2">
-        <div className="aspect-square w-16 overflow-clip">
+      <CardBody className="flex-row gap-2 overflow-hidden py-2 sm:gap-4">
+        <div className="aspect-square w-full min-w-12 max-w-16 overflow-clip">
           <Skeleton className="rounded-lg" isLoaded={!isDataLoaded}>
             <Image
               alt="Cargo Image"
@@ -134,9 +131,9 @@ function ShipmentCard({
             />
           </Skeleton>
         </div>
-        <div className="flex flex-1 justify-between gap-2">
+        <div className="flex justify-between gap-2">
           <div
-            className={cn("flex flex-col text-sm", {
+            className={cn("flex flex-col text-sm max-w-[180px] sm:max-w-max", {
               "gap-2": isDataLoaded,
             })}
           >
@@ -194,53 +191,56 @@ function ShipmentCard({
             </Skeleton>
           </div>
           <div className="flex flex-col items-end gap-2 text-xs">
-            <Skeleton className="w-20 rounded-lg" isLoaded={!isDataLoaded}>
-              <p className="text-right">{props?.packaging}</p>
-            </Skeleton>
-            <Skeleton className="w-20 rounded-lg" isLoaded={!isDataLoaded}>
-              <p className="text-right">
-                <span>{props?.containerSize}</span>
-                <span> {props?.cargoMeasure}</span>
-              </p>
-            </Skeleton>
-            <Skeleton className="items-end rounded-lg" isLoaded={!isDataLoaded}>
-              {user?.role === "TRANSPORTER" && !props?.hasPaid ? (
-                <Button
-                  startContent={
-                    <LockKeyholeOpen
-                      className={cn(
-                        "h-4 w-4 transition-all duration-200 ease-in-out"
-                      )}
-                    />
-                  }
-                  onPress={handleOpenDetailsModal}
-                  variant="light"
-                  size="sm"
-                  className="-mt-2 bg-transparent p-0 text-xs data-[hover=true]:bg-transparent"
-                >
-                  Request Access
-                </Button>
-              ) : user?.role === "TRANSPORTER" && props?.hasPaid ? (
-                <Button
-                  startContent={
-                    <PackageCheck
-                      className={cn(
-                        "h-4 w-4 transition-all duration-200 ease-in-out"
-                      )}
-                    />
-                  }
-                  // TODO:
-                  onPress={handlePickupDelivery}
-                  // variant="light"
-                  size="sm"
-                  className="-mt-2 bg-transparent p-0 text-xs data-[hover=true]:bg-transparent"
-                >
-                  Pickup Delivery
-                </Button>
-              ) : (
-                <span>ETA</span>
-              )}
-            </Skeleton>
+            {!isDataLoaded && (
+              <div className="flex flex-col items-end justify-end text-right">
+                <span>{props?.packaging}</span>
+                <div>
+                  <span>{props?.containerSize}</span>
+                  <span> {props?.cargoMeasure}</span>
+                </div>
+              </div>
+            )}
+
+            {!isDataLoaded && (
+              <>
+                {user?.role === "TRANSPORTER" && !props?.hasPaid ? (
+                  <Button
+                    startContent={
+                      <LockKeyholeOpen
+                        className={cn(
+                          "h-4 w-4 transition-all duration-200 ease-in-out"
+                        )}
+                      />
+                    }
+                    onPress={handleOpenDetailsModal}
+                    variant="light"
+                    size="sm"
+                    className="-mt-2 bg-transparent p-0 text-xs data-[hover=true]:bg-transparent"
+                  >
+                    Access
+                  </Button>
+                ) : user?.role === "TRANSPORTER" && props?.hasPaid ? (
+                  <Button
+                    startContent={
+                      <PackageCheck
+                        className={cn(
+                          "h-4 w-4 transition-all duration-200 ease-in-out"
+                        )}
+                      />
+                    }
+                    // TODO:
+                    onPress={handlePickupDelivery}
+                    // variant="light"
+                    size="sm"
+                    className="-mt-2 bg-transparent p-0 text-xs data-[hover=true]:bg-transparent"
+                  >
+                    Pickup Delivery
+                  </Button>
+                ) : (
+                  <span>ETA</span>
+                )}
+              </>
+            )}
           </div>
         </div>
       </CardBody>
