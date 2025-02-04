@@ -39,6 +39,7 @@ export function TransportCargoForm() {
   );
 
   const listMutation = useMutation({
+    
     mutationFn: () => getAvailableDeliveries(city, currentPage, size),
   });
 

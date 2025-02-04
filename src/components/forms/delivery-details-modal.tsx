@@ -26,7 +26,12 @@ import useCustomTabsHook from "@/hooks/use-custom-tabs";
 import { containerVariants } from "@/lib/constants";
 import { ShipmentRecord } from "@/lib/types";
 import {} from "@heroui/react";
-import { ArrowLeftIcon, ArrowRightIcon, Trash2Icon } from "lucide-react";
+import {
+  ArrowLeftIcon,
+  ArrowRightIcon,
+  LockKeyholeOpenIcon,
+  Trash2Icon,
+} from "lucide-react";
 
 import { Button } from "../ui/button";
 import { cn, formatDate, notify } from "@/lib/utils";
@@ -108,6 +113,7 @@ export default function CargoDetailsModal({
     setIsLoading(false);
     setIsPickUp(false);
   }
+  
   async function handleDeleteDelivery() {
     if (!isDelete) {
       toggleDelete();
@@ -308,8 +314,11 @@ export default function CargoDetailsModal({
                         size="md"
                         className="mt-2 text-sm"
                         onPress={openPaymentModal}
+                        startContent={
+                          <LockKeyholeOpenIcon className={cn("h-4 w-4 ")} />
+                        }
                       >
-                        Pay To See Contacts
+                        See Contact Details
                       </Button>
                     )}
 

@@ -116,13 +116,6 @@ export default function PayToAccessModal({
         return;
       }
 
-      setIsPromptSent(true);
-      notify({
-        title: "Success",
-        description: `Prompt sent to ${formData?.paymentDetails?.phone}`,
-        variant: "success",
-      });
-
       const transactionResponse = {
         ...response?.data?.status?.payment,
         transactionID,
@@ -132,6 +125,12 @@ export default function PayToAccessModal({
       setTransaction(transactionResponse);
       setTransactionId(transactionID);
       runSocket(transactionID);
+
+      notify({
+        title: "Success",
+        description: `Prompt sent to ${formData?.paymentDetails?.phone}`,
+        variant: "success",
+      });
     } else {
       notify({
         title: "Error",
