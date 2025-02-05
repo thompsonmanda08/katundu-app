@@ -79,8 +79,8 @@ function Home({ user }: { user: User }) {
 
     if (deliveryDetailsMutation?.data?.success) {
       setSelectedShipment(details);
-      openShowDetailsModal();
     }
+    openShowDetailsModal();
   }
 
   function openTransporterModal() {

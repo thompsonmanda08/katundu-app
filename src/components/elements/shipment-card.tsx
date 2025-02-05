@@ -214,7 +214,9 @@ function ShipmentCard({
 
             {!isDataLoaded && (
               <>
-                {user?.role === "TRANSPORTER" && !props?.isPublished ? (
+                {user?.role === "TRANSPORTER" &&
+                String(props?.deliveryStatus)?.toUpperCase() == "READY" &&
+                !props?.isPublished ? (
                   <Button
                     startContent={
                       <PackageCheck
@@ -231,7 +233,7 @@ function ShipmentCard({
                   >
                     Pick Up
                   </Button>
-                ) : user?.role === "TRANSPORTER" ? (
+                ) : user?.role === "TRANSPORTER" && props?.isPublished ? (
                   <Button
                     startContent={
                       <LockKeyholeOpen

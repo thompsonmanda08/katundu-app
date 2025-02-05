@@ -366,7 +366,8 @@ export default function CargoDetailsModal({
                     {/* CONTACT DETAILS */}
 
                     {!selectedShipment?.contacts &&
-                      user?.role === "TRANSPORTER" && (
+                      user?.role === "TRANSPORTER" &&
+                      selectedShipment?.isPublished && (
                         <Button
                           size="md"
                           className="mt-2 text-sm"
@@ -382,7 +383,9 @@ export default function CargoDetailsModal({
 
                     {user?.role == "TRANSPORTER" &&
                       selectedShipment?.contacts &&
-                      !selectedShipment?.isPublished && (
+                      !selectedShipment?.isPublished &&
+                      String(selectedShipment?.deliveryStatus)?.toUpperCase() ==
+                        "READY" && (
                         <Button
                           size="sm"
                           radius="sm"

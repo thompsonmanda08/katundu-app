@@ -13,7 +13,10 @@ export default async function App() {
 
   return (
     <Suspense fallback={<LoadingPage loadingText="Please wait..." />}>
-      <Dashboard user={session?.user as User} />{" "}
+      <Dashboard
+        user={session?.user as User}
+        isAuthenticated={isAuthenticated}
+      />{" "}
     </Suspense>
   );
 }

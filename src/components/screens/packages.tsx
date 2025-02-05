@@ -92,16 +92,18 @@ function Packages({ user }: { user: User }) {
       ...detailsMutation?.data?.data?.delivery,
     };
 
-    if (detailsMutation?.isSuccess) {
+    if (detailsMutation?.data?.success) {
       setSelectedShipment(details);
-      openShowDetailsModal();
     }
+    openShowDetailsModal();
   }
 
   function handlePublish(item: Partial<ShipmentRecord>) {
     openPaymentModal();
     setSelectedShipment(item);
   }
+
+  console.log("filteredItems", filteredItems);
 
   return (
     <div className="flex w-full flex-col gap-4">
@@ -154,9 +156,8 @@ function Packages({ user }: { user: User }) {
             Array.from({ length: 3 })?.map((_, index) => (
               <ShipmentCard key={index} isDataLoaded={isLoaded} />
             ))
-          ) : allUserDeliveries?.length == 0 ? (
+          ) : filteredItems?.length == 0 ? (
             <>
-              {" "}
               <div className="flex items-center justify-center">
                 <EmptyState
                   title="No Shipments"

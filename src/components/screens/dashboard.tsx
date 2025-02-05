@@ -6,7 +6,13 @@ import { Account, Home, Packages } from "@/components/screens";
 import { User } from "@/lib/types";
 import useMainStore from "@/context/main-store";
 
-export default function Dashboard({ user }: { user: User }) {
+export default function Dashboard({
+  user,
+  isAuthenticated,
+}: {
+  user: User;
+  isAuthenticated: boolean;
+}) {
   const { setUser } = useMainStore((state) => state);
   const { currentTabIndex, activeTab, navigateTo } = useCustomTabsHook([
     <Home key={"home"} user={user} />,
@@ -23,7 +29,10 @@ export default function Dashboard({ user }: { user: User }) {
   return (
     <div className="relative flex min-h-screen flex-1 flex-col gap-4">
       <div className="fixed top-16 -z-50 aspect-square w-[420px] bg-gradient-to-br from-primary/30 via-transparent via-[50%] to-transparent" />
-      <TopNavBar currentPage={currentTabIndex} />
+      <TopNavBar
+        currentPage={currentTabIndex}
+        isAuthenticated={isAuthenticated}
+      />
 
       <div className="no-scrollbar container mx-auto max-h-screen overflow-y-auto pb-28 pt-20">
         {activeTab}

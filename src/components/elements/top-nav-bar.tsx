@@ -8,10 +8,10 @@ import { CirclePowerIcon, RotateCcwIcon } from "lucide-react";
 import { revokeAccessToken } from "@/app/_actions/config-actions";
 
 function TopNavBar({
-  authenticated = false,
+  isAuthenticated = false,
   currentPage,
 }: {
-  authenticated?: boolean;
+  isAuthenticated?: boolean;
   currentPage?: number;
 }) {
   return (
@@ -42,9 +42,11 @@ function TopNavBar({
             <RotateCcwIcon className="h-4 w-4"></RotateCcwIcon>
           </NavIconButton>
           <ThemeSwitcher />
-          <NavIconButton onClick={revokeAccessToken}>
-            <CirclePowerIcon className="h-4 w-4"></CirclePowerIcon>
-          </NavIconButton>
+          {isAuthenticated && (
+            <NavIconButton onClick={revokeAccessToken}>
+              <CirclePowerIcon className="h-4 w-4"></CirclePowerIcon>
+            </NavIconButton>
+          )}
         </div>
       </div>
     </nav>
