@@ -15,7 +15,7 @@ import {
   Tabs,
   useDisclosure,
 } from "@heroui/react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ActivityIcon,
   BoxIcon,
@@ -23,9 +23,11 @@ import {
   ChevronRight,
   PackageIcon,
 } from "lucide-react";
-import React, { useEffect } from "react";
+import React, { Key, useEffect } from "react";
 import { CargoDetailsModal, PayToAccessModal } from "../forms";
 import EmptyState from "../ui/empty-state";
+import { useUserDeliveries } from "@/hooks/use-query-data";
+import { QUERY_KEYS } from "@/lib/constants";
 
 function Packages({ user }: { user: User }) {
   const {
@@ -39,6 +41,7 @@ function Packages({ user }: { user: User }) {
 
   const [currentPage, setCurrentPage] = React.useState(1);
   const [size, setSize] = React.useState(3);
+  const [currentTab, setCurrentTab] = React.useState<Key | string>("ALL");
 
   const {
     isOpen: showPaymentModal,
@@ -46,45 +49,60 @@ function Packages({ user }: { user: User }) {
     onClose: closePaymentModal,
   } = useDisclosure();
 
-  const mutation = useMutation({
+  const detailsMutation = useMutation({
     mutationFn: (ID: string) => getDeliveryDetails(ID),
   });
 
-  const deliveriesMutation = useMutation({
-    mutationFn: () => getUserDeliveries(currentPage, size),
-  });
+  const queryClient = useQueryClient();
 
-  const fetchDeliveries = async () => await deliveriesMutation.mutateAsync();
+  const { data: deliveriesResponse, isLoading: isLoaded } = useUserDeliveries(
+    currentPage,
+    size
+  );
 
-  const deliveryData = deliveriesMutation?.data?.data;
+  const listData = deliveriesResponse?.data;
+  const allUserDeliveries = listData?.deliveries as Partial<ShipmentRecord>[];
 
-  const allUserDeliveries =
-    deliveryData?.deliveries as Partial<ShipmentRecord>[];
+  const filteredItems = React.useMemo(() => {
+    let FilteredData = [...allUserDeliveries];
 
-  const isLoaded = deliveriesMutation?.isPending;
+    if (currentTab !== "ALL" && allUserDeliveries?.length > 0) {
+      FilteredData = allUserDeliveries.filter((shipment) =>
+        shipment?.deliveryStatus
+          ?.toUpperCase()
+          .includes(currentTab?.toString()?.toUpperCase())
+      );
+    }
+
+    return FilteredData;
+  }, [allUserDeliveries, currentTab]);
 
   useEffect(() => {
-    fetchDeliveries();
+    queryClient.invalidateQueries({
+      queryKey: [QUERY_KEYS.USER_DELIVERIES, currentPage, size],
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage]);
 
   async function showDetails(item: Partial<ShipmentRecord>) {
-    openShowDetailsModal();
-
-    await mutation.mutateAsync(String(item?.id));
+    await detailsMutation.mutateAsync(String(item?.id));
 
     const details = {
       ...item,
-      ...mutation?.data?.data?.delivery,
+      ...detailsMutation?.data?.data?.delivery,
     };
 
-    setSelectedShipment(details);
+    if (detailsMutation?.isSuccess) {
+      setSelectedShipment(details);
+      openShowDetailsModal();
+    }
   }
 
   function handlePublish(item: Partial<ShipmentRecord>) {
     openPaymentModal();
     setSelectedShipment(item);
   }
+
   return (
     <div className="flex w-full flex-col gap-4">
       <div className="flex w-full flex-col gap-4 p-4">
@@ -93,24 +111,26 @@ function Packages({ user }: { user: User }) {
           aria-label="Options"
           color="primary"
           variant="bordered"
+          selectedKey={String(currentTab)}
+          onSelectionChange={setCurrentTab}
           classNames={{
             tabList: "w-full",
           }}
         >
           <Tab
-            key="0"
+            key="ALL"
             title={
               <div className="flex items-center space-x-2">
                 <PackageIcon />
                 <span>All</span>
                 <Chip size="sm" variant="faded" className="scale-75">
-                  {deliveryData?.totalElements || 0}
+                  {listData?.totalElements || 0}
                 </Chip>
               </div>
             }
           />
           <Tab
-            key="1"
+            key="IN TRANSIT"
             title={
               <div className="flex items-center space-x-2">
                 <ActivityIcon />
@@ -119,7 +139,7 @@ function Packages({ user }: { user: User }) {
             }
           />
           <Tab
-            key="2"
+            key="DELIVERED"
             title={
               <div className="flex items-center space-x-2">
                 <BoxIcon />
@@ -148,11 +168,12 @@ function Packages({ user }: { user: User }) {
               </div>
             </>
           ) : (
-            allUserDeliveries?.map((item) => (
+            filteredItems?.map((item) => (
               <ShipmentCard
                 key={String(item?.id)}
                 displayDetails={true}
                 isDataLoaded={isLoaded}
+                loadingDetails={detailsMutation?.isPending}
                 handlePublish={() => handlePublish(item)}
                 handleOpenDetailsModal={() => showDetails(item)}
                 {...item}
@@ -166,7 +187,7 @@ function Packages({ user }: { user: User }) {
             <Button
               isIconOnly
               variant="flat"
-              isDisabled={!deliveryData?.hasPrevious}
+              isDisabled={!listData?.hasPrevious}
               onPress={() =>
                 setCurrentPage((prev) => (prev > 1 ? prev - 1 : prev))
               }
@@ -175,14 +196,14 @@ function Packages({ user }: { user: User }) {
             </Button>
             <Pagination
               page={currentPage}
-              total={deliveryData?.totalPages}
+              total={listData?.totalPages || 3}
               onChange={setCurrentPage}
             />
 
             <Button
               isIconOnly
               variant="flat"
-              isDisabled={!deliveryData?.hasNext}
+              isDisabled={!listData?.hasNext}
               onPress={() =>
                 setCurrentPage((prev) => (prev < 10 ? prev + 1 : prev))
               }
@@ -203,8 +224,8 @@ function Packages({ user }: { user: User }) {
         isOpen={showDetailsModal}
         onOpen={openShowDetailsModal}
         onClose={closeShowDetailsModal}
-        loadingDetails={mutation?.isPending}
-        {...selectedShipment}
+        loadingDetails={detailsMutation?.isPending}
+        detailsHandler={detailsMutation}
       />
       {/* ************************************************************* */}
     </div>

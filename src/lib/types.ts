@@ -24,9 +24,9 @@ type User = {
   firstName: string;
   lastName: string;
   phone: string;
+  role: "SENDER" | "TRANSPORTER";
   email?: string;
   username?: string;
-  role?: "SENDER" | "TRANSPORTER";
   [x: string]: unknown;
 };
 

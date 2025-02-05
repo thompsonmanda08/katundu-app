@@ -39,7 +39,6 @@ export function TransportCargoForm() {
   );
 
   const listMutation = useMutation({
-    
     mutationFn: () => getAvailableDeliveries(city, currentPage, size),
   });
 
@@ -65,10 +64,11 @@ export function TransportCargoForm() {
     setSelectedShipment(details);
   }
 
-  useEffect(() => {
-    const loadShipments = async () => await listMutation.mutateAsync();
+  const loadShipmentDetails = async () => await listMutation.mutateAsync();
 
-    loadShipments();
+  useEffect(() => {
+    loadShipmentDetails();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [city]);
 
   return (
@@ -168,7 +168,7 @@ export function TransportCargoForm() {
         onOpen={openShowDetailsModal}
         onClose={closeShowDetailsModal}
         loadingDetails={detailsMutation?.isPending}
-        {...selectedShipment}
+        handleRefetch={showDetails}
       />
       {/* ************************************************************* */}
     </div>

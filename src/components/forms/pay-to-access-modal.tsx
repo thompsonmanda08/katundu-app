@@ -55,6 +55,8 @@ export default function PayToAccessModal({
   const [transactionId, setTransactionId] = React.useState("");
   const [transactionStatus, setTransactionStatus] = React.useState("PENDING");
 
+  const [tookTooLong, setTookTooLong] = React.useState(false);
+
   const [transaction, setTransaction] = React.useState<Partial<Transaction>>({
     status: "PENDING",
     message: "Transaction Pending Approval",

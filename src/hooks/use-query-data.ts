@@ -28,21 +28,21 @@ export const useAvailableDeliveries = (
   size?: number
 ) =>
   useQuery({
-    queryKey: [QUERY_KEYS.POSTS, city],
+    queryKey: [QUERY_KEYS.DELIVERY_LISTINGS, city],
     queryFn: async () => await getAvailableDeliveries(city, page, size),
     staleTime: 30,
   });
 
 export const useUserDeliveries = (page: number, size: number) =>
   useQuery({
-    queryKey: [QUERY_KEYS.USER_POSTS],
+    queryKey: [QUERY_KEYS.USER_DELIVERIES, page, size],
     queryFn: async () => await getUserDeliveries(page, size),
     staleTime: Infinity,
   });
 
 export const useDeliveryDetails = (ID: string) =>
   useQuery({
-    queryKey: [QUERY_KEYS.POSTS, ID],
+    queryKey: [QUERY_KEYS.USER_DELIVERIES, ID],
     queryFn: async () => await getDeliveryDetails(ID),
     staleTime: Infinity,
   });

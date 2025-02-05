@@ -24,12 +24,13 @@ import {
 import { NavIconButton } from "../elements";
 import useCustomTabsHook from "@/hooks/use-custom-tabs";
 import { containerVariants } from "@/lib/constants";
-import { ShipmentRecord } from "@/lib/types";
+import { APIResponse, ShipmentRecord } from "@/lib/types";
 import {} from "@heroui/react";
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
   LockKeyholeOpenIcon,
+  PackageCheck,
   Trash2Icon,
 } from "lucide-react";
 
@@ -42,9 +43,11 @@ import { AnimatePresence, motion } from "framer-motion";
 import PayToAccessModal from "./pay-to-access-modal";
 import PromptModal from "../elements/prompt-modal";
 import {
+  cancelDelivery,
   deleteDelivery,
   pickUpDelivery,
 } from "@/app/_actions/delivery-actions";
+import { UseBaseMutationResult, useQueryClient } from "@tanstack/react-query";
 
 type CargoProps = Partial<ShipmentRecord> & {
   isOpen: boolean;
@@ -53,6 +56,7 @@ type CargoProps = Partial<ShipmentRecord> & {
   onOpen: (open: boolean) => void;
   onClose: () => void;
   src?: string;
+  detailsHandler?: UseBaseMutationResult<APIResponse, Error, string, unknown>;
 };
 
 export default function CargoDetailsModal({
@@ -61,21 +65,25 @@ export default function CargoDetailsModal({
   onClose,
   isDataLoaded,
   loadingDetails,
+  detailsHandler,
   src,
-  ...props
 }: CargoProps) {
   const { user, setSelectedShipment, selectedShipment } = useMainStore(
     (state) => state
   );
 
+  const queryClient = useQueryClient();
+
   const [isDelete, setIsDelete] = React.useState(false);
   const [isPickUp, setIsPickUp] = React.useState(false);
+  const [isCancel, setIsCancel] = React.useState(false);
 
   const [isLoading, setIsLoading] = React.useState(false);
   const [deleteLoading, setDeleteLoading] = React.useState(false);
 
   const toggleDelete = () => setIsDelete(!isDelete);
   const togglePickUp = () => setIsPickUp(!isPickUp);
+  const toggleCancel = () => setIsCancel(!isCancel);
 
   const {
     isOpen: showPaymentModal,
@@ -103,6 +111,13 @@ export default function CargoDetailsModal({
         title: "Success!",
         description: "Shipment picked up successfully!",
       });
+
+      // REFETCH DETAILS
+      detailsHandler?.mutateAsync(String(selectedShipment?.id));
+
+      if (detailsHandler?.data?.success) {
+        setSelectedShipment(detailsHandler?.data?.data?.delivery);
+      }
     } else {
       notify({
         title: "Pick up Failed!",
@@ -113,7 +128,40 @@ export default function CargoDetailsModal({
     setIsLoading(false);
     setIsPickUp(false);
   }
-  
+
+  async function handleCancelDelivery() {
+    if (!isCancel) {
+      toggleCancel();
+      return;
+    }
+
+    setIsLoading(true);
+
+    const response = await cancelDelivery(String(selectedShipment?.id));
+
+    if (response?.success) {
+      notify({
+        title: "Success!",
+        description: "Shipment picked up successfully!",
+      });
+
+      // REFETCH DETAILS
+      detailsHandler?.mutateAsync(String(selectedShipment?.id));
+
+      if (detailsHandler?.data?.success) {
+        setSelectedShipment(detailsHandler?.data?.data?.delivery);
+      }
+    } else {
+      notify({
+        title: "Pick up Failed!",
+        description: `${response?.message} - Reload and try again!`,
+      });
+    }
+
+    setIsLoading(false);
+    setIsPickUp(false);
+  }
+
   async function handleDeleteDelivery() {
     if (!isDelete) {
       toggleDelete();
@@ -130,6 +178,7 @@ export default function CargoDetailsModal({
         description: "Shipment deleted successfully!",
         variant: "success",
       });
+      queryClient.invalidateQueries();
     } else {
       notify({
         title: "Delete Failed!",
@@ -142,8 +191,8 @@ export default function CargoDetailsModal({
     setIsDelete(false);
   }
 
-  // console.log("selectedShipment", selectedShipment);
-  // console.log("CONTACTS", props?.contacts);
+  console.log("selectedShipment", selectedShipment);
+  // console.log("CONTACTS", selectedShipment?.contacts);
 
   return (
     <Modal
@@ -172,7 +221,7 @@ export default function CargoDetailsModal({
                     isLoaded={!isDataLoaded}
                   >
                     <Chip variant="flat" size="sm" color="primary">
-                      {props?.pickUpCity}
+                      {selectedShipment?.pickUpCity}
                     </Chip>
                   </Skeleton>
 
@@ -183,7 +232,8 @@ export default function CargoDetailsModal({
                     isLoaded={!isDataLoaded}
                   >
                     <Chip color="success" size="sm" variant="flat">
-                      {props?.deliveryCity || props?.deliveryLocation}
+                      {selectedShipment?.deliveryCity ||
+                        selectedShipment?.deliveryLocation}
                     </Chip>
                   </Skeleton>
                 </div>
@@ -211,7 +261,7 @@ export default function CargoDetailsModal({
                       className="max-w-max rounded-lg"
                       isLoaded={!isDataLoaded}
                     >
-                      <p>{props?.cargoDescription}</p>
+                      <p>{selectedShipment?.cargoDescription}</p>
                     </Skeleton>
 
                     <Skeleton
@@ -219,8 +269,8 @@ export default function CargoDetailsModal({
                       isLoaded={!isDataLoaded}
                     >
                       <small className="text-xs text-foreground/60">
-                        {props?.transportDate
-                          ? formatDate(props?.transportDate)
+                        {selectedShipment?.transportDate
+                          ? formatDate(selectedShipment?.transportDate)
                           : formatDate(new Date().toISOString())}
                       </small>
                     </Skeleton>
@@ -229,18 +279,23 @@ export default function CargoDetailsModal({
                       isLoaded={!isDataLoaded}
                     >
                       <div className="">
-                        {props?.isPublished || user?.role == "TRANSPORTER" ? (
+                        {selectedShipment?.isPublished ||
+                        user?.role == "TRANSPORTER" ? (
                           <span className="flex items-center gap-1 text-xs font-medium">
                             Delivery Status:{" "}
                             <Chip
                               color={
-                                props?.deliveryStatus == "DELIVERED"
+                                selectedShipment?.deliveryStatus == "DELIVERED"
                                   ? "success"
-                                  : props?.deliveryStatus == "IN TRANSIT"
+                                  : selectedShipment?.deliveryStatus ==
+                                    "IN TRANSIT"
+                                  ? "secondary"
+                                  : selectedShipment?.deliveryStatus == "READY"
                                   ? "warning"
-                                  : props?.deliveryStatus == "CANCELLED"
+                                  : selectedShipment?.deliveryStatus ==
+                                    "CANCELLED"
                                   ? "danger"
-                                  : "warning"
+                                  : "default"
                               }
                               size="sm"
                               // variant="flat"
@@ -249,8 +304,8 @@ export default function CargoDetailsModal({
                                 content: "text-xs font-semibold",
                               }}
                             >
-                              {props?.deliveryStatus?.toLowerCase() ||
-                                "READY".toLowerCase()}
+                              {selectedShipment?.deliveryStatus?.toLowerCase() ||
+                                "LISTED".toLowerCase()}
                             </Chip>
                           </span>
                         ) : (
@@ -271,15 +326,17 @@ export default function CargoDetailsModal({
                       className="w-20 rounded-lg"
                       isLoaded={!isDataLoaded}
                     >
-                      <p className="text-right">{props?.packaging}</p>
+                      <p className="text-right">
+                        {selectedShipment?.packaging}
+                      </p>
                     </Skeleton>
                     <Skeleton
                       className="w-20 rounded-lg"
                       isLoaded={!isDataLoaded}
                     >
                       <p className="text-right">
-                        <span>{props?.containerSize}</span>
-                        <span> {props?.cargoMeasure}</span>
+                        <span>{selectedShipment?.containerSize}</span>
+                        <span> {selectedShipment?.cargoMeasure}</span>
                       </p>
                     </Skeleton>
 
@@ -303,35 +360,47 @@ export default function CargoDetailsModal({
                       <CargoDetails
                         key={"cargo-details"}
                         loadingDetails={loadingDetails}
-                        {...props}
                       />
                     </div>
 
                     {/* CONTACT DETAILS */}
 
-                    {!props?.contacts && user?.role === "TRANSPORTER" && (
-                      <Button
-                        size="md"
-                        className="mt-2 text-sm"
-                        onPress={openPaymentModal}
-                        startContent={
-                          <LockKeyholeOpenIcon className={cn("h-4 w-4 ")} />
-                        }
-                      >
-                        See Contact Details
-                      </Button>
-                    )}
+                    {!selectedShipment?.contacts &&
+                      user?.role === "TRANSPORTER" && (
+                        <Button
+                          size="md"
+                          className="mt-2 text-sm"
+                          onPress={openPaymentModal}
+                          isLoading={isLoading}
+                          startContent={
+                            <LockKeyholeOpenIcon className={cn("h-4 w-4 ")} />
+                          }
+                        >
+                          See Contact Details
+                        </Button>
+                      )}
 
-                    {props?.contacts && user?.role == "TRANSPORTER" && (
-                      <Button
-                        size="sm"
-                        radius="sm"
-                        onPress={handlePickupDelivery}
-                        className="mt-2 text-sm"
-                      >
-                        Pick up Delivery
-                      </Button>
-                    )}
+                    {user?.role == "TRANSPORTER" &&
+                      selectedShipment?.contacts &&
+                      !selectedShipment?.isPublished && (
+                        <Button
+                          size="sm"
+                          radius="sm"
+                          onPress={handlePickupDelivery}
+                          startContent={
+                            <PackageCheck
+                              className={cn(
+                                "h-4 w-4 transition-all duration-200 ease-in-out"
+                              )}
+                            />
+                          }
+                          isLoading={isLoading}
+                          loadingText="Picking up..."
+                          className="mt-2 text-sm"
+                        >
+                          Pick up Delivery
+                        </Button>
+                      )}
 
                     {/* ONLY SENDERS CAN DELETE */}
                     {user?.role === "SENDER" && (
@@ -356,12 +425,11 @@ export default function CargoDetailsModal({
                   isOpen={showPaymentModal}
                   onOpen={openPaymentModal}
                   onClose={closePaymentModal}
-                  {...props}
                 />
                 {/* **************************************************** */}
 
                 <PromptModal
-                  isOpen={isDelete}
+                  isOpen={isDelete || isPickUp}
                   placement="center"
                   isLoading={deleteLoading || isLoading}
                   title={
@@ -371,7 +439,13 @@ export default function CargoDetailsModal({
                       ? " Pick Up Delivery"
                       : ""
                   }
-                  onConfirm={handleDeleteDelivery}
+                  onConfirm={
+                    isDelete
+                      ? handleDeleteDelivery
+                      : isPickUp
+                      ? handlePickupDelivery
+                      : () => {}
+                  }
                 >
                   <p>
                     Are you sure you want to{" "}
@@ -392,9 +466,11 @@ export function CargoDetails({
   loadingDetails,
   ...props
 }: Partial<CargoProps>) {
-  const { user } = useMainStore((state) => state);
+  const { user, selectedShipment } = useMainStore((state) => state);
   const userHasAccess =
-    props?.contacts && (props?.contacts?.sender || props?.contacts?.receiver);
+    selectedShipment?.contacts &&
+    (selectedShipment?.contacts?.sender ||
+      selectedShipment?.contacts?.receiver);
 
   return (
     <Table hideHeader removeWrapper aria-label="Katundu specifications data">
@@ -405,8 +481,8 @@ export function CargoDetails({
       <TableBody
         isLoading={loadingDetails}
         loadingContent={
-          <div className="flex w-full flex-1 flex-col overflow-clip rounded-xl">
-            <Skeleton className="flex w-full flex-1">
+          <div className="flex h-full w-full flex-1 flex-col overflow-clip rounded-xl">
+            <Skeleton className="flex h-full w-full flex-1">
               <Loader loadingText="Getting details..." />{" "}
             </Skeleton>
           </div>
@@ -415,33 +491,33 @@ export function CargoDetails({
         <TableRow key="pickup-city">
           <TableCell>Pick-up City </TableCell>
           <TableCell className="text-right font-bold capitalize">
-            {`${props?.pickUpCity}`}
+            {`${selectedShipment?.pickUpCity}`}
           </TableCell>
         </TableRow>
 
         <TableRow key="pickup-location">
           <TableCell>Pick-up Location </TableCell>
           <TableCell className="text-right font-bold capitalize">
-            {`${props?.pickUpLocation}`}
+            {`${selectedShipment?.pickUpLocation}`}
           </TableCell>
         </TableRow>
 
         <TableRow key="delivery-city">
           <TableCell>Delivery City </TableCell>
           <TableCell className="text-right font-bold capitalize">
-            {`${props?.deliveryCity}`}
+            {`${selectedShipment?.deliveryCity}`}
           </TableCell>
         </TableRow>
         <TableRow key="delivery-location">
           <TableCell>Drop off Location </TableCell>
           <TableCell className="text-right font-bold capitalize">
-            {`${props?.deliveryLocation}`}
+            {`${selectedShipment?.deliveryLocation}`}
           </TableCell>
         </TableRow>
         <TableRow key="cargo-size-measure">
           <TableCell>Cargo Size (Measurement) </TableCell>
           <TableCell className="text-right font-bold capitalize">
-            {`${props?.containerSize} ${props?.cargoMeasure}`}
+            {`${selectedShipment?.containerSize} ${selectedShipment?.cargoMeasure}`}
           </TableCell>
         </TableRow>
 
@@ -453,7 +529,7 @@ export function CargoDetails({
               {/* TODO: IF USER HAS PAID */}
               {userHasAccess ? (
                 <TableCell className="text-right font-bold capitalize">
-                  {`${props?.contacts?.sender?.firstName} ${props?.contacts?.sender?.lastName}`}
+                  {`${selectedShipment?.contacts?.sender?.firstName} ${selectedShipment?.contacts?.sender?.lastName}`}
                 </TableCell>
               ) : (
                 <TableCell className="text-right font-bold capitalize">
@@ -468,7 +544,7 @@ export function CargoDetails({
               <TableCell>Shipper Mobile Number </TableCell>
               {userHasAccess ? (
                 <TableCell className="text-right font-bold capitalize">
-                  {`${props?.contacts?.sender?.phone}`}
+                  {`${selectedShipment?.contacts?.sender?.phone}`}
                 </TableCell>
               ) : (
                 <TableCell className="text-right font-bold capitalize">
@@ -484,7 +560,7 @@ export function CargoDetails({
               {/* TODO: IF USER HAS PAID */}
               {userHasAccess ? (
                 <TableCell className="text-right font-bold capitalize">
-                  {`${props?.contacts?.receiver?.firstName} ${props?.contacts?.receiver?.lastName}`}
+                  {`${selectedShipment?.contacts?.receiver?.name}`}
                 </TableCell>
               ) : (
                 <TableCell className="text-right font-bold capitalize">
@@ -495,11 +571,39 @@ export function CargoDetails({
               )}
             </TableRow>
 
-            <TableRow key="receiver-phone">
-              <TableCell>Receiver Mobile Number </TableCell>
+            <TableRow key="receiver-phone-1">
+              <TableCell>Receiver Phone #1 </TableCell>
               {userHasAccess ? (
                 <TableCell className="text-right font-bold capitalize">
-                  {`${props?.contacts?.receiver?.phone}`}
+                  {`${selectedShipment?.contacts?.receiver?.phoneOne}`}
+                </TableCell>
+              ) : (
+                <TableCell className="text-right font-bold capitalize">
+                  <span className="overflow-clip blur-sm">
+                    Pay4This Katundu
+                  </span>
+                </TableCell>
+              )}
+            </TableRow>
+            <TableRow key="receiver-phone-2">
+              <TableCell>Receiver Phone #2 </TableCell>
+              {userHasAccess ? (
+                <TableCell className="text-right font-bold capitalize">
+                  {`${selectedShipment?.contacts?.receiver?.phoneTwo}`}
+                </TableCell>
+              ) : (
+                <TableCell className="text-right font-bold capitalize">
+                  <span className="overflow-clip blur-sm">
+                    Pay4This Katundu
+                  </span>
+                </TableCell>
+              )}
+            </TableRow>
+            <TableRow key="receiver-address">
+              <TableCell>Receiver Address</TableCell>
+              {userHasAccess ? (
+                <TableCell className="text-right font-bold capitalize">
+                  {`${selectedShipment?.contacts?.receiver?.address}`}
                 </TableCell>
               ) : (
                 <TableCell className="text-right font-bold capitalize">
@@ -515,13 +619,13 @@ export function CargoDetails({
             <TableRow key="transporter-name">
               <TableCell>Transporter Name </TableCell>
               <TableCell className="text-right font-bold capitalize">
-                {`${props?.transporterName || "N/A"}`}
+                {`${selectedShipment?.transporterName || "N/A"}`}
               </TableCell>
             </TableRow>
             <TableRow key="transporter-phone">
               <TableCell>Transporter Mobile Number </TableCell>
               <TableCell className="text-right font-bold capitalize">
-                {`${props?.transporterContact || "N/A"}`}
+                {`${selectedShipment?.transporterContact || "N/A"}`}
               </TableCell>
             </TableRow>
           </>

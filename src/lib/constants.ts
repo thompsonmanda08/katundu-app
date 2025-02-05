@@ -108,8 +108,8 @@ export const QUERY_KEYS = {
   CARGO_LISTINGS: "cargo-list",
   CITIES: "cities-list",
   PROFILE: "user-profile",
-  POSTS: "deliveries-list",
-  USER_POSTS: "user-deliveries-list",
+  DELIVERY_LISTINGS: "deliveries-list",
+  USER_DELIVERIES: "user-deliveries-list",
 };
 
 export const whileTabInView = {

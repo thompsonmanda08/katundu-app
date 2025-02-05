@@ -29,7 +29,7 @@ import { cn, formatDate, notify } from "@/lib/utils";
 import useMainStore from "@/context/main-store";
 import NavIconButton from "./nav-icon-button";
 import { pickUpDelivery } from "@/app/_actions/delivery-actions";
-import { useQueryClient } from "@tanstack/react-query";
+import { UseBaseMutationResult, useQueryClient } from "@tanstack/react-query";
 
 type CardProps = Partial<ShipmentRecord> & {
   src?: string;
@@ -39,6 +39,8 @@ type CardProps = Partial<ShipmentRecord> & {
   handleViewDetails?: () => Promise<APIResponse>;
   handleOpenDetailsModal?: () => void;
   handlePublish?: () => void;
+
+  mutationHandler?: UseBaseMutationResult<APIResponse, Error, string, unknown>;
 };
 
 function ShipmentCard({
@@ -49,6 +51,7 @@ function ShipmentCard({
   handlePublish,
   handleViewDetails,
   handleOpenDetailsModal,
+  mutationHandler,
   ...props
 }: CardProps) {
   const queryClient = useQueryClient();
@@ -61,10 +64,10 @@ function ShipmentCard({
   const hasMoreInfo = Boolean(props?.containerSize);
 
   async function handlePickupDelivery() {
-    if (user?.role === "TRANSPORTER") {
+    if (user?.role === "SENDER") {
       notify({
         title: "Transporter Action",
-        description: "You are a transporter, you can't pick up a cargo",
+        description: "You are a sender, you can't pick up a cargo",
       });
       return;
     }
@@ -74,15 +77,17 @@ function ShipmentCard({
     const response = await pickUpDelivery(String(props?.id));
 
     if (response?.success) {
-      queryClient.invalidateQueries();
       notify({
         title: "Success",
         description: "Successfully picked up the cargo",
       });
+
+      queryClient.invalidateQueries();
     } else {
       notify({
         title: "Error",
         description: response?.message,
+        variant: "danger",
       });
     }
 
@@ -133,7 +138,7 @@ function ShipmentCard({
         </div>
         <div className="flex justify-between gap-2">
           <div
-            className={cn("flex flex-col text-sm max-w-[180px] sm:max-w-max", {
+            className={cn("flex flex-col text-sm max-w-[180px] sm:max-w-max ", {
               "gap-2": isDataLoaded,
             })}
           >
@@ -161,10 +166,12 @@ function ShipmentCard({
                         props?.deliveryStatus == "DELIVERED"
                           ? "success"
                           : props?.deliveryStatus == "IN TRANSIT"
+                          ? "secondary"
+                          : props?.deliveryStatus == "READY"
                           ? "warning"
                           : props?.deliveryStatus == "CANCELLED"
                           ? "danger"
-                          : "warning"
+                          : "default"
                       }
                       size="sm"
                       // variant="flat"
@@ -174,7 +181,7 @@ function ShipmentCard({
                       }}
                     >
                       {props?.deliveryStatus?.toLowerCase() ||
-                        "READY".toLowerCase()}
+                        "LISTED".toLowerCase()}
                     </Chip>
                   </span>
                 ) : (
@@ -190,7 +197,11 @@ function ShipmentCard({
               </div>
             </Skeleton>
           </div>
-          <div className="flex flex-col items-end gap-2 text-xs">
+          <div
+            className={cn("flex  flex-col items-end gap-2 text-xs", {
+              "max-w-[70px]": props?.hasPaid,
+            })}
+          >
             {!isDataLoaded && (
               <div className="flex flex-col items-end justify-end text-right">
                 <span>{props?.packaging}</span>
@@ -203,7 +214,24 @@ function ShipmentCard({
 
             {!isDataLoaded && (
               <>
-                {user?.role === "TRANSPORTER" && !props?.hasPaid ? (
+                {user?.role === "TRANSPORTER" && !props?.isPublished ? (
+                  <Button
+                    startContent={
+                      <PackageCheck
+                        className={cn(
+                          "h-4 w-4 transition-all duration-200 ease-in-out"
+                        )}
+                      />
+                    }
+                    onPress={handlePickupDelivery}
+                    // variant="light"
+                    isLoading={isLoading}
+                    size="sm"
+                    className="-mt-1 text-xs"
+                  >
+                    Pick Up
+                  </Button>
+                ) : user?.role === "TRANSPORTER" ? (
                   <Button
                     startContent={
                       <LockKeyholeOpen
@@ -213,28 +241,12 @@ function ShipmentCard({
                       />
                     }
                     onPress={handleOpenDetailsModal}
+                    isLoading={loadingDetails}
                     variant="light"
                     size="sm"
                     className="-mt-2 bg-transparent p-0 text-xs data-[hover=true]:bg-transparent"
                   >
                     Access
-                  </Button>
-                ) : user?.role === "TRANSPORTER" && props?.hasPaid ? (
-                  <Button
-                    startContent={
-                      <PackageCheck
-                        className={cn(
-                          "h-4 w-4 transition-all duration-200 ease-in-out"
-                        )}
-                      />
-                    }
-                    // TODO:
-                    onPress={handlePickupDelivery}
-                    // variant="light"
-                    size="sm"
-                    className="-mt-2 bg-transparent p-0 text-xs data-[hover=true]:bg-transparent"
-                  >
-                    Pickup Delivery
                   </Button>
                 ) : (
                   <span>ETA</span>
@@ -285,8 +297,11 @@ function ShipmentCard({
                       <TableRow key="cargo-details-btn">
                         <TableCell>Display Full Details</TableCell>
                         <TableCell className="text-right font-bold capitalize">
-                          <NavIconButton onClick={handleOpenDetailsModal}>
-                            <SquareArrowOutUpRight className="h-4 w-4"></SquareArrowOutUpRight>
+                          <NavIconButton
+                            isLoading={loadingDetails}
+                            onClick={handleOpenDetailsModal}
+                          >
+                            <SquareArrowOutUpRight className="h-4 w-4" />
                           </NavIconButton>
                         </TableCell>
                       </TableRow>

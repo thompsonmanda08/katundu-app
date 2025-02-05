@@ -12,13 +12,18 @@ import {
 } from "@/components/forms";
 import { Button } from "@/components/ui/button";
 import useMainStore from "@/context/main-store";
-import { useAccountProfile, useUserDeliveries } from "@/hooks/use-query-data";
+import {
+  useAccountProfile,
+  useAvailableDeliveries,
+  useUserDeliveries,
+} from "@/hooks/use-query-data";
 import { ShipmentRecord, User } from "@/lib/types";
 import { cn, notify } from "@/lib/utils";
 import { Divider, Image, Skeleton, useDisclosure } from "@heroui/react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import React, { useEffect } from "react";
 import EmptyState from "../ui/empty-state";
+import { QUERY_KEYS } from "@/lib/constants";
 
 function Home({ user }: { user: User }) {
   const {
@@ -49,34 +54,22 @@ function Home({ user }: { user: User }) {
     (state) => state
   );
 
-  //?? ONLY NEEDS TO FETCH AND SET COOKIE
+  const queryClient = useQueryClient();
   const { isLoading } = useAccountProfile();
 
-  const [currentPage, setCurrentPage] = React.useState(1);
-  const [size, setSize] = React.useState(3);
-
   const { data: deliveriesResponse, isLoading: isLoaded } = useUserDeliveries(
-    currentPage,
-    size
+    1,
+    3
   );
-
-  const deliveryListMutation = useMutation({
-    mutationFn: () => getUserDeliveries(currentPage, size),
-  });
 
   const deliveryDetailsMutation = useMutation({
     mutationFn: (ID: string) => getDeliveryDetails(ID),
   });
 
-  const listData = deliveryListMutation?.data;
-  const recentDeliveries = deliveriesResponse?.data?.deliveries?.slice(
-    0,
-    6
-  ) as Partial<ShipmentRecord>[];
+  const listData = deliveriesResponse?.data;
+  const recentDeliveries = listData?.deliveries as Partial<ShipmentRecord>[];
 
   async function showDetails(item: Partial<ShipmentRecord>) {
-    openShowDetailsModal();
-
     await deliveryDetailsMutation.mutateAsync(String(item?.id));
 
     const details = {
@@ -84,7 +77,10 @@ function Home({ user }: { user: User }) {
       ...deliveryDetailsMutation?.data?.data?.delivery,
     };
 
-    setSelectedShipment(details);
+    if (deliveryDetailsMutation?.data?.success) {
+      setSelectedShipment(details);
+      openShowDetailsModal();
+    }
   }
 
   function openTransporterModal() {
@@ -115,14 +111,6 @@ function Home({ user }: { user: User }) {
     openPaymentModal();
     setSelectedShipment(item);
   }
-
-  // TODO: PAGINATION NOT WORKING
-  useEffect(() => {
-    const fetchDeliveries = async () =>
-      await deliveryListMutation.mutateAsync();
-    fetchDeliveries();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage]);
 
   return (
     <div className="flex w-full flex-col gap-2">
@@ -217,36 +205,6 @@ function Home({ user }: { user: User }) {
             ))
           )}
         </div>
-        {/* {(recentDeliveries?.length || currentPage > 1) && (
-          <div className="flex items-center justify-center gap-2">
-            <Button
-              isIconOnly
-              variant="flat"
-              isDisabled={!listData?.hasPrevious}
-              onPress={() =>
-                setCurrentPage((prev) => (prev > 1 ? prev - 1 : prev))
-              }
-            >
-              <ChevronLeft />
-            </Button>
-            <Pagination
-              page={currentPage}
-              total={Number(listData?.totalPages)}
-              onChange={setCurrentPage}
-            />
-
-            <Button
-              isIconOnly
-              variant="flat"
-              isDisabled={!listData?.hasNext}
-              onPress={() =>
-                setCurrentPage((prev) => (prev < 10 ? prev + 1 : prev))
-              }
-            >
-              <ChevronRight />
-            </Button>
-          </div>
-        )} */}
       </div>
 
       {/* **************************************************** */}
@@ -267,6 +225,7 @@ function Home({ user }: { user: User }) {
         onOpen={openShowDetailsModal}
         onClose={closeShowDetailsModal}
         loadingDetails={deliveryDetailsMutation?.isPending}
+        detailsHandler={deliveryDetailsMutation}
         {...selectedShipment}
       />
       {/* **************************************************** */}
