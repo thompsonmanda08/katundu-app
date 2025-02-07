@@ -138,9 +138,12 @@ function ShipmentCard({
         </div>
         <div className="flex justify-between gap-2">
           <div
-            className={cn("flex flex-col text-sm max-w-[180px] sm:max-w-max ", {
-              "gap-2": isDataLoaded,
-            })}
+            className={cn(
+              "flex flex-col text-sm max-w-[180px] sm:max-w-max mr-auto",
+              {
+                "gap-2": isDataLoaded,
+              }
+            )}
           >
             <Skeleton className="max-w-max rounded-lg" isLoaded={!isDataLoaded}>
               <p>{props?.cargoDescription}</p>
@@ -198,12 +201,15 @@ function ShipmentCard({
             </Skeleton>
           </div>
           <div
-            className={cn("flex  flex-col items-end gap-2 text-xs", {
-              "max-w-[70px]": props?.hasPaid,
-            })}
+            className={cn(
+              "flex  flex-col justify-end text-right items-end gap-2 text-xs ml-auto min-w-[70px]",
+              {
+                "max-w-[80px]": props?.hasPaid,
+              }
+            )}
           >
             {!isDataLoaded && (
-              <div className="flex flex-col items-end justify-end text-right">
+              <div className="ml-auto flex flex-col items-end justify-end text-right">
                 <span>{props?.packaging}</span>
                 <div>
                   <span>{props?.containerSize}</span>
@@ -215,7 +221,7 @@ function ShipmentCard({
             {!isDataLoaded && (
               <>
                 {user?.role === "TRANSPORTER" &&
-                String(props?.deliveryStatus)?.toUpperCase() == "READY" &&
+                props?.hasPaid &&
                 !props?.isPublished ? (
                   <Button
                     startContent={
@@ -233,7 +239,9 @@ function ShipmentCard({
                   >
                     Pick Up
                   </Button>
-                ) : user?.role === "TRANSPORTER" && props?.isPublished ? (
+                ) : user?.role === "TRANSPORTER" &&
+                  !props?.hasPaid &&
+                  props?.isPublished ? (
                   <Button
                     startContent={
                       <LockKeyholeOpen

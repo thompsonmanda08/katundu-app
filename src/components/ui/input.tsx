@@ -24,13 +24,12 @@ const Input = React.forwardRef<HTMLInputElement, UIInputProps>(
       return validateEmail(value) ? false : true;
     }, [value, type]);
 
-    
     return (
       <NextInput
+        type={isVisible && type == "password" ? "text" : type}
         className={cn("", className)}
         variant={variant || "bordered"}
         isInvalid={isInvalid || isInvalidEmail}
-        type={isVisible && type == "password" ? "text" : type}
         endContent={
           type == "password" && Number(value?.length) > 1 ? (
             <button

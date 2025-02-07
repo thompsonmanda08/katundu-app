@@ -160,8 +160,14 @@ function Packages({ user }: { user: User }) {
             <>
               <div className="flex items-center justify-center">
                 <EmptyState
-                  title="No Shipments"
-                  description="You have no Katundu moving to any destinations"
+                  title={
+                    currentTab == "IN TRANSIT"
+                      ? "No Shipments in Transit"
+                      : currentTab == "DELIVERED"
+                      ? "No Shipments Delivered"
+                      : "No Shipments"
+                  }
+                  description="You have no Katundu here yet"
                   width={380}
                   height={380}
                   classNames={{ image: "w-80 h-80" }}
@@ -183,7 +189,7 @@ function Packages({ user }: { user: User }) {
           )}
         </div>
 
-        {(allUserDeliveries?.length || currentPage > 1) && (
+        {(allUserDeliveries?.length > 3 || currentPage > 1) && (
           <div className="flex items-center justify-center gap-2">
             <Button
               isIconOnly

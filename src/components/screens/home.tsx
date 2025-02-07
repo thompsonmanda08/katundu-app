@@ -226,7 +226,6 @@ function Home({ user }: { user: User }) {
         onClose={closeShowDetailsModal}
         loadingDetails={deliveryDetailsMutation?.isPending}
         detailsHandler={deliveryDetailsMutation}
-        {...selectedShipment}
       />
       {/* **************************************************** */}
       <PayToAccessModal

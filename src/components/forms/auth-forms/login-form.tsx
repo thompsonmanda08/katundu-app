@@ -7,7 +7,7 @@ import { AuthFormData, ErrorState } from "@/lib/types";
 import { useRouter } from "next/navigation";
 import { StatusMessage } from "@/components/elements";
 import { Input } from "@/components/ui/input";
-import { Radio, RadioGroup } from "@heroui/react";
+import { LockIcon, Smartphone } from "lucide-react";
 
 type AuthFormProps = {
   formData: AuthFormData;
@@ -37,6 +37,9 @@ function LoginForm({ formData, updateFormData }: AuthFormProps) {
           label="Mobile Number"
           value={formData.phone}
           isInvalid={Boolean(error.status)}
+          endContent={
+            <Smartphone className="pointer-events-none aspect-square h-6 w-6 text-default-400" />
+          }
           onChange={(e) =>
             updateFormData({
               phone: String(e.target.value),
@@ -47,9 +50,13 @@ function LoginForm({ formData, updateFormData }: AuthFormProps) {
         <Input
           label="Password"
           type="password"
+          name="password"
           isInvalid={Boolean(error.status)}
           value={formData.password}
           onChange={(e) => updateFormData({ password: e.target.value })}
+          endContent={
+            <LockIcon className="pointer-events-none aspect-square h-6 w-6 text-default-400" />
+          }
         />
         <Link
           href={"/auth/reset-password"}

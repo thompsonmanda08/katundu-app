@@ -321,7 +321,7 @@ export default function CargoDetailsModal({
                       </div>
                     </Skeleton>
                   </div>
-                  <div className="flex flex-col items-end gap-2 text-xs">
+                  <div className="flex flex-col items-end justify-end gap-2 text-right text-xs">
                     <Skeleton
                       className="w-20 rounded-lg"
                       isLoaded={!isDataLoaded}

@@ -52,8 +52,6 @@ export function TransportCargoForm() {
     []) as Partial<ShipmentRecord>[];
 
   async function showDetails(item: Partial<ShipmentRecord>) {
-    openShowDetailsModal();
-
     await detailsMutation.mutateAsync(String(item?.id));
 
     const details = {
@@ -61,7 +59,11 @@ export function TransportCargoForm() {
       ...detailsMutation?.data?.data?.delivery,
     };
 
-    setSelectedShipment(details);
+    if (detailsMutation?.data?.success) {
+      setSelectedShipment(details);
+    }
+
+    openShowDetailsModal();
   }
 
   const loadShipmentDetails = async () => await listMutation.mutateAsync();
@@ -124,14 +126,15 @@ export function TransportCargoForm() {
               key={String(item?.id)}
               // src={item?.cargo?.image}
               displayDetails={true}
-              isDataLoaded={detailsMutation?.isPending}
+              loadingDetails={detailsMutation?.isPending}
+              isDataLoaded={listMutation?.isPending}
               handleOpenDetailsModal={() => showDetails(item)}
               {...item}
             />
           ))
         )}
 
-        {(availableDeliveries?.length || currentPage > 1) && (
+        {(availableDeliveries?.length > 3 || currentPage > 1) && (
           <div className="flex items-center justify-center gap-2">
             <Button
               isIconOnly
@@ -168,7 +171,7 @@ export function TransportCargoForm() {
         onOpen={openShowDetailsModal}
         onClose={closeShowDetailsModal}
         loadingDetails={detailsMutation?.isPending}
-        handleRefetch={showDetails}
+        detailsHandler={detailsMutation}
       />
       {/* ************************************************************* */}
     </div>

@@ -51,6 +51,7 @@ export async function authenticateUser({
     return {
       success: false,
       message:
+        error?.message ||
         error?.response?.data?.message ||
         error?.response?.data?.data?.error ||
         "Error! See Console for more details",
@@ -110,6 +111,7 @@ export async function registerNewUser({
     return {
       success: false,
       message:
+        error?.message ||
         error?.response?.data?.message ||
         error?.response?.data?.data?.error ||
         "Error! See Console for more details",
@@ -149,8 +151,10 @@ export async function sendEmailResetVerificationCode(
     return {
       success: false,
       message:
+        error?.message ||
         error?.response?.data?.message ||
-        "Failed to send the verification code.",
+        error?.response?.data?.data?.error ||
+        "Error! See Console for more details",
       data: null,
       status: error?.response?.status || 500,
     };
