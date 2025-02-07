@@ -36,7 +36,7 @@ export default function TransportCargoModal({
       onClose={handleCloseModal}
       size="full"
       classNames={{
-        base: "rounded-b-none lg:rounded-b-xl sm:mb-0 lg:my-auto pb-4 lg:min-h-max overflow-y-auto max-h-[480px]",
+        base: "rounded-b-none lg:rounded-b-xl sm:mb-0 lg:my-auto pb-4 lg:min-h-max overflow-y-auto max-h-[520px] -bottom-1",
       }}
       // classNames={{
       //   base: "rounded-b-none overflow-clip",

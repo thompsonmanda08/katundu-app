@@ -121,6 +121,8 @@ type ShipmentRecord = {
   transportationType?: string; // Type of transportation (e.g., Air, Sea, Land)
   transportDate?: string; // Date of transportation
   deliveryStatus: string; // Status of the delivery (e.g., READY | IN TRANSIT | DELIVERED)
+  deliverId: string; // Unique identifier for the delivery
+  id: string; // Unique identifier for the delivery
 
   // TRANSPORTER DETAILS
   transporterName?: string; // Name of the transporter

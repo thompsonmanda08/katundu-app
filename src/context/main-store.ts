@@ -16,6 +16,7 @@ export type MainStateStore = {
   // ACTIONS
   updateSendCargoFormData: (data: Partial<ShipmentRecord>) => void;
   updateTransportCargoFormData: (data: Partial<ShipmentRecord>) => void;
+  updateSelectedShipment: (data: Partial<ShipmentRecord>) => void;
 
   // CLEAR
   resetStore: () => void;
@@ -59,6 +60,12 @@ const useMainStore = create<MainStateStore>((set, get) => ({
   setUser: (userDetails: Partial<User>) => set({ user: userDetails }),
   setSelectedShipment: (item: Partial<ShipmentRecord> | null) =>
     set({ selectedShipment: item }),
+
+  // ACTIONS
+  updateSelectedShipment: (data: Partial<ShipmentRecord>) =>
+    set((state) => ({
+      selectedShipment: { ...state.selectedShipment, ...data },
+    })),
 
   updateSendCargoFormData: (data: Partial<ShipmentRecord>) =>
     set((state) => ({

@@ -218,7 +218,7 @@ export default function SendCargoModal({
       placement="bottom"
       isDismissable={false}
       classNames={{
-        base: "rounded-b-none lg:rounded-b-xl sm:mb-0 lg:my-auto pb-4 lg:min-h-max overflow-y-auto max-h-[480px]",
+        base: "rounded-b-none lg:rounded-b-xl sm:mb-0 lg:my-auto pb-4 lg:min-h-max overflow-y-auto max-h-[520px] -bottom-1",
       }}
     >
       <ModalContent>
