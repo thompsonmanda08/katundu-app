@@ -121,8 +121,11 @@ function Home({ user }: { user: User }) {
           )}
         >
           <span className="text-xl font-bold text-primary">Hello,</span>{" "}
-          <Skeleton className="rounded-lg" isLoaded={!isLoading}>
-            {`${user?.firstName}`}
+          <Skeleton
+            className="rounded-lg"
+            isLoaded={!isLoading || Boolean(user?.firstName)}
+          >
+            {`${user?.firstName || "there!"}`}
           </Skeleton>
         </h2>
       </div>

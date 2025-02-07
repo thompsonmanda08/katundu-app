@@ -211,7 +211,7 @@ export default function CargoDetailsModal({
             </NavIconButton>
             <small>Shipment Details</small>
           </ModalHeader>
-          <ModalBody className="items-center p-0">
+          <ModalBody className="items-center p-0 overflow-y-auto">
             <Card className="flex flex-col border border-default-100/20 p-2 shadow-none">
               <CardHeader className="flex-row justify-between py-1 text-sm font-semibold">
                 Shipment Route

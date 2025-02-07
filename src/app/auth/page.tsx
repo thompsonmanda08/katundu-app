@@ -99,7 +99,6 @@ export default function AuthPage() {
       response = await authenticateUser({
         phone: formData?.phone,
         password: formData?.password,
-        role: formData?.role,
       });
 
       if (response?.success) {
@@ -124,7 +123,7 @@ export default function AuthPage() {
         lastName: formData?.lastName,
         password: formData?.password,
         phone: formData?.phone,
-        role: formData?.role,
+        role: formData?.role || "SENDER",
       });
 
       if (response?.success) {

@@ -218,7 +218,7 @@ export default function SendCargoModal({
       placement="bottom"
       isDismissable={false}
       classNames={{
-        base: "rounded-b-none lg:rounded-b-xl sm:mb-0 lg:my-auto pb-4 min-h-[60svh] lg:min-h-max",
+        base: "rounded-b-none lg:rounded-b-xl sm:mb-0 lg:my-auto pb-4 lg:min-h-max overflow-y-auto max-h-[480px]",
       }}
     >
       <ModalContent>
@@ -226,7 +226,7 @@ export default function SendCargoModal({
           <ModalHeader className="flex flex-col gap-1">
             Send a Package
           </ModalHeader>
-          <ModalBody className="p-0">
+          <ModalBody className="overflow-y-auto">
             <>
               <AnimatePresence mode="wait">
                 <motion.div
@@ -238,7 +238,7 @@ export default function SendCargoModal({
                   className="relative"
                 >
                   {!isFirstTab && (
-                    <div className="flex w-full items-center justify-between bg-red-500">
+                    <div className="flex w-full items-center justify-between">
                       <NavIconButton
                         className={cn(
                           "absolute -bottom-14 left-2 border-foreground/10 max-w-40 max-h-10 aspect-video",

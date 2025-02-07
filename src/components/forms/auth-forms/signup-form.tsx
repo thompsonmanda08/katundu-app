@@ -57,7 +57,8 @@ export default function SignUpForm({
         color="default"
         label="What best describes you?"
         orientation="horizontal"
-        value={formData.role}
+        defaultValue={"SENDER"}
+        value={formData.role || "SENDER"}
         onValueChange={(role) =>
           updateFormData({
             role: role as "SENDER" | "TRANSPORTER",
