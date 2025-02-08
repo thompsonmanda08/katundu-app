@@ -166,7 +166,7 @@ function ShipmentCard({
               <div className="">
                 {props?.isPublished || user?.role == "TRANSPORTER" ? (
                   <span className="flex items-center gap-1 text-xs font-medium">
-                    Delivery Status:{" "}
+                    Status:{" "}
                     <Chip
                       color={
                         props?.deliveryStatus == "DELIVERED"
@@ -183,7 +183,7 @@ function ShipmentCard({
                       // variant="flat"
                       classNames={{
                         base: "bg-opacity-30 text-opacity-80",
-                        content: "text-xs font-semibold",
+                        content: "text-xs font-semibold capitalize",
                       }}
                     >
                       {props?.deliveryStatus?.toLowerCase() ||

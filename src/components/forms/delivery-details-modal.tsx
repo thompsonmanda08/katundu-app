@@ -105,6 +105,16 @@ export default function CargoDetailsModal({
     onClose();
     return;
   }
+  
+  function handleClosePrompts() {
+    setIsDelete(false);
+    setIsPickUp(false);
+    setIsCancel(false);
+
+    setIsLoading(false);
+    setDeleteLoading(false);
+    return;
+  }
 
   async function handlePickupDelivery() {
     if (!isPickUp) {
@@ -302,7 +312,7 @@ export default function CargoDetailsModal({
                           {selectedShipment?.isPublished ||
                           user?.role == "TRANSPORTER" ? (
                             <span className="flex items-center gap-1 text-xs font-medium">
-                              Delivery Status:{" "}
+                              Status:{" "}
                               <Chip
                                 color={
                                   selectedShipment?.deliveryStatus ==
@@ -433,16 +443,18 @@ export default function CargoDetailsModal({
                       )}
 
                     {/* SENDER ACTION - PUBLISH */}
-                    {user?.role == "SENDER" && !isLoadingDetails && (
-                      <Button
-                        size="md"
-                        radius="sm"
-                        onPress={openPaymentModal}
-                        className="my-1 text-sm"
-                      >
-                        Publish
-                      </Button>
-                    )}
+                    {user?.role == "SENDER" &&
+                      !isLoadingDetails &&
+                      !selectedShipment?.isPublished && (
+                        <Button
+                          size="md"
+                          radius="sm"
+                          onPress={openPaymentModal}
+                          className="my-1 text-sm"
+                        >
+                          Publish
+                        </Button>
+                      )}
 
                     {/* SENDER ACTION - DELETE */}
                     {user?.role === "SENDER" && !isLoadingDetails && (
@@ -475,6 +487,7 @@ export default function CargoDetailsModal({
 
                 <PromptModal
                   isOpen={isDelete || isPickUp}
+                  onClose={handleClosePrompts}
                   placement="center"
                   isLoading={deleteLoading || isLoading}
                   title={
