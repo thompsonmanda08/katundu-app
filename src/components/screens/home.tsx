@@ -57,6 +57,9 @@ function Home({ user }: { user: User }) {
   const queryClient = useQueryClient();
   const { isLoading } = useAccountProfile();
 
+  const [selectedDeliveryId, setSelectedDeliveryId] =
+    React.useState<string>("");
+
   const { data: deliveriesResponse, isLoading: isLoaded } = useUserDeliveries(
     1,
     3
@@ -70,17 +73,8 @@ function Home({ user }: { user: User }) {
   const recentDeliveries = listData?.deliveries as Partial<ShipmentRecord>[];
 
   async function showDetails(item: Partial<ShipmentRecord>) {
-    await deliveryDetailsMutation.mutateAsync(String(item?.id));
-
-    const details = {
-      ...item,
-      ...deliveryDetailsMutation?.data?.data?.delivery,
-    };
-
-    if (deliveryDetailsMutation?.data?.success) {
-      setSelectedShipment(details);
-    }
     openShowDetailsModal();
+    setSelectedDeliveryId(item?.id as string);
   }
 
   function openTransporterModal() {
@@ -199,7 +193,7 @@ function Home({ user }: { user: User }) {
               <ShipmentCard
                 key={String(item?.id || index)}
                 displayDetails={true}
-                isDataLoaded={isLoaded}
+                isDataLoading={isLoaded}
                 handleOpenDetailsModal={() => showDetails(item)}
                 handlePublish={() => handlePublish(item)}
                 loadingDetails={deliveryDetailsMutation?.isPending}
@@ -227,8 +221,8 @@ function Home({ user }: { user: User }) {
         isOpen={showDetailsModal}
         onOpen={openShowDetailsModal}
         onClose={closeShowDetailsModal}
-        loadingDetails={deliveryDetailsMutation?.isPending}
-        detailsHandler={deliveryDetailsMutation}
+        deliveryId={selectedDeliveryId}
+        setDeliveryId={setSelectedDeliveryId}
       />
       {/* **************************************************** */}
       <PayToAccessModal

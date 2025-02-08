@@ -34,7 +34,7 @@ import { UseBaseMutationResult, useQueryClient } from "@tanstack/react-query";
 type CardProps = Partial<ShipmentRecord> & {
   src?: string;
   displayDetails?: boolean;
-  isDataLoaded?: boolean;
+  isDataLoading?: boolean;
   loadingDetails?: boolean;
   handleViewDetails?: () => Promise<APIResponse>;
   handleOpenDetailsModal?: () => void;
@@ -46,7 +46,7 @@ type CardProps = Partial<ShipmentRecord> & {
 function ShipmentCard({
   src,
   displayDetails = false,
-  isDataLoaded,
+  isDataLoading,
   loadingDetails,
   handlePublish,
   handleViewDetails,
@@ -102,9 +102,9 @@ function ShipmentCard({
           <div className="flex flex-row items-center gap-2 text-sm">
             <Skeleton
               className={cn("max-w-max rounded-lg  capitalize", {
-                "min-w-16 h-6": isDataLoaded,
+                "min-w-16 h-6": isDataLoading,
               })}
-              isLoaded={!isDataLoaded}
+              isLoaded={!isDataLoading}
             >
               <Chip variant="flat" size="sm" color="primary">
                 {props?.pickUpCity}
@@ -115,9 +115,9 @@ function ShipmentCard({
 
             <Skeleton
               className={cn("max-w-max rounded-lg  capitalize", {
-                "min-w-16 h-6": isDataLoaded,
+                "min-w-16 h-6": isDataLoading,
               })}
-              isLoaded={!isDataLoaded}
+              isLoaded={!isDataLoading}
             >
               <Chip color="success" size="sm" variant="flat">
                 {props?.deliveryCity || props?.deliveryLocation}
@@ -126,40 +126,43 @@ function ShipmentCard({
           </div>
         </div>
       </CardHeader>
-      <CardBody className="flex-row gap-2 overflow-hidden py-2 sm:gap-4">
-        <div className="aspect-square w-full min-w-12 max-w-16 overflow-clip">
-          <Skeleton className="rounded-lg" isLoaded={!isDataLoaded}>
+      <CardBody className="grid grid-cols-4 gap-2 overflow-hidden py-2">
+        <div className="col-span-1 aspect-square w-full flex-1 overflow-clip">
+          <Skeleton className="rounded-lg" isLoaded={!isDataLoading}>
             <Image
               alt="Cargo Image"
-              className="h-full w-full rounded-lg object-cover"
+              className="w-full rounded-lg object-cover"
               src={src || "/images/fallback.svg"}
             />
           </Skeleton>
         </div>
-        <div className="flex justify-between gap-2">
+        <div className="col-span-3 grid w-full grid-cols-4 justify-between">
           <div
             className={cn(
-              "flex flex-col text-sm max-w-[180px] sm:max-w-max mr-auto",
+              "flex flex-col col-span-3 gap-1 text-sm w-full flex-[1.5] ",
               {
-                "gap-2": isDataLoaded,
+                "gap-2": isDataLoading,
               }
             )}
           >
-            <Skeleton className="max-w-max rounded-lg" isLoaded={!isDataLoaded}>
+            <Skeleton
+              className="max-w-max rounded-lg"
+              isLoaded={!isDataLoading}
+            >
               <p>{props?.cargoDescription}</p>
             </Skeleton>
 
-            <Skeleton className="w-60 rounded-lg" isLoaded={!isDataLoaded}>
+            <Skeleton
+              className="w-60 max-w-40 rounded-lg"
+              isLoaded={!isDataLoading}
+            >
               <small className="text-xs text-foreground/60">
                 {props?.transportDate
                   ? formatDate(props?.transportDate)
                   : formatDate(new Date().toISOString())}
               </small>
             </Skeleton>
-            <Skeleton
-              className="w-40 rounded-lg capitalize"
-              isLoaded={!isDataLoaded}
-            >
+            {!isDataLoading && (
               <div className="">
                 {props?.isPublished || user?.role == "TRANSPORTER" ? (
                   <span className="flex items-center gap-1 text-xs font-medium">
@@ -189,40 +192,37 @@ function ShipmentCard({
                   </span>
                 ) : (
                   <Button
-                    size="sm"
+                    size="md"
                     radius="sm"
                     onPress={handlePublish}
-                    className="h-6 text-xs"
+                    className="h-8 text-sm"
                   >
                     Publish
                   </Button>
                 )}
               </div>
-            </Skeleton>
-          </div>
-          <div
-            className={cn(
-              "flex  flex-col justify-end text-right items-end gap-2 text-xs ml-auto min-w-[70px]",
-              {
-                "max-w-[80px]": props?.hasPaid,
-              }
             )}
-          >
-            {!isDataLoaded && (
-              <div className="ml-auto flex flex-col items-end justify-end text-right">
-                <span>{props?.packaging}</span>
-                <div>
+          </div>
+
+          {/* FAR RIGHT */}
+          <div className={cn("flex flex-col text-right gap-2 text-sm flex-1")}>
+            <Skeleton
+              className="w-16 max-w-20 rounded-lg"
+              isLoaded={!isDataLoading}
+            >
+              <div className="flex flex-col gap-1 text-right">
+                <p>{props?.packaging}</p>
+                <p>
                   <span>{props?.containerSize}</span>
                   <span> {props?.cargoMeasure}</span>
-                </div>
+                </p>
+                <p>Qty: {props?.quantity}</p>
               </div>
-            )}
+            </Skeleton>
 
-            {!isDataLoaded && (
+            {!isDataLoading && (
               <>
-                {user?.role === "TRANSPORTER" &&
-                props?.hasPaid &&
-                !props?.isPublished ? (
+                {user?.role === "TRANSPORTER" && props?.hasPaid ? (
                   <Button
                     startContent={
                       <PackageCheck
@@ -239,9 +239,7 @@ function ShipmentCard({
                   >
                     Pick Up
                   </Button>
-                ) : user?.role === "TRANSPORTER" &&
-                  !props?.hasPaid &&
-                  props?.isPublished ? (
+                ) : user?.role === "TRANSPORTER" && !props?.hasPaid ? (
                   <Button
                     startContent={
                       <LockKeyholeOpen
@@ -258,9 +256,7 @@ function ShipmentCard({
                   >
                     Access
                   </Button>
-                ) : (
-                  <span>ETA</span>
-                )}
+                ) : null}
               </>
             )}
           </div>
@@ -302,6 +298,20 @@ function ShipmentCard({
                         <TableCell>Cargo Size (Measurement) </TableCell>
                         <TableCell className="text-right font-bold capitalize">
                           {`${props?.containerSize} ${props?.cargoMeasure}`}
+                        </TableCell>
+                      </TableRow>
+                      <TableRow key="quantity">
+                        <TableCell>Quantity </TableCell>
+                        <TableCell className="text-right font-bold capitalize">
+                          {`${props?.quantity} ${props?.packaging}`}
+                        </TableCell>
+                      </TableRow>
+                      <TableRow key="date">
+                        <TableCell>Transport Date </TableCell>
+                        <TableCell className="text-right font-bold capitalize">
+                          {`${formatDate(
+                            new Date(Number(props?.transportDate))
+                          )}`}
                         </TableCell>
                       </TableRow>
                       <TableRow key="cargo-details-btn">

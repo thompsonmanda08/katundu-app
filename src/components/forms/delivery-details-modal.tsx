@@ -45,34 +45,43 @@ import PromptModal from "../elements/prompt-modal";
 import {
   cancelDelivery,
   deleteDelivery,
+  getDeliveryDetails,
   pickUpDelivery,
 } from "@/app/_actions/delivery-actions";
-import { UseBaseMutationResult, useQueryClient } from "@tanstack/react-query";
+import {
+  UseBaseMutationResult,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 
 type CargoProps = Partial<ShipmentRecord> & {
   isOpen: boolean;
-  isDataLoaded?: boolean;
-  loadingDetails?: boolean;
   onOpen: (open: boolean) => void;
   onClose: () => void;
-  src?: string;
-  detailsHandler?: UseBaseMutationResult<APIResponse, Error, string, unknown>;
+  deliveryId: string;
+  setDeliveryId: React.Dispatch<React.SetStateAction<string>>;
 };
 
 export default function CargoDetailsModal({
   isOpen,
   onOpen,
   onClose,
-  isDataLoaded,
-  loadingDetails,
-  detailsHandler,
-  src,
+  deliveryId,
+  setDeliveryId,
 }: CargoProps) {
-  const { user, setSelectedShipment, selectedShipment } = useMainStore(
-    (state) => state
-  );
+  const { user } = useMainStore((state) => state);
 
   const queryClient = useQueryClient();
+
+  const deliveryDetails = useMutation({
+    mutationFn: (ID: string) => getDeliveryDetails(ID),
+  });
+
+  const selectedShipment = deliveryDetails?.data?.data?.delivery;
+
+  const isLoadingDetails = Boolean(
+    !selectedShipment || deliveryDetails.isPending
+  );
 
   const [isDelete, setIsDelete] = React.useState(false);
   const [isPickUp, setIsPickUp] = React.useState(false);
@@ -92,8 +101,9 @@ export default function CargoDetailsModal({
   } = useDisclosure();
 
   function handleCloseModal() {
-    setSelectedShipment(null);
+    setDeliveryId("");
     onClose();
+    return;
   }
 
   async function handlePickupDelivery() {
@@ -104,7 +114,7 @@ export default function CargoDetailsModal({
 
     setIsLoading(true);
 
-    const response = await pickUpDelivery(String(selectedShipment?.id));
+    const response = await pickUpDelivery(String(deliveryId));
 
     if (response?.success) {
       notify({
@@ -113,11 +123,7 @@ export default function CargoDetailsModal({
       });
 
       // REFETCH DETAILS
-      detailsHandler?.mutateAsync(String(selectedShipment?.id));
-
-      if (detailsHandler?.data?.success) {
-        setSelectedShipment(detailsHandler?.data?.data?.delivery);
-      }
+      deliveryDetails?.mutateAsync(String(deliveryId));
     } else {
       notify({
         title: "Pick up Failed!",
@@ -137,7 +143,7 @@ export default function CargoDetailsModal({
 
     setIsLoading(true);
 
-    const response = await cancelDelivery(String(selectedShipment?.id));
+    const response = await cancelDelivery(String(deliveryId));
 
     if (response?.success) {
       notify({
@@ -146,11 +152,7 @@ export default function CargoDetailsModal({
       });
 
       // REFETCH DETAILS
-      detailsHandler?.mutateAsync(String(selectedShipment?.id));
-
-      if (detailsHandler?.data?.success) {
-        setSelectedShipment(detailsHandler?.data?.data?.delivery);
-      }
+      deliveryDetails?.mutateAsync(String(deliveryId));
     } else {
       notify({
         title: "Pick up Failed!",
@@ -170,7 +172,7 @@ export default function CargoDetailsModal({
 
     setDeleteLoading(true);
 
-    const response = await deleteDelivery(String(selectedShipment?.id));
+    const response = await deleteDelivery(String(deliveryId));
 
     if (response?.success) {
       notify({
@@ -191,16 +193,31 @@ export default function CargoDetailsModal({
     setIsDelete(false);
   }
 
-  console.log("selectedShipment", selectedShipment);
-  // console.log("CONTACTS", selectedShipment?.contacts);
+  async function showDetails(ID: string) {
+    await deliveryDetails.mutateAsync(String(ID));
+  }
+
+  React.useEffect(() => {
+    if (!deliveryId) {
+      handleCloseModal();
+      return;
+    }
+
+    showDetails(deliveryId);
+
+    return () => {
+      handleCloseModal();
+    };
+  }, [deliveryId]);
 
   return (
     <Modal
       isOpen={isOpen}
       onClose={handleCloseModal}
       size="full"
+      backdrop="blur"
       classNames={{
-        base: "rounded-b-none -mb-2 sm:-mb-4 pb-4",
+        base: "overflow-y-auto max-h-[820px] max-w-2xl",
       }}
     >
       <ModalContent>
@@ -211,14 +228,14 @@ export default function CargoDetailsModal({
             </NavIconButton>
             <small>Shipment Details</small>
           </ModalHeader>
-          <ModalBody className="items-center p-0 overflow-y-auto">
-            <Card className="flex flex-col border border-default-100/20 p-2 shadow-none">
+          <ModalBody className="w-full flex-1 items-center overflow-y-auto p-0">
+            <Card className="flex w-full flex-col border border-default-100/20 p-2 shadow-none">
               <CardHeader className="flex-row justify-between py-1 text-sm font-semibold">
                 Shipment Route
-                <div className="flex flex-row items-center gap-2 text-sm">
+                <div className="flex max-w-[50%] flex-row items-center gap-2 text-sm">
                   <Skeleton
-                    className="max-w-max rounded-lg capitalize"
-                    isLoaded={!isDataLoaded}
+                    className="min-w-14 max-w-max rounded-lg capitalize"
+                    isLoaded={!isLoadingDetails}
                   >
                     <Chip variant="flat" size="sm" color="primary">
                       {selectedShipment?.pickUpCity}
@@ -228,75 +245,94 @@ export default function CargoDetailsModal({
                   <ArrowRightIcon className="h-4 w-4 text-primary-400" />
 
                   <Skeleton
-                    className="max-w-max rounded-lg capitalize"
-                    isLoaded={!isDataLoaded}
+                    className="min-w-14 max-w-max rounded-lg capitalize"
+                    isLoaded={!isLoadingDetails}
                   >
                     <Chip color="success" size="sm" variant="flat">
-                      {selectedShipment?.deliveryCity ||
-                        selectedShipment?.deliveryLocation}
+                      {selectedShipment?.deliveryCity}
                     </Chip>
                   </Skeleton>
                 </div>
               </CardHeader>
-              <CardBody className="flex-row gap-4 py-2">
-                <div className="aspect-square w-16 overflow-clip">
-                  <Skeleton className="rounded-lg" isLoaded={!isDataLoaded}>
-                    <Image
-                      alt="Cargo Image"
-                      className="h-full w-full rounded-lg object-cover"
-                      src={src || "/images/fallback.svg"}
-                    />
-                  </Skeleton>
-                </div>
-                <div className="flex flex-1 justify-between gap-2">
-                  <div
-                    className={cn(
-                      "flex flex-col text-sm max-w-[185px] sm:max-w-max",
-                      {
-                        "gap-2": isDataLoaded,
-                      }
-                    )}
-                  >
+              <CardBody className="flex-1 flex-col overflow-y-auto">
+                <div className="flex flex-row gap-2 py-2">
+                  <div className="aspect-square w-16 overflow-clip">
                     <Skeleton
-                      className="max-w-max rounded-lg"
-                      isLoaded={!isDataLoaded}
+                      className="rounded-lg"
+                      isLoaded={!isLoadingDetails}
                     >
-                      <p>{selectedShipment?.cargoDescription}</p>
+                      <Image
+                        alt="Cargo Image"
+                        className="h-full w-full rounded-lg object-cover"
+                        src={selectedShipment?.src || "/images/fallback.svg"}
+                      />
                     </Skeleton>
+                  </div>
+                  <div className="flex flex-1 justify-between gap-2">
+                    <div
+                      className={cn(
+                        "flex flex-col text-sm max-w-[185px] sm:max-w-max",
+                        {
+                          "gap-1": isLoadingDetails,
+                        }
+                      )}
+                    >
+                      <Skeleton
+                        className="max-w-max rounded-lg"
+                        isLoaded={!isLoadingDetails}
+                      >
+                        <p>{selectedShipment?.cargoDescription}</p>
+                      </Skeleton>
 
-                    <Skeleton
-                      className="w-60 rounded-lg"
-                      isLoaded={!isDataLoaded}
-                    >
-                      <small className="text-xs text-foreground/60">
-                        {selectedShipment?.transportDate
-                          ? formatDate(selectedShipment?.transportDate)
-                          : formatDate(new Date().toISOString())}
-                      </small>
-                    </Skeleton>
-                    <Skeleton
-                      className="w-40 rounded-lg capitalize"
-                      isLoaded={!isDataLoaded}
-                    >
-                      <div className="">
-                        {selectedShipment?.isPublished ||
-                        user?.role == "TRANSPORTER" ? (
-                          <span className="flex items-center gap-1 text-xs font-medium">
-                            Delivery Status:{" "}
+                      <Skeleton
+                        className="min-w-32 max-w-max rounded-lg"
+                        isLoaded={!isLoadingDetails}
+                      >
+                        <small className="text-xs text-foreground/60">
+                          {selectedShipment?.transportDate
+                            ? formatDate(selectedShipment?.transportDate)
+                            : formatDate(new Date().toISOString())}
+                        </small>
+                      </Skeleton>
+                      <Skeleton
+                        className="w-40 rounded-lg capitalize"
+                        isLoaded={!isLoadingDetails}
+                      >
+                        <div className="">
+                          {selectedShipment?.isPublished ||
+                          user?.role == "TRANSPORTER" ? (
+                            <span className="flex items-center gap-1 text-xs font-medium">
+                              Delivery Status:{" "}
+                              <Chip
+                                color={
+                                  selectedShipment?.deliveryStatus ==
+                                  "DELIVERED"
+                                    ? "success"
+                                    : selectedShipment?.deliveryStatus ==
+                                      "IN TRANSIT"
+                                    ? "secondary"
+                                    : selectedShipment?.deliveryStatus ==
+                                      "READY"
+                                    ? "warning"
+                                    : selectedShipment?.deliveryStatus ==
+                                      "CANCELLED"
+                                    ? "danger"
+                                    : "default"
+                                }
+                                size="sm"
+                                // variant="flat"
+                                classNames={{
+                                  base: "bg-opacity-30 text-opacity-80",
+                                  content: "text-xs font-semibold",
+                                }}
+                              >
+                                {selectedShipment?.deliveryStatus?.toLowerCase() ||
+                                  "Published".toLowerCase()}
+                              </Chip>
+                            </span>
+                          ) : (
                             <Chip
-                              color={
-                                selectedShipment?.deliveryStatus == "DELIVERED"
-                                  ? "success"
-                                  : selectedShipment?.deliveryStatus ==
-                                    "IN TRANSIT"
-                                  ? "secondary"
-                                  : selectedShipment?.deliveryStatus == "READY"
-                                  ? "warning"
-                                  : selectedShipment?.deliveryStatus ==
-                                    "CANCELLED"
-                                  ? "danger"
-                                  : "default"
-                              }
+                              color={"default"}
                               size="sm"
                               // variant="flat"
                               classNames={{
@@ -305,47 +341,40 @@ export default function CargoDetailsModal({
                               }}
                             >
                               {selectedShipment?.deliveryStatus?.toLowerCase() ||
-                                "LISTED".toLowerCase()}
+                                // true ? "Published".toLowerCase() :
+                                "Not Published".toLowerCase()}
                             </Chip>
-                          </span>
-                        ) : (
-                          <Button
-                            size="sm"
-                            radius="sm"
-                            onPress={openPaymentModal}
-                            className="h-6 text-xs"
-                          >
-                            Publish
-                          </Button>
-                        )}
-                      </div>
-                    </Skeleton>
-                  </div>
-                  <div className="flex flex-col items-end justify-end gap-2 text-right text-xs">
-                    <Skeleton
-                      className="w-20 rounded-lg"
-                      isLoaded={!isDataLoaded}
-                    >
-                      <p className="text-right">
-                        {selectedShipment?.packaging}
-                      </p>
-                    </Skeleton>
-                    <Skeleton
-                      className="w-20 rounded-lg"
-                      isLoaded={!isDataLoaded}
-                    >
-                      <p className="text-right">
-                        <span>{selectedShipment?.containerSize}</span>
-                        <span> {selectedShipment?.cargoMeasure}</span>
-                      </p>
-                    </Skeleton>
+                          )}
+                        </div>
+                      </Skeleton>
+                    </div>
+                    <div className="flex flex-col items-end justify-end gap-2 text-right text-xs">
+                      <Skeleton
+                        className="w-20 rounded-lg"
+                        isLoaded={!isLoadingDetails}
+                      >
+                        <p className="text-right">
+                          {selectedShipment?.packaging}
+                        </p>
+                      </Skeleton>
+                      <Skeleton
+                        className="w-20 rounded-lg"
+                        isLoaded={!isLoadingDetails}
+                      >
+                        <p className="text-right">
+                          <span>{selectedShipment?.containerSize}</span>
+                          <span> {selectedShipment?.cargoMeasure}</span>
+                        </p>
+                      </Skeleton>
 
-                    <span>ETA</span>
+                      {!isLoadingDetails && (
+                        <span>Qty: {selectedShipment?.quantity}</span>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </CardBody>
-              <Divider className="my-2 bg-slate-100" />
-              <CardFooter className={cn("flex-col p-0")}>
+
+                <Divider className="my-2 bg-slate-100" />
                 <AnimatePresence>
                   <motion.div
                     variants={containerVariants}
@@ -359,15 +388,15 @@ export default function CargoDetailsModal({
                     <div className="flex w-full flex-col">
                       <CargoDetails
                         key={"cargo-details"}
-                        loadingDetails={loadingDetails}
+                        isLoading={isLoadingDetails}
+                        selectedShipment={selectedShipment}
                       />
                     </div>
 
-                    {/* CONTACT DETAILS */}
-
-                    {!selectedShipment?.contacts &&
-                      user?.role === "TRANSPORTER" &&
-                      selectedShipment?.isPublished && (
+                    {/* TRANSPORTER ACTION - PAY TO SEE CONTACT */}
+                    {user?.role === "TRANSPORTER" &&
+                      selectedShipment?.isPublished &&
+                      !selectedShipment?.contacts && (
                         <Button
                           size="md"
                           className="mt-2 text-sm"
@@ -377,15 +406,13 @@ export default function CargoDetailsModal({
                             <LockKeyholeOpenIcon className={cn("h-4 w-4 ")} />
                           }
                         >
-                          See Contact Details
+                          Access Contact Details
                         </Button>
                       )}
 
+                    {/* TRANSPORTER ACTION - PICK UP */}
                     {user?.role == "TRANSPORTER" &&
-                      selectedShipment?.contacts &&
-                      !selectedShipment?.isPublished &&
-                      String(selectedShipment?.deliveryStatus)?.toUpperCase() ==
-                        "READY" && (
+                      selectedShipment?.contacts && (
                         <Button
                           size="sm"
                           radius="sm"
@@ -405,24 +432,39 @@ export default function CargoDetailsModal({
                         </Button>
                       )}
 
-                    {/* ONLY SENDERS CAN DELETE */}
-                    {user?.role === "SENDER" && (
+                    {/* SENDER ACTION - PUBLISH */}
+                    {user?.role == "SENDER" && !isLoadingDetails && (
+                      <Button
+                        size="md"
+                        radius="sm"
+                        onPress={openPaymentModal}
+                        className="my-1 text-sm"
+                      >
+                        Publish
+                      </Button>
+                    )}
+
+                    {/* SENDER ACTION - DELETE */}
+                    {user?.role === "SENDER" && !isLoadingDetails && (
                       <Button
                         startContent={<Trash2Icon className={cn("h-4 w-4 ")} />}
                         onPress={handleDeleteDelivery}
-                        isDisabled={isDataLoaded || isLoading || deleteLoading}
+                        isDisabled={
+                          isLoadingDetails || isLoading || deleteLoading
+                        }
                         isLoading={deleteLoading}
-                        size="sm"
+                        size="md"
                         radius="sm"
                         color="danger"
-                        className="mt- text-sm"
+                        className="my-1 text-sm"
                       >
                         Delete
                       </Button>
                     )}
                   </motion.div>
                 </AnimatePresence>
-
+              </CardBody>
+              <CardFooter className={cn("flex-col p-0")}>
                 {/* **************************************************** */}
                 <PayToAccessModal
                   isOpen={showPaymentModal}
@@ -466,10 +508,13 @@ export default function CargoDetailsModal({
 }
 
 export function CargoDetails({
-  loadingDetails,
-  ...props
-}: Partial<CargoProps>) {
-  const { user, selectedShipment } = useMainStore((state) => state);
+  isLoading = false,
+  selectedShipment,
+}: Partial<CargoProps> & {
+  isLoading: boolean;
+  selectedShipment: Partial<ShipmentRecord>;
+}) {
+  const { user } = useMainStore((state) => state);
   const userHasAccess =
     selectedShipment?.contacts &&
     (selectedShipment?.contacts?.sender ||
@@ -482,12 +527,10 @@ export function CargoDetails({
         <TableColumn>VALUE</TableColumn>
       </TableHeader>
       <TableBody
-        isLoading={loadingDetails}
+        isLoading={isLoading}
         loadingContent={
           <div className="flex h-full w-full flex-1 flex-col overflow-clip rounded-xl">
-            <Skeleton className="flex h-full w-full flex-1">
-              <Loader loadingText="Getting details..." />{" "}
-            </Skeleton>
+            <Skeleton className="flex h-full w-full flex-1"></Skeleton>
           </div>
         }
       >
@@ -521,6 +564,18 @@ export function CargoDetails({
           <TableCell>Cargo Size (Measurement) </TableCell>
           <TableCell className="text-right font-bold capitalize">
             {`${selectedShipment?.containerSize} ${selectedShipment?.cargoMeasure}`}
+          </TableCell>
+        </TableRow>
+        <TableRow key="quantity">
+          <TableCell>Quantity </TableCell>
+          <TableCell className="text-right font-bold capitalize">
+            {`${selectedShipment?.quantity} ${selectedShipment?.packaging}`}
+          </TableCell>
+        </TableRow>
+        <TableRow key="date">
+          <TableCell>Transport Date </TableCell>
+          <TableCell className="text-right font-bold capitalize">
+            {`${formatDate(new Date(Number(selectedShipment?.transportDate)))}`}
           </TableCell>
         </TableRow>
 

@@ -1,8 +1,4 @@
 "use client";
-import {
-  getDeliveryDetails,
-  getUserDeliveries,
-} from "@/app/_actions/delivery-actions";
 import { ShipmentCard } from "@/components/elements";
 import useMainStore from "@/context/main-store";
 import { ShipmentRecord, User } from "@/lib/types";
@@ -15,7 +11,7 @@ import {
   Tabs,
   useDisclosure,
 } from "@heroui/react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   ActivityIcon,
   BoxIcon,
@@ -23,7 +19,7 @@ import {
   ChevronRight,
   PackageIcon,
 } from "lucide-react";
-import React, { Key, useEffect } from "react";
+import React, { Key } from "react";
 import { CargoDetailsModal, PayToAccessModal } from "../forms";
 import EmptyState from "../ui/empty-state";
 import { useUserDeliveries } from "@/hooks/use-query-data";
@@ -35,9 +31,10 @@ function Packages({ user }: { user: User }) {
     onOpen: openShowDetailsModal,
     onClose: closeShowDetailsModal,
   } = useDisclosure();
-  const { setSelectedShipment, selectedShipment } = useMainStore(
-    (state) => state
-  );
+  const { setSelectedShipment } = useMainStore((state) => state);
+
+  const [selectedDeliveryId, setSelectedDeliveryId] =
+    React.useState<string>("");
 
   const [currentPage, setCurrentPage] = React.useState(1);
   const [size, setSize] = React.useState(3);
@@ -49,10 +46,6 @@ function Packages({ user }: { user: User }) {
     onClose: closePaymentModal,
   } = useDisclosure();
 
-  const detailsMutation = useMutation({
-    mutationFn: (ID: string) => getDeliveryDetails(ID),
-  });
-
   const queryClient = useQueryClient();
 
   const { data: deliveriesResponse, isLoading: isLoaded } = useUserDeliveries(
@@ -62,6 +55,16 @@ function Packages({ user }: { user: User }) {
 
   const listData = deliveriesResponse?.data;
   const allUserDeliveries = listData?.deliveries as Partial<ShipmentRecord>[];
+
+  async function showDetails(item: Partial<ShipmentRecord>) {
+    openShowDetailsModal();
+    setSelectedDeliveryId(item?.id as string);
+  }
+
+  function handlePublish(item: Partial<ShipmentRecord>) {
+    openPaymentModal();
+    setSelectedShipment(item);
+  }
 
   const filteredItems = React.useMemo(() => {
     let FilteredData = [...allUserDeliveries];
@@ -77,31 +80,12 @@ function Packages({ user }: { user: User }) {
     return FilteredData;
   }, [allUserDeliveries, currentTab]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     queryClient.invalidateQueries({
       queryKey: [QUERY_KEYS.USER_DELIVERIES, currentPage, size],
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage]);
-
-  async function showDetails(item: Partial<ShipmentRecord>) {
-    await detailsMutation.mutateAsync(String(item?.id));
-
-    const details = {
-      ...item,
-      ...detailsMutation?.data?.data?.delivery,
-    };
-
-    if (detailsMutation?.data?.success) {
-      setSelectedShipment(details);
-    }
-    openShowDetailsModal();
-  }
-
-  function handlePublish(item: Partial<ShipmentRecord>) {
-    openPaymentModal();
-    setSelectedShipment(item);
-  }
 
   console.log("filteredItems", filteredItems);
 
@@ -179,8 +163,6 @@ function Packages({ user }: { user: User }) {
               <ShipmentCard
                 key={String(item?.id)}
                 displayDetails={true}
-                isDataLoaded={isLoaded}
-                loadingDetails={detailsMutation?.isPending}
                 handlePublish={() => handlePublish(item)}
                 handleOpenDetailsModal={() => showDetails(item)}
                 {...item}
@@ -231,8 +213,8 @@ function Packages({ user }: { user: User }) {
         isOpen={showDetailsModal}
         onOpen={openShowDetailsModal}
         onClose={closeShowDetailsModal}
-        loadingDetails={detailsMutation?.isPending}
-        detailsHandler={detailsMutation}
+        deliveryId={selectedDeliveryId}
+        setDeliveryId={setSelectedDeliveryId}
       />
       {/* ************************************************************* */}
     </div>
