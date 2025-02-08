@@ -138,7 +138,7 @@ function Packages({ user }: { user: User }) {
         <div className="flex w-full flex-col gap-4">
           {isLoaded ? (
             Array.from({ length: 3 })?.map((_, index) => (
-              <ShipmentCard key={index} isDataLoaded={isLoaded} />
+              <ShipmentCard key={index} isDataLoading={isLoaded} />
             ))
           ) : filteredItems?.length == 0 ? (
             <>

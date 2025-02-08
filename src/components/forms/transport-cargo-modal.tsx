@@ -36,11 +36,8 @@ export default function TransportCargoModal({
       onClose={handleCloseModal}
       size="full"
       classNames={{
-        base: "rounded-b-none lg:rounded-b-xl sm:mb-0 lg:my-auto pb-4 lg:min-h-max overflow-y-auto max-h-[520px] -bottom-1",
+        base: "overflow-y-auto max-h-[820px] max-w-2xl",
       }}
-      // classNames={{
-      //   base: "rounded-b-none overflow-clip",
-      // }}
     >
       <ModalContent>
         <>
@@ -50,7 +47,7 @@ export default function TransportCargoModal({
             </NavIconButton>
             Transport a Package
           </ModalHeader>
-          <ModalBody className="overflow-y-auto">
+          <ModalBody className="overflow-y-auto overflow-x-clip">
             <AnimatePresence mode="wait">
               <motion.div
                 variants={containerVariants}

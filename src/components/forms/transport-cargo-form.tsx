@@ -30,13 +30,12 @@ export function TransportCargoForm() {
 
   const { data: DISTRICTS } = useCities(100);
 
+  const [selectedDeliveryId, setSelectedDeliveryId] =
+    React.useState<string>("");
+
   const [currentPage, setCurrentPage] = React.useState(1);
   const [size, setSize] = React.useState(3);
   const [city, setCity] = React.useState("");
-
-  const { selectedShipment, setSelectedShipment } = useMainStore(
-    (state) => state
-  );
 
   const listMutation = useMutation({
     mutationFn: () => getAvailableDeliveries(city, currentPage, size),
@@ -44,32 +43,18 @@ export function TransportCargoForm() {
 
   const listData = listMutation?.data?.data;
 
-  const detailsMutation = useMutation({
-    mutationFn: (ID: string) => getDeliveryDetails(ID),
-  });
-
   const availableDeliveries = (listData?.deliveries ||
     []) as Partial<ShipmentRecord>[];
 
   async function showDetails(item: Partial<ShipmentRecord>) {
-    await detailsMutation.mutateAsync(String(item?.id));
-
-    const details = {
-      ...item,
-      ...detailsMutation?.data?.data?.delivery,
-    };
-
-    if (detailsMutation?.data?.success) {
-      setSelectedShipment(details);
-    }
-
     openShowDetailsModal();
+    setSelectedDeliveryId(item?.id as string);
   }
 
-  const loadShipmentDetails = async () => await listMutation.mutateAsync();
+  const fetchAvailableDeliveries = async () => await listMutation.mutateAsync();
 
   useEffect(() => {
-    loadShipmentDetails();
+    fetchAvailableDeliveries();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [city]);
 
@@ -104,7 +89,7 @@ export function TransportCargoForm() {
       <div className="flex w-full flex-col gap-4">
         {listMutation?.isPending ? (
           Array.from({ length: 3 })?.map((_, index) => (
-            <ShipmentCard key={index} isDataLoaded={listMutation?.isPending} />
+            <ShipmentCard key={index} isDataLoading={listMutation?.isPending} />
           ))
         ) : availableDeliveries?.length == 0 ? (
           <>
@@ -124,10 +109,8 @@ export function TransportCargoForm() {
           availableDeliveries?.map((item) => (
             <ShipmentCard
               key={String(item?.id)}
-              // src={item?.cargo?.image}
               displayDetails={true}
-              loadingDetails={detailsMutation?.isPending}
-              isDataLoaded={listMutation?.isPending}
+              isDataLoading={listMutation?.isPending}
               handleOpenDetailsModal={() => showDetails(item)}
               {...item}
             />
@@ -170,8 +153,8 @@ export function TransportCargoForm() {
         isOpen={showDetailsModal}
         onOpen={openShowDetailsModal}
         onClose={closeShowDetailsModal}
-        loadingDetails={detailsMutation?.isPending}
-        detailsHandler={detailsMutation}
+        deliveryId={selectedDeliveryId}
+        setDeliveryId={setSelectedDeliveryId}
       />
       {/* ************************************************************* */}
     </div>
