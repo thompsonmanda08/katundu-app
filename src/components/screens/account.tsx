@@ -75,7 +75,7 @@ export default function Account({ user }: { user?: User }) {
 
   return (
     <div className="flex h-full w-full flex-1 flex-col shadow-none">
-      <div className="flex flex-wrap gap-4 px-5">
+      {/* <div className="flex flex-wrap gap-4 px-5">
         <Tabs
           aria-label="Tabs"
           selectedKey={String(currentTabIndex)}
@@ -88,7 +88,7 @@ export default function Account({ user }: { user?: User }) {
             <Tab key={String(key)} title={title} />
           ))}
         </Tabs>
-      </div>
+      </div> */}
       <AnimatePresence mode="wait">
         <motion.div
           key={currentTabIndex}
@@ -214,6 +214,7 @@ export function AccountDetails() {
           <NextButton
             aria-label="update-profile-photo"
             color="primary"
+            disabled // TODO: Enable this
             className={
               "absolute rounded-full left-[65%] w-8 h-8 min-h-auto min-w-max aspect-square ring-2 ring-offset-2 ring-primary"
             }
@@ -225,6 +226,7 @@ export function AccountDetails() {
           <input
             id={"profile-photo"}
             name={"profile-photo"}
+            disabled // TODO: Enable this
             type="file"
             accept="image/*"
             className={`hidden`}
@@ -245,6 +247,8 @@ export function AccountDetails() {
               <Button
                 variant="light"
                 size="sm"
+                isDisabled
+                disabled // TODO: Enable this
                 onPress={toggleShowMore}
                 className="bg-transparent p-0 text-sm data-[hover=true]:bg-transparent"
               >
@@ -408,6 +412,7 @@ export function AccountDetails() {
                 <span className="mx-auto mt-1">********</span>
                 <button
                   type="button"
+                  disabled // TODO: Enable this
                   onClick={() => setChangePassword(true)}
                   className="font-semibold text-primary hover:text-primary/80"
                 >
