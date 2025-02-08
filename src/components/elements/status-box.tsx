@@ -16,12 +16,14 @@ function StatusBox({
   status,
   onPress,
   buttonText,
+  dismissText,
 }: {
   title: string;
   description: string;
   status: string;
   onPress?: any;
   buttonText?: string;
+  dismissText?: string;
 }) {
   const [lottieFile, setLottieFile] = React.useState<any>(loadingLottie);
 
@@ -72,6 +74,13 @@ function StatusBox({
           play
           style={{ width: 220, height: 220 }}
         />
+        {dismissText && (
+          <>
+            <span className="text-center text-sm font-medium leading-6 text-foreground/60">
+              {dismissText}
+            </span>
+          </>
+        )}
       </div>
       {onPress && (
         <Button onPress={onPress} className={"my-4 w-full"}>

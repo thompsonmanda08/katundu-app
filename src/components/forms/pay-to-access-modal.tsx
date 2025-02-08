@@ -196,6 +196,32 @@ export default function PayToAccessModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [transactionId]);
 
+  const [dismissText, setDismissText] = React.useState("");
+  const [count, setCount] = React.useState(45);
+  // const [isDownToZero, setIsDownToZero] = React.useState(false);
+
+  // Render a text after 45 seconds later if isPromptSent is true
+
+  React.useEffect(() => {
+    if (!isPromptSent) return;
+
+    const interval = setInterval(() => {
+      setCount((prevCount) => {
+        if (prevCount <= 1) {
+          clearInterval(interval);
+          // setIsDownToZero(true);
+          setDismissText(
+            "Transaction may have completed already. If yes, please refresh the page."
+          );
+          return 0;
+        }
+        return prevCount - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [isPromptSent]);
+
   return (
     <Modal
       key={"pay-to-access-modal"}
@@ -220,12 +246,15 @@ export default function PayToAccessModal({
                 className="relative"
               >
                 {isPromptSent && (
-                  <div className="flex w-full items-center justify-between bg-red-500">
+                  <div className="flex w-full items-center justify-between">
                     <NavIconButton
                       className={cn(
                         "absolute -bottom-14 left-2 border-foreground/10 max-w-40 max-h-10 aspect-video",
                         {
                           "bottom-0": isPromptSent,
+                          hidden:
+                            transactionStatus == "SUCCESS" ||
+                            transaction?.status == "SUCCESS",
                         }
                       )}
                       onClick={() => setIsPromptSent(false)}
@@ -251,6 +280,7 @@ export default function PayToAccessModal({
                         ? `${transaction?.message} - Try reloading and try again.`
                         : "A payment confirmation prompt has been sent to your mobile phone number for approval."
                     }
+                    dismissText={dismissText}
                   />
                 ) : (
                   <PaymentDetailsForm key="payment" />
