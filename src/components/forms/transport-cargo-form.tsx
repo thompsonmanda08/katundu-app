@@ -65,7 +65,7 @@ export function TransportCargoForm() {
         <Autocomplete
           label="Pick up city"
           variant="bordered"
-          defaultItems={DISTRICTS as OptionItem[]}
+          defaultItems={(DISTRICTS || []) as OptionItem[]}
           placeholder="Select a city"
           className=""
           selectedKey={city}
