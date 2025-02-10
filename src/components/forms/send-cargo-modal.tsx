@@ -22,7 +22,7 @@ import {
 import useCustomTabsHook from "@/hooks/use-custom-tabs";
 import { NavIconButton, StatusBox } from "../elements";
 import useMainStore from "@/context/main-store";
-import { containerVariants } from "@/lib/constants";
+import { containerVariants, QUERY_KEYS } from "@/lib/constants";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
 import { cn, notify } from "@/lib/utils";
@@ -46,10 +46,9 @@ export default function SendCargoModal({
   onOpen,
   onClose,
 }: CargoProps) {
+  const queryClient = useQueryClient();
   const socketRef = React.useRef<any>(null);
-  const { data: cities } = useCities();
-  const [isCompleteTransaction, setIsCompleteTransaction] =
-    React.useState(false);
+
   const [isPromptSent, setIsPromptSent] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
   const [transactionId, setTransactionId] = React.useState("");
@@ -59,8 +58,6 @@ export default function SendCargoModal({
     status: "PENDING",
     message: "Transaction Pending Approval",
   });
-
-  const queryClient = useQueryClient();
 
   const { sendCargoFormData, user } = useMainStore((state) => state);
 
@@ -78,7 +75,7 @@ export default function SendCargoModal({
   ]);
 
   function handleCloseModal() {
-    setIsCompleteTransaction(false);
+    queryClient.invalidateQueries();
     setIsPromptSent(false);
     setIsLoading(false);
     onClose();
@@ -181,9 +178,14 @@ export default function SendCargoModal({
         const response = JSON.parse(statusUpdate?.body);
         console.info("SOCKET RESPONSE: ", response);
         setTransactionStatus(response.status?.toUpperCase());
-        setIsCompleteTransaction(true);
+
         setTransaction((prev) => ({ ...prev, ...response }));
-        queryClient.invalidateQueries();
+        queryClient.invalidateQueries({
+          queryKey: [QUERY_KEYS.DELIVERY_LISTINGS],
+        });
+        queryClient.invalidateQueries({
+          queryKey: [QUERY_KEYS.KATUNDU_DETAILS],
+        });
       }
     );
   }

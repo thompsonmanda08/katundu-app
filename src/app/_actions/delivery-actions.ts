@@ -515,3 +515,44 @@ export async function startDelivery(deliveryId: string): Promise<APIResponse> {
     };
   }
 }
+
+export async function finishDelivery(deliveryId: string): Promise<APIResponse> {
+  if (!deliveryId) {
+    return {
+      success: false,
+      message: "Delivery ID is Required!",
+      data: null,
+      status: 400,
+    };
+  }
+  try {
+    const res = await authenticatedService({
+      url: `/deliveries/${deliveryId}/finish`,
+    });
+    const response = res.data;
+
+    return {
+      success: true,
+      message: response?.message,
+      data: response?.data,
+      status: res.status,
+    };
+  } catch (error: Error | any) {
+    console.error({
+      status: error?.response?.status,
+      statusText: error?.response?.statusText,
+      headers: error?.response?.headers,
+      config: error?.response?.config,
+      data: error?.response?.data || error,
+    });
+    return {
+      success: false,
+      message:
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        "Error! See Console for more details",
+      data: null,
+      status: error?.response?.status || 500,
+    };
+  }
+}

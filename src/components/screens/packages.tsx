@@ -116,11 +116,16 @@ function Packages({ user }: { user: User }) {
             }
           />
           <Tab
-            key="IN TRANSIT"
+            key="IN_TRANSIT"
             title={
               <div className="flex items-center space-x-2">
                 <ActivityIcon />
                 <span>In Transit</span>
+                {filteredItems && filteredItems.length && (
+                  <Chip size="sm" variant="faded" className="scale-75">
+                    {listData?.totalElements || 0}
+                  </Chip>
+                )}
               </div>
             }
           />

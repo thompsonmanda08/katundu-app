@@ -20,15 +20,24 @@ import {
   LockKeyholeOpen,
   PackageCheck,
   SquareArrowOutUpRight,
+  Truck,
 } from "lucide-react";
 import React from "react";
 import { Button } from "../ui/button";
 import { AnimatePresence, motion } from "framer-motion";
-import { slideDownInView } from "@/lib/constants";
+import {
+  DELIVERY_STATUSES,
+  QUERY_KEYS,
+  slideDownInView,
+} from "@/lib/constants";
 import { cn, formatDate, notify } from "@/lib/utils";
 import useMainStore from "@/context/main-store";
 import NavIconButton from "./nav-icon-button";
-import { pickUpDelivery } from "@/app/_actions/delivery-actions";
+import {
+  finishDelivery,
+  pickUpDelivery,
+  startDelivery,
+} from "@/app/_actions/delivery-actions";
 import { UseBaseMutationResult, useQueryClient } from "@tanstack/react-query";
 
 type CardProps = Partial<ShipmentRecord> & {
@@ -80,13 +89,81 @@ function ShipmentCard({
       notify({
         title: "Success",
         description: "Successfully picked up the cargo",
+        variant: "success",
       });
 
-      queryClient.invalidateQueries();
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.DELIVERY_LISTINGS],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.KATUNDU_DETAILS, props?.id],
+      });
     } else {
       notify({
         title: "Error",
         description: response?.message,
+        variant: "danger",
+      });
+    }
+
+    setIsLoading(false);
+  }
+
+  async function handleStartDelivery() {
+    setIsLoading(true);
+
+    const response = await startDelivery(String(props?.id));
+
+    if (response?.success) {
+      notify({
+        title: "Success!",
+        description: "Delivery started successfully!",
+        variant: "success",
+      });
+
+      // REFETCH DETAILS
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.DELIVERY_LISTINGS],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.KATUNDU_DETAILS, props?.id],
+      });
+    } else {
+      notify({
+        title: "Delivery Initialization Failed!",
+        description: `${response?.message} - Reload and try again!`,
+        variant: "danger",
+      });
+    }
+
+    setIsLoading(false);
+  }
+
+  async function handleFinishDelivery() {
+    setIsLoading(true);
+
+    const response = await finishDelivery(String(props?.id));
+
+    if (response?.success) {
+      notify({
+        title: "Success!",
+        description: "Delivery completed successfully!",
+        variant: "success",
+      });
+
+      // REFETCH DETAILS
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.DELIVERY_LISTINGS],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.KATUNDU_DETAILS, props?.id],
+      });
+    } else {
+      notify({
+        title: "Delivery Completion Failed!",
+        description: `${response?.message} - Reload and try again!`,
         variant: "danger",
       });
     }
@@ -106,7 +183,7 @@ function ShipmentCard({
               })}
               isLoaded={!isDataLoading}
             >
-              <Chip variant="flat" size="sm" color="primary">
+              <Chip variant="flat" size="sm" color="warning">
                 {props?.pickUpCity}
               </Chip>
             </Skeleton>
@@ -171,8 +248,8 @@ function ShipmentCard({
                       color={
                         props?.deliveryStatus == "DELIVERED"
                           ? "success"
-                          : props?.deliveryStatus == "IN TRANSIT"
-                          ? "secondary"
+                          : props?.deliveryStatus == "IN_TRANSIT"
+                          ? "primary"
                           : props?.deliveryStatus == "READY"
                           ? "warning"
                           : props?.deliveryStatus == "CANCELLED"
@@ -180,14 +257,15 @@ function ShipmentCard({
                           : "default"
                       }
                       size="sm"
-                      // variant="flat"
+                      variant="flat"
                       classNames={{
                         base: "bg-opacity-30 text-opacity-80",
                         content: "text-xs font-semibold capitalize",
                       }}
                     >
-                      {props?.deliveryStatus?.toLowerCase() ||
-                        "Published".toLowerCase()}
+                      {DELIVERY_STATUSES[
+                        String(props?.deliveryStatus)
+                      ]?.toLowerCase() || "Published"}
                     </Chip>
                   </span>
                 ) : (
@@ -222,41 +300,26 @@ function ShipmentCard({
 
             {!isDataLoading && (
               <>
-                {user?.role === "TRANSPORTER" && props?.hasPaid ? (
-                  <Button
-                    startContent={
-                      <PackageCheck
-                        className={cn(
-                          "h-4 w-4 transition-all duration-200 ease-in-out"
-                        )}
-                      />
-                    }
-                    onPress={handlePickupDelivery}
-                    // variant="light"
-                    isLoading={isLoading}
-                    size="sm"
-                    className="-mt-1 text-xs"
-                  >
-                    Pick Up
-                  </Button>
-                ) : user?.role === "TRANSPORTER" && !props?.hasPaid ? (
-                  <Button
-                    startContent={
-                      <LockKeyholeOpen
-                        className={cn(
-                          "h-4 w-4 transition-all duration-200 ease-in-out"
-                        )}
-                      />
-                    }
-                    onPress={handleOpenDetailsModal}
-                    isLoading={loadingDetails}
-                    variant="light"
-                    size="sm"
-                    className="-mt-2 bg-transparent p-0 text-xs data-[hover=true]:bg-transparent"
-                  >
-                    Access
-                  </Button>
-                ) : null}
+                {user?.role === "TRANSPORTER" &&
+                  !props?.hasPaid &&
+                  props?.isPublished && (
+                    <Button
+                      startContent={
+                        <LockKeyholeOpen
+                          className={cn(
+                            "h-4 w-4 transition-all duration-200 ease-in-out"
+                          )}
+                        />
+                      }
+                      onPress={handleOpenDetailsModal}
+                      isLoading={loadingDetails}
+                      variant="light"
+                      size="sm"
+                      className="-mt-2 bg-transparent p-0 text-xs data-[hover=true]:bg-transparent"
+                    >
+                      Access
+                    </Button>
+                  )}
               </>
             )}
           </div>
@@ -327,6 +390,78 @@ function ShipmentCard({
                       </TableRow>
                     </TableBody>
                   </Table>
+
+                  {Boolean(user?.role === "TRANSPORTER" && props?.hasPaid) && (
+                    <>
+                      <Button
+                        startContent={
+                          <PackageCheck
+                            className={cn(
+                              "h-5 w-5 transition-all duration-200 ease-in-out"
+                            )}
+                          />
+                        }
+                        onPress={handlePickupDelivery}
+                        isLoading={isLoading}
+                        loadingText="Picking up..."
+                        radius="sm"
+                        size="sm"
+                        className="mt-2"
+                      >
+                        Pick Up
+                      </Button>
+                    </>
+                  )}
+
+                  {Boolean(
+                    user?.role === "TRANSPORTER" &&
+                      props?.deliveryStatus == "READY"
+                  ) && (
+                    <>
+                      <Button
+                        startContent={
+                          <Truck
+                            className={cn(
+                              "h-5 w-5 transition-all duration-200 ease-in-out"
+                            )}
+                          />
+                        }
+                        onPress={handleStartDelivery}
+                        isLoading={isLoading}
+                        loadingText="Starting delivery..."
+                        radius="sm"
+                        size="sm"
+                        className="mt-2"
+                      >
+                        Start Delivery
+                      </Button>
+                    </>
+                  )}
+
+                  {Boolean(
+                    user?.role === "TRANSPORTER" &&
+                      props?.deliveryStatus == "IN_TRANSIT"
+                  ) && (
+                    <>
+                      <Button
+                        startContent={
+                          <Truck
+                            className={cn(
+                              "h-5 w-5 transition-all duration-200 ease-in-out"
+                            )}
+                          />
+                        }
+                        onPress={handleFinishDelivery}
+                        isLoading={isLoading}
+                        loadingText="Finishing delivery..."
+                        radius="sm"
+                        size="sm"
+                        className="mt-2"
+                      >
+                        Finish Delivery
+                      </Button>
+                    </>
+                  )}
                 </div>
               </motion.div>
             )}
@@ -350,7 +485,7 @@ function ShipmentCard({
             onPress={toggleShowMore}
             size="sm"
             radius="sm"
-            className="w-full p-0 text-xs"
+            className="mt-2 w-full p-0 text-xs"
           >
             {!showMore ? "See more" : "Show less"}
           </Button>

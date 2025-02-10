@@ -23,7 +23,11 @@ import {
 } from "@heroui/react";
 import { NavIconButton } from "../elements";
 import useCustomTabsHook from "@/hooks/use-custom-tabs";
-import { containerVariants } from "@/lib/constants";
+import {
+  containerVariants,
+  DELIVERY_STATUSES,
+  QUERY_KEYS,
+} from "@/lib/constants";
 import { APIResponse, ShipmentRecord } from "@/lib/types";
 import {} from "@heroui/react";
 import {
@@ -31,7 +35,9 @@ import {
   ArrowRightIcon,
   LockKeyholeOpenIcon,
   PackageCheck,
+  PackageXIcon,
   Trash2Icon,
+  Truck,
 } from "lucide-react";
 
 import { Button } from "../ui/button";
@@ -45,8 +51,10 @@ import PromptModal from "../elements/prompt-modal";
 import {
   cancelDelivery,
   deleteDelivery,
+  finishDelivery,
   getDeliveryDetails,
   pickUpDelivery,
+  startDelivery,
 } from "@/app/_actions/delivery-actions";
 import {
   UseBaseMutationResult,
@@ -74,6 +82,7 @@ export default function CargoDetailsModal({
   const queryClient = useQueryClient();
 
   const deliveryDetails = useMutation({
+    mutationKey: [QUERY_KEYS.PAYMENTS, deliveryId],
     mutationFn: (ID: string) => getDeliveryDetails(ID),
   });
 
@@ -101,11 +110,12 @@ export default function CargoDetailsModal({
   } = useDisclosure();
 
   function handleCloseModal() {
+    queryClient.invalidateQueries();
     setDeliveryId("");
     onClose();
     return;
   }
-  
+
   function handleClosePrompts() {
     setIsDelete(false);
     setIsPickUp(false);
@@ -133,10 +143,49 @@ export default function CargoDetailsModal({
       });
 
       // REFETCH DETAILS
-      deliveryDetails?.mutateAsync(String(deliveryId));
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.DELIVERY_LISTINGS],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.KATUNDU_DETAILS, deliveryId],
+      });
     } else {
       notify({
         title: "Pick up Failed!",
+        description: `${response?.message} - Reload and try again!`,
+      });
+    }
+
+    setIsLoading(false);
+    setIsPickUp(false);
+  }
+  async function handleStartDelivery() {
+    if (!isPickUp) {
+      togglePickUp();
+      return;
+    }
+
+    setIsLoading(true);
+
+    const response = await startDelivery(String(deliveryId));
+
+    if (response?.success) {
+      notify({
+        title: "Success!",
+        description: "Delivery started successfully!",
+      });
+
+      // REFETCH DETAILS
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.DELIVERY_LISTINGS],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.KATUNDU_DETAILS, deliveryId],
+      });
+    } else {
+      notify({
+        title: "Delivery Initialization Failed!",
         description: `${response?.message} - Reload and try again!`,
       });
     }
@@ -158,14 +207,19 @@ export default function CargoDetailsModal({
     if (response?.success) {
       notify({
         title: "Success!",
-        description: "Shipment picked up successfully!",
+        description: "Shipment canceled successfully!",
       });
 
       // REFETCH DETAILS
-      deliveryDetails?.mutateAsync(String(deliveryId));
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.DELIVERY_LISTINGS],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.KATUNDU_DETAILS, deliveryId],
+      });
     } else {
       notify({
-        title: "Pick up Failed!",
+        title: "Failed!",
         description: `${response?.message} - Reload and try again!`,
       });
     }
@@ -190,7 +244,12 @@ export default function CargoDetailsModal({
         description: "Shipment deleted successfully!",
         variant: "success",
       });
-      queryClient.invalidateQueries();
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.DELIVERY_LISTINGS],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.KATUNDU_DETAILS, deliveryId],
+      });
     } else {
       notify({
         title: "Delete Failed!",
@@ -201,6 +260,37 @@ export default function CargoDetailsModal({
 
     setDeleteLoading(false);
     setIsDelete(false);
+  }
+
+  async function handleFinishDelivery() {
+    setIsLoading(true);
+
+    const response = await finishDelivery(String(deliveryId));
+
+    if (response?.success) {
+      notify({
+        title: "Success!",
+        description: "Delivery completed successfully!",
+        variant: "success",
+      });
+
+      // REFETCH DETAILS
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.DELIVERY_LISTINGS],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.KATUNDU_DETAILS, deliveryId],
+      });
+    } else {
+      notify({
+        title: "Delivery completion Failed!",
+        description: `${response?.message} - Reload and try again!`,
+        variant: "danger",
+      });
+    }
+
+    setIsLoading(false);
   }
 
   async function showDetails(ID: string) {
@@ -219,6 +309,11 @@ export default function CargoDetailsModal({
       handleCloseModal();
     };
   }, [deliveryId]);
+
+  const userHasAccess = Boolean(
+    selectedShipment?.contacts?.sender?.phone ||
+      selectedShipment?.contacts?.receiver?.phone
+  );
 
   return (
     <Modal
@@ -319,8 +414,8 @@ export default function CargoDetailsModal({
                                   "DELIVERED"
                                     ? "success"
                                     : selectedShipment?.deliveryStatus ==
-                                      "IN TRANSIT"
-                                    ? "secondary"
+                                      "IN_TRANSIT"
+                                    ? "primary"
                                     : selectedShipment?.deliveryStatus ==
                                       "READY"
                                     ? "warning"
@@ -330,14 +425,15 @@ export default function CargoDetailsModal({
                                     : "default"
                                 }
                                 size="sm"
-                                // variant="flat"
+                                variant="flat"
                                 classNames={{
                                   base: "bg-opacity-30 text-opacity-80",
                                   content: "text-xs font-semibold",
                                 }}
                               >
-                                {selectedShipment?.deliveryStatus?.toLowerCase() ||
-                                  "Published".toLowerCase()}
+                                {DELIVERY_STATUSES[
+                                  selectedShipment?.deliveryStatus
+                                ]?.toLowerCase() || "Published".toLowerCase()}
                               </Chip>
                             </span>
                           ) : (
@@ -400,13 +496,14 @@ export default function CargoDetailsModal({
                         key={"cargo-details"}
                         isLoading={isLoadingDetails}
                         selectedShipment={selectedShipment}
+                        userHasAccess={userHasAccess}
                       />
                     </div>
 
                     {/* TRANSPORTER ACTION - PAY TO SEE CONTACT */}
                     {user?.role === "TRANSPORTER" &&
                       selectedShipment?.isPublished &&
-                      !selectedShipment?.contacts && (
+                      !userHasAccess && (
                         <Button
                           size="md"
                           className="mt-2 text-sm"
@@ -422,9 +519,11 @@ export default function CargoDetailsModal({
 
                     {/* TRANSPORTER ACTION - PICK UP */}
                     {user?.role == "TRANSPORTER" &&
-                      selectedShipment?.contacts && (
+                      userHasAccess &&
+                      selectedShipment?.isPublished &&
+                      !selectedShipment?.deliveryStatus && (
                         <Button
-                          size="sm"
+                          size="md"
                           radius="sm"
                           onPress={handlePickupDelivery}
                           startContent={
@@ -441,6 +540,83 @@ export default function CargoDetailsModal({
                           Pick up Delivery
                         </Button>
                       )}
+
+                    {Boolean(
+                      user?.role === "TRANSPORTER" &&
+                        selectedShipment?.deliveryStatus == "READY"
+                    ) && (
+                      <>
+                        <Button
+                          startContent={
+                            <Truck
+                              className={cn(
+                                "h-5 w-5 transition-all duration-200 ease-in-out"
+                              )}
+                            />
+                          }
+                          onPress={handleStartDelivery}
+                          isLoading={isLoading}
+                          size="md"
+                          radius="sm"
+                          loadingText="Starting delivery..."
+                          className="mt-2 text-sm"
+                        >
+                          Start Delivery
+                        </Button>
+                      </>
+                    )}
+
+                    {Boolean(
+                      user?.role === "TRANSPORTER" &&
+                        selectedShipment?.deliveryStatus == "IN_TRANSIT"
+                    ) && (
+                      <>
+                        <Button
+                          startContent={
+                            <Truck
+                              className={cn(
+                                "h-5 w-5 transition-all duration-200 ease-in-out"
+                              )}
+                            />
+                          }
+                          onPress={handleFinishDelivery}
+                          isLoading={isLoading}
+                          size="md"
+                          radius="sm"
+                          loadingText="Finishing delivery..."
+                          className="mt-2 text-sm"
+                        >
+                          Finish Delivery
+                        </Button>
+                      </>
+                    )}
+
+                    {Boolean(
+                      user?.role === "TRANSPORTER" &&
+                        selectedShipment?.deliveryStatus == "IN_TRANSIT"
+                    ) && (
+                      <>
+                        <Button
+                          startContent={
+                            <PackageXIcon
+                              className={cn(
+                                "h-5 w-5 transition-all duration-200 ease-in-out"
+                              )}
+                            />
+                          }
+                          onPress={handleCancelDelivery}
+                          isLoading={isLoading}
+                          size="md"
+                          radius="sm"
+                          color="danger"
+                          loadingText="Canceling delivery..."
+                          className="mt-2 text-sm"
+                        >
+                          Cancel Delivery
+                        </Button>
+                      </>
+                    )}
+                    {/* *************************************************** */}
 
                     {/* SENDER ACTION - PUBLISH */}
                     {user?.role == "SENDER" &&
@@ -482,6 +658,8 @@ export default function CargoDetailsModal({
                   isOpen={showPaymentModal}
                   onOpen={openPaymentModal}
                   onClose={closePaymentModal}
+                  deliveryId={deliveryId}
+                  setDeliveryId={setDeliveryId}
                 />
                 {/* **************************************************** */}
 
@@ -523,15 +701,13 @@ export default function CargoDetailsModal({
 export function CargoDetails({
   isLoading = false,
   selectedShipment,
+  userHasAccess,
 }: Partial<CargoProps> & {
   isLoading: boolean;
   selectedShipment: Partial<ShipmentRecord>;
+  userHasAccess: boolean;
 }) {
   const { user } = useMainStore((state) => state);
-  const userHasAccess =
-    selectedShipment?.contacts &&
-    (selectedShipment?.contacts?.sender ||
-      selectedShipment?.contacts?.receiver);
 
   return (
     <Table hideHeader removeWrapper aria-label="Katundu specifications data">

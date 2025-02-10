@@ -110,6 +110,16 @@ export const QUERY_KEYS = {
   PROFILE: "user-profile",
   DELIVERY_LISTINGS: "deliveries-list",
   USER_DELIVERIES: "user-deliveries-list",
+  PAYMENTS: "payments-for-deliveries",
+  KATUNDU_DETAILS: "delivery-details",
+};
+
+export const DELIVERY_STATUSES: {
+  [x: string]: string;
+} = {
+  READY: "READY",
+  IN_TRANSIT: "IN TRANSIT",
+  DELIVERED: "DELIVERED",
 };
 
 export const whileTabInView = {

@@ -91,6 +91,10 @@ const config: Config = {
               DEFAULT: "#4D5DFA",
               foreground: "#FFFFFF",
             },
+            secondary: {
+              DEFAULT: "#272a66",
+              // foreground: "#FFFFFF",
+            },
             default: {
               DEFAULT: "#C9CEFD",
               foreground: "#4D5DFA",
@@ -104,6 +108,10 @@ const config: Config = {
             primary: {
               DEFAULT: "#4D5DFA",
               foreground: "#FFFFFF",
+            },
+            secondary: {
+              DEFAULT: "#272a66",
+              // foreground: "#FFFFFF",
             },
           },
         },

@@ -37,6 +37,8 @@ type CargoProps = {
   isOpen: boolean;
   onOpen: (open: boolean) => void;
   onClose: () => void;
+  deliveryId?: string;
+  setDeliveryId?: React.Dispatch<React.SetStateAction<string>>;
 };
 
 export default function PayToAccessModal({
@@ -44,6 +46,8 @@ export default function PayToAccessModal({
   isOpen,
   onOpen,
   onClose,
+  deliveryId,
+  setDeliveryId,
 }: CargoProps) {
   const queryClient = useQueryClient();
   const socketRef = React.useRef<any>(null);
@@ -56,16 +60,12 @@ export default function PayToAccessModal({
   const [transactionId, setTransactionId] = React.useState("");
   const [transactionStatus, setTransactionStatus] = React.useState("PENDING");
   const [dismissText, setDismissText] = React.useState("");
-  const [count, setCount] = React.useState(45);
-
-  
+  const [count, setCount] = React.useState(60);
 
   const [transaction, setTransaction] = React.useState<Partial<Transaction>>({
     status: "PENDING",
     message: "Transaction Pending Approval",
   });
-
-  
 
   const { sendCargoFormData, selectedShipment, user } = useMainStore(
     (state) => state
@@ -96,15 +96,9 @@ export default function PayToAccessModal({
     let response = {} as APIResponse;
 
     if (user?.role === "TRANSPORTER") {
-      response = await payToSeeContacts(
-        paymentDetails,
-        String(selectedShipment?.id)
-      );
+      response = await payToSeeContacts(paymentDetails, String(deliveryId));
     } else if (user?.role === "SENDER") {
-      response = await publishCargoListing(
-        paymentDetails,
-        String(selectedShipment?.id)
-      );
+      response = await publishCargoListing(paymentDetails, String(deliveryId));
     }
 
     if (response?.success) {
@@ -169,9 +163,14 @@ export default function PayToAccessModal({
         const response = JSON.parse(statusUpdate?.body);
         console.info("SOCKET RESPONSE: ", response);
         setTransactionStatus(response.status?.toUpperCase());
-        setIsCompleteTransaction(true);
         setTransaction((prev) => ({ ...prev, ...response }));
-        queryClient.invalidateQueries();
+
+        queryClient.invalidateQueries({
+          queryKey: [QUERY_KEYS.DELIVERY_LISTINGS],
+        });
+        queryClient.invalidateQueries({
+          queryKey: [QUERY_KEYS.KATUNDU_DETAILS, deliveryId],
+        });
       }
     );
   }
@@ -198,8 +197,6 @@ export default function PayToAccessModal({
     // WHEN TRANSACTION ID CHANGES, THE SOCKET WILL ACTIVATE
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [transactionId]);
-
-
 
   // Render a text after 45 seconds later if isPromptSent is true
 

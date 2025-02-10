@@ -21,6 +21,7 @@ import { Button } from "../ui/button";
 import { notify } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
 import Spinner from "../ui/spinner";
+import { QUERY_KEYS } from "@/lib/constants";
 
 const MIN_DIMENSION = 200;
 const ASPECT_RATIO = 1;
@@ -154,7 +155,7 @@ function ProfilePictureUploader({
     const response: any = await setTimeout(() => ({ success: true }), 2000);
 
     if (response?.success) {
-      queryClient.invalidateQueries();
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.PROFILE] });
       notify({
         title: "Update Success",
         description: "Profile Picture updated successfully",
@@ -191,21 +192,21 @@ function ProfilePictureUploader({
             <>
               <ModalHeader className="flex flex-col gap-1">
                 <h4>Crop Profile Picture</h4>
-                <p className="text-xs md:text-sm text-foreground/50">
+                <p className="text-xs text-foreground/50 md:text-sm">
                   Make sure all your facial details are visible within the crop
                 </p>
               </ModalHeader>
-              <ModalBody className=" overflow-visible grid place-items-center ">
+              <ModalBody className="grid place-items-center overflow-visible">
                 {/* UPLOAD BUTTONS */}
-                <div className="flex  items-center max-w-max ml-auto">
+                <div className="ml-auto flex max-w-max items-center">
                   <label
                     htmlFor="avatar"
-                    className="py-3 flex text-sm text-foreground/50 hover:scale-[0.99] cursor-pointer items-center transition-all duration-300 ease-in-out max-w-fit "
+                    className="flex max-w-fit cursor-pointer items-center py-3 text-sm text-foreground/50 transition-all duration-300 ease-in-out hover:scale-[0.99]"
                   >
                     {imageFile?.name || "No file chosen"}
-                    <span className="inline-flex items-center text-nowrap text-primary text-base font-medium leading-6 mx-2">
+                    <span className="mx-2 inline-flex items-center text-nowrap text-base font-medium leading-6 text-primary">
                       {" "}
-                      | Change Image <FileEdit className="w-6 h-6 ml-2" />
+                      | Change Image <FileEdit className="ml-2 h-6 w-6" />
                     </span>
                   </label>
                   <input
@@ -222,13 +223,13 @@ function ProfilePictureUploader({
                   />
                   {/* ERROR STATUS */}
                   {error && (
-                    <p className="text-sm text-rose-600 my-2 leading-6">
+                    <p className="my-2 text-sm leading-6 text-rose-600">
                       {error}
                     </p>
                   )}
                 </div>
 
-                <div className="grid place-items-center mx-auto w-full rounded-md">
+                <div className="mx-auto grid w-full place-items-center rounded-md">
                   {!newAvatar ? (
                     <Spinner
                       size={60}
@@ -244,12 +245,12 @@ function ProfilePictureUploader({
                       onChange={(pixelCrop: any, percentCrop: any) =>
                         setCrop(percentCrop)
                       }
-                      className="bg-green-200/50 w-full h-full flex items-center justify-center max-h-[600px]"
+                      className="flex h-full max-h-[600px] w-full items-center justify-center bg-green-200/50"
                     >
                       <img
                         src={newAvatar}
                         ref={imageRef}
-                        className="w-full h-full object-contain"
+                        className="h-full w-full object-contain"
                         alt="Profile Picture Upload"
                         onLoad={onImageLoad}
                       />

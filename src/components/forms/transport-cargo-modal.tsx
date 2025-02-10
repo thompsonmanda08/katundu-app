@@ -1,19 +1,13 @@
 "use client";
 import React from "react";
-import {
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  Button,
-} from "@heroui/react";
+import { Modal, ModalContent, ModalHeader, ModalBody } from "@heroui/react";
 import { NavIconButton } from "../elements";
 import { containerVariants } from "@/lib/constants";
 
 import { AnimatePresence, motion } from "framer-motion";
 import { TransportCargoForm } from "./transport-cargo-form";
 import { ArrowLeftIcon } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 
 type CargoProps = {
   isOpen: boolean;
@@ -26,7 +20,10 @@ export default function TransportCargoModal({
   onOpen,
   onClose,
 }: CargoProps) {
+  const queryClient = useQueryClient();
+
   function handleCloseModal() {
+    queryClient.invalidateQueries();
     onClose();
   }
 
@@ -60,19 +57,19 @@ export default function TransportCargoModal({
               </motion.div>
             </AnimatePresence>
           </ModalBody>
-          <ModalFooter>
+          {/* <ModalFooter>
             <Button color="danger" onPress={handleCloseModal}>
               Close
             </Button>
-            {/* <Button
+            <Button
               color="primary"
               isLoading={isLoading}
               isDisabled={isLoading}
               onPress={handleProceed}
             >
               {isLastTab ? "Create" : "Next"}
-            </Button> */}
-          </ModalFooter>
+            </Button>
+          </ModalFooter> */}
         </>
       </ModalContent>
     </Modal>

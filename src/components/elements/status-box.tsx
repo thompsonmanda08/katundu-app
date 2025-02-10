@@ -9,6 +9,7 @@ import successLottie from "../../../public/lottie/success.json";
 import loadingLottie from "../../../public/lottie/loading.json";
 import errorLottie from "../../../public/lottie/error.json";
 import { cn } from "@/lib/utils";
+import { RotateCcwIcon } from "lucide-react";
 
 function StatusBox({
   title,
@@ -67,7 +68,7 @@ function StatusBox({
       <span className="max-w-md text-center text-sm font-medium leading-6 text-foreground/60">
         {description}
       </span>
-      <div className="mx-auto max-w-sm object-contain">
+      <div className="mx-auto flex max-w-sm flex-col items-center justify-center object-contain">
         <Lottie
           loop
           animationData={lottieFile}
@@ -76,9 +77,24 @@ function StatusBox({
         />
         {dismissText && (
           <>
-            <span className="text-center text-sm font-medium leading-6 text-foreground/60">
+            <span className="mx-auto flex items-center justify-center text-center text-sm font-semibold leading-6 text-foreground/80">
               {dismissText}
             </span>
+            <Button
+              onPress={() => {
+                window.location.reload();
+              }}
+              variant="flat"
+              color={
+                String(status)?.toUpperCase() == "SUCCESS"
+                  ? "success"
+                  : "danger"
+              }
+              className={cn("my-4 w-full")}
+              startContent={<RotateCcwIcon className="h-4 w-4"></RotateCcwIcon>}
+            >
+              Reload
+            </Button>
           </>
         )}
       </div>

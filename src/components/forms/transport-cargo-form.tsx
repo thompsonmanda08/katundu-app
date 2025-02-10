@@ -9,13 +9,9 @@ import {
   useDisclosure,
 } from "@heroui/react";
 import React, { useEffect } from "react";
-import useMainStore from "@/context/main-store";
 import { useCities } from "@/hooks/use-query-data";
 import { ShipmentCard } from "../elements";
-import {
-  getAvailableDeliveries,
-  getDeliveryDetails,
-} from "@/app/_actions/delivery-actions";
+import { getAvailableDeliveries } from "@/app/_actions/delivery-actions";
 import { useMutation } from "@tanstack/react-query";
 import CargoDetailsModal from "./delivery-details-modal";
 import { ChevronLeft, ChevronRight } from "lucide-react";
