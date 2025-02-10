@@ -107,7 +107,7 @@ function Packages({ user }: { user: User }) {
             key="ALL"
             title={
               <div className="flex items-center space-x-2">
-                <PackageIcon />
+                <PackageIcon className="h-4 w-4" />
                 <span>All</span>
                 <Chip size="sm" variant="faded" className="scale-75">
                   {listData?.totalElements || 0}
@@ -119,11 +119,11 @@ function Packages({ user }: { user: User }) {
             key="IN_TRANSIT"
             title={
               <div className="flex items-center space-x-2">
-                <ActivityIcon />
+                <ActivityIcon className="h-4 w-4" />
                 <span>In Transit</span>
-                {filteredItems && filteredItems.length && (
+                {filteredItems && currentTab == "IN_TRANSIT" && (
                   <Chip size="sm" variant="faded" className="scale-75">
-                    {listData?.totalElements || 0}
+                    {filteredItems.length || 0}
                   </Chip>
                 )}
               </div>
@@ -133,8 +133,13 @@ function Packages({ user }: { user: User }) {
             key="DELIVERED"
             title={
               <div className="flex items-center space-x-2">
-                <BoxIcon />
+                <BoxIcon className="h-4 w-4" />
                 <span>Delivered</span>
+                {filteredItems && currentTab == "DELIVERED" && (
+                  <Chip size="sm" variant="faded" className="scale-75">
+                    {filteredItems.length || 0}
+                  </Chip>
+                )}
               </div>
             }
           />

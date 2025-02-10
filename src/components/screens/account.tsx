@@ -426,7 +426,6 @@ export function AccountDetails() {
               />
             )}
           </div>
-          {/* *************************************** */}
           <div className="flex w-full items-center justify-between py-3 opacity-50">
             <p className="text-sm font-medium text-foreground sm:pr-6 md:text-base">
               2F Authentication
@@ -436,11 +435,10 @@ export function AccountDetails() {
             </div>
             <Switch isDisabled />
           </div>
-          {/* *************************************** */}
         </div>
       </div>
 
-      <div className="flex flex-col gap-2 md:flex-row md:justify-between">
+      {/* <div className="flex flex-col gap-2 md:flex-row md:justify-between">
         <div className="mb-4">
           <h4 className="font-medium">Notification Settings</h4>
           <p className="text-xs leading-6 text-foreground/60 sm:text-sm">
@@ -467,7 +465,7 @@ export function AccountDetails() {
             </p>
           </div>
         </div>
-      </div>
+      </div> */}
 
       <Button
         onPress={async () => await revokeAccessToken()}

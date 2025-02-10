@@ -30,7 +30,7 @@ export function CargoDetailsForm() {
       <Autocomplete
         label="From"
         variant="bordered"
-        defaultItems={DISTRICTS as OptionItem[]}
+        defaultItems={(DISTRICTS || []) as OptionItem[]}
         placeholder="Select a city"
         className="max-w-md"
         selectedKey={String(sendCargoFormData.pickUpCity)}
@@ -53,7 +53,7 @@ export function CargoDetailsForm() {
       <Autocomplete
         label="Destination"
         variant="bordered"
-        defaultItems={DISTRICTS as OptionItem[]}
+        defaultItems={(DISTRICTS || []) as OptionItem[]}
         placeholder="Select a city"
         className="max-w-md"
         selectedKey={String(sendCargoFormData.deliveryCity)}

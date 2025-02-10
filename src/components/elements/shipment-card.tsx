@@ -241,7 +241,9 @@ function ShipmentCard({
             </Skeleton>
             {!isDataLoading && (
               <div className="">
-                {props?.isPublished || user?.role == "TRANSPORTER" ? (
+                {props?.isPublished ||
+                user?.role == "TRANSPORTER" ||
+                props?.deliveryStatus ? (
                   <span className="flex items-center gap-1 text-xs font-medium">
                     Status:{" "}
                     <Chip
@@ -268,7 +270,7 @@ function ShipmentCard({
                       ]?.toLowerCase() || "Published"}
                     </Chip>
                   </span>
-                ) : (
+                ) : !props?.isPublished && props?.deliveryStatus == null ? (
                   <Button
                     size="md"
                     radius="sm"
@@ -277,7 +279,7 @@ function ShipmentCard({
                   >
                     Publish
                   </Button>
-                )}
+                ) : null}
               </div>
             )}
           </div>

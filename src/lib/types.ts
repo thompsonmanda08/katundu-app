@@ -103,6 +103,12 @@ type ShipmentRecord = {
       phone?: string; // Receiver's contact number
       [x: string]: string | any;
     };
+
+    transporter?: {
+      name?: string; // Name of the receiver
+      phone?: string; // Receiver's contact number
+      [x: string]: string | any;
+    };
   };
 
   // CARGO DETAILS

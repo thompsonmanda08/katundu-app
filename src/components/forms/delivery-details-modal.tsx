@@ -315,6 +315,22 @@ export default function CargoDetailsModal({
       selectedShipment?.contacts?.receiver?.phone
   );
 
+  const hasTransporterLinked =
+    userHasAccess && selectedShipment?.contacts?.transporter?.phone;
+
+  const deliveryStatusColor =
+    selectedShipment?.deliveryStatus == "DELIVERED"
+      ? "success"
+      : selectedShipment?.deliveryStatus == "IN_TRANSIT"
+      ? "primary"
+      : selectedShipment?.deliveryStatus == "READY"
+      ? "warning"
+      : selectedShipment?.deliveryStatus == "CANCELLED"
+      ? "danger"
+      : "default";
+
+  console.log("KATUNDU", { ...selectedShipment });
+
   return (
     <Modal
       isOpen={isOpen}
@@ -333,7 +349,7 @@ export default function CargoDetailsModal({
             </NavIconButton>
             <small>Shipment Details</small>
           </ModalHeader>
-          <ModalBody className="w-full flex-1 items-center overflow-y-auto p-0">
+          <ModalBody className="w-full flex-1 items-center overflow-y-auto">
             <Card className="flex w-full flex-col border border-default-100/20 p-2 shadow-none">
               <CardHeader className="flex-row justify-between py-1 text-sm font-semibold">
                 Shipment Route
@@ -342,7 +358,7 @@ export default function CargoDetailsModal({
                     className="min-w-14 max-w-max rounded-lg capitalize"
                     isLoaded={!isLoadingDetails}
                   >
-                    <Chip variant="flat" size="sm" color="primary">
+                    <Chip variant="flat" size="sm" color="warning">
                       {selectedShipment?.pickUpCity}
                     </Chip>
                   </Skeleton>
@@ -404,53 +420,26 @@ export default function CargoDetailsModal({
                         isLoaded={!isLoadingDetails}
                       >
                         <div className="">
-                          {selectedShipment?.isPublished ||
-                          user?.role == "TRANSPORTER" ? (
-                            <span className="flex items-center gap-1 text-xs font-medium">
-                              Status:{" "}
-                              <Chip
-                                color={
-                                  selectedShipment?.deliveryStatus ==
-                                  "DELIVERED"
-                                    ? "success"
-                                    : selectedShipment?.deliveryStatus ==
-                                      "IN_TRANSIT"
-                                    ? "primary"
-                                    : selectedShipment?.deliveryStatus ==
-                                      "READY"
-                                    ? "warning"
-                                    : selectedShipment?.deliveryStatus ==
-                                      "CANCELLED"
-                                    ? "danger"
-                                    : "default"
-                                }
-                                size="sm"
-                                variant="flat"
-                                classNames={{
-                                  base: "bg-opacity-30 text-opacity-80",
-                                  content: "text-xs font-semibold",
-                                }}
-                              >
-                                {DELIVERY_STATUSES[
-                                  selectedShipment?.deliveryStatus
-                                ]?.toLowerCase() || "Published".toLowerCase()}
-                              </Chip>
-                            </span>
-                          ) : (
+                          <span className="flex items-center gap-1 text-xs font-medium">
+                            Status:{" "}
                             <Chip
-                              color={"default"}
+                              color={deliveryStatusColor}
                               size="sm"
-                              // variant="flat"
+                              variant="flat"
                               classNames={{
                                 base: "bg-opacity-30 text-opacity-80",
                                 content: "text-xs font-semibold",
                               }}
                             >
-                              {selectedShipment?.deliveryStatus?.toLowerCase() ||
-                                // true ? "Published".toLowerCase() :
-                                "Not Published".toLowerCase()}
+                              {DELIVERY_STATUSES[
+                                selectedShipment?.deliveryStatus
+                              ]?.toLowerCase() ||
+                                (selectedShipment?.isPublished
+                                  ? "Published"
+                                  : "Not Published"
+                                ).toLowerCase()}
                             </Chip>
-                          )}
+                          </span>
                         </div>
                       </Skeleton>
                     </div>
@@ -621,7 +610,8 @@ export default function CargoDetailsModal({
                     {/* SENDER ACTION - PUBLISH */}
                     {user?.role == "SENDER" &&
                       !isLoadingDetails &&
-                      !selectedShipment?.isPublished && (
+                      !selectedShipment?.isPublished &&
+                      selectedShipment?.deliveryStatus == null && (
                         <Button
                           size="md"
                           radius="sm"
@@ -633,22 +623,27 @@ export default function CargoDetailsModal({
                       )}
 
                     {/* SENDER ACTION - DELETE */}
-                    {user?.role === "SENDER" && !isLoadingDetails && (
-                      <Button
-                        startContent={<Trash2Icon className={cn("h-4 w-4 ")} />}
-                        onPress={handleDeleteDelivery}
-                        isDisabled={
-                          isLoadingDetails || isLoading || deleteLoading
-                        }
-                        isLoading={deleteLoading}
-                        size="md"
-                        radius="sm"
-                        color="danger"
-                        className="my-1 text-sm"
-                      >
-                        Delete
-                      </Button>
-                    )}
+                    {user?.role === "SENDER" &&
+                      !isLoadingDetails &&
+                      (selectedShipment?.deliveryStatus == null ||
+                        selectedShipment?.deliveryStatus == "READY") && (
+                        <Button
+                          startContent={
+                            <Trash2Icon className={cn("h-4 w-4 ")} />
+                          }
+                          onPress={handleDeleteDelivery}
+                          isDisabled={
+                            isLoadingDetails || isLoading || deleteLoading
+                          }
+                          isLoading={deleteLoading}
+                          size="md"
+                          radius="sm"
+                          color="danger"
+                          className="my-1 text-sm"
+                        >
+                          Delete
+                        </Button>
+                      )}
                   </motion.div>
                 </AnimatePresence>
               </CardBody>
@@ -865,14 +860,17 @@ export function CargoDetails({
           <>
             <TableRow key="transporter-name">
               <TableCell>Transporter Name </TableCell>
-              <TableCell className="text-right font-bold capitalize">
-                {`${selectedShipment?.transporterName || "N/A"}`}
+              <TableCell className="text-nowrap text-right font-bold capitalize">
+                {`${
+                  selectedShipment?.contacts?.transporter?.firstName || "N/A"
+                } `}
+                {`${selectedShipment?.contacts?.transporter?.lastName || ""}`}
               </TableCell>
             </TableRow>
             <TableRow key="transporter-phone">
               <TableCell>Transporter Mobile Number </TableCell>
-              <TableCell className="text-right font-bold capitalize">
-                {`${selectedShipment?.transporterContact || "N/A"}`}
+              <TableCell className="text-nowrap text-right font-bold capitalize">
+                {`${selectedShipment?.contacts?.transporter?.phone || "N/A"}`}
               </TableCell>
             </TableRow>
           </>
