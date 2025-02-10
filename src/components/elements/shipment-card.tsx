@@ -187,7 +187,7 @@ function ShipmentCard({
                       }}
                     >
                       {props?.deliveryStatus?.toLowerCase() ||
-                        "LISTED".toLowerCase()}
+                        "Published".toLowerCase()}
                     </Chip>
                   </span>
                 ) : (

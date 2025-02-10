@@ -45,6 +45,7 @@ export default function PayToAccessModal({
   onOpen,
   onClose,
 }: CargoProps) {
+  const queryClient = useQueryClient();
   const socketRef = React.useRef<any>(null);
 
   const [isCompleteTransaction, setIsCompleteTransaction] =
@@ -54,15 +55,17 @@ export default function PayToAccessModal({
   const [isLoading, setIsLoading] = React.useState(false);
   const [transactionId, setTransactionId] = React.useState("");
   const [transactionStatus, setTransactionStatus] = React.useState("PENDING");
+  const [dismissText, setDismissText] = React.useState("");
+  const [count, setCount] = React.useState(45);
 
-  const [tookTooLong, setTookTooLong] = React.useState(false);
+  
 
   const [transaction, setTransaction] = React.useState<Partial<Transaction>>({
     status: "PENDING",
     message: "Transaction Pending Approval",
   });
 
-  const queryClient = useQueryClient();
+  
 
   const { sendCargoFormData, selectedShipment, user } = useMainStore(
     (state) => state
@@ -196,9 +199,7 @@ export default function PayToAccessModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [transactionId]);
 
-  const [dismissText, setDismissText] = React.useState("");
-  const [count, setCount] = React.useState(45);
-  // const [isDownToZero, setIsDownToZero] = React.useState(false);
+
 
   // Render a text after 45 seconds later if isPromptSent is true
 

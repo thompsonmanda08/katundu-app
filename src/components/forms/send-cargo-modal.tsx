@@ -106,6 +106,7 @@ export default function SendCargoModal({
         cargoMeasure: sendCargoFormData?.cargoMeasure,
         packaging: sendCargoFormData?.packaging,
         containerSize: sendCargoFormData?.containerSize,
+        quantity: sendCargoFormData?.quantity,
         receiverName: sendCargoFormData?.receiverName,
         receiverAddress: sendCargoFormData?.receiverAddress,
         receiverPhoneOne: sendCargoFormData?.receiverPhoneOne,
