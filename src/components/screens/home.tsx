@@ -1,8 +1,4 @@
 "use client";
-import {
-  getDeliveryDetails,
-  getUserDeliveries,
-} from "@/app/_actions/delivery-actions";
 import { ShipmentCard } from "@/components/elements";
 import {
   TransportCargoModal,
@@ -12,18 +8,12 @@ import {
 } from "@/components/forms";
 import { Button } from "@/components/ui/button";
 import useMainStore from "@/context/main-store";
-import {
-  useAccountProfile,
-  useAvailableDeliveries,
-  useUserDeliveries,
-} from "@/hooks/use-query-data";
+import { useAccountProfile, useUserDeliveries } from "@/hooks/use-query-data";
 import { ShipmentRecord, User } from "@/lib/types";
 import { cn, notify } from "@/lib/utils";
 import { Divider, Image, Skeleton, useDisclosure } from "@heroui/react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import React, { useEffect } from "react";
+import React from "react";
 import EmptyState from "../ui/empty-state";
-import { QUERY_KEYS } from "@/lib/constants";
 
 function Home({ user }: { user: User }) {
   const {
@@ -50,26 +40,18 @@ function Home({ user }: { user: User }) {
     onClose: closePaymentModal,
   } = useDisclosure();
 
-  const { setSelectedShipment, selectedShipment } = useMainStore(
-    (state) => state
-  );
+  const { setSelectedShipment } = useMainStore((state) => state);
 
-  const queryClient = useQueryClient();
-  const { isLoading } = useAccountProfile();
+  const { data: userInfo } = useAccountProfile();
+  const [currentPage, setCurrentPage] = React.useState(1);
+  const [size, setSize] = React.useState(2);
 
   const [selectedDeliveryId, setSelectedDeliveryId] =
     React.useState<string>("");
 
-  const { data: deliveriesResponse, isLoading: isLoaded } = useUserDeliveries(
-    1,
-    2
-  );
+  const { data, isLoading: isLoaded } = useUserDeliveries(currentPage, size);
 
-  const deliveryDetailsMutation = useMutation({
-    mutationFn: (ID: string) => getDeliveryDetails(ID),
-  });
-
-  const listData = deliveriesResponse?.data;
+  const listData = data?.data;
   const recentDeliveries = listData?.deliveries as Partial<ShipmentRecord>[];
 
   async function showDetails(item: Partial<ShipmentRecord>) {
@@ -115,10 +97,7 @@ function Home({ user }: { user: User }) {
           )}
         >
           <span className="text-xl font-bold text-primary">Hello,</span>{" "}
-          <Skeleton
-            className="rounded-lg"
-            isLoaded={!isLoading || Boolean(user?.firstName)}
-          >
+          <Skeleton className="rounded-lg" isLoaded={Boolean(user?.firstName)}>
             {`${user?.firstName || "there!"}`}
           </Skeleton>
         </h2>
@@ -196,7 +175,6 @@ function Home({ user }: { user: User }) {
                 isDataLoading={isLoaded}
                 handleOpenDetailsModal={() => showDetails(item)}
                 handlePublish={() => handlePublish(item)}
-                loadingDetails={deliveryDetailsMutation?.isPending}
                 {...item}
               />
             ))

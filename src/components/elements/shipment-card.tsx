@@ -92,12 +92,7 @@ function ShipmentCard({
         variant: "success",
       });
 
-      queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.DELIVERY_LISTINGS],
-      });
-      queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.KATUNDU_DETAILS, props?.id],
-      });
+      queryClient.invalidateQueries();
     } else {
       notify({
         title: "Error",
@@ -122,13 +117,7 @@ function ShipmentCard({
       });
 
       // REFETCH DETAILS
-      queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.DELIVERY_LISTINGS],
-      });
-
-      queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.KATUNDU_DETAILS, props?.id],
-      });
+      queryClient.invalidateQueries();
     } else {
       notify({
         title: "Delivery Initialization Failed!",
@@ -153,13 +142,7 @@ function ShipmentCard({
       });
 
       // REFETCH DETAILS
-      queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.DELIVERY_LISTINGS],
-      });
-
-      queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.KATUNDU_DETAILS, props?.id],
-      });
+      queryClient.invalidateQueries();
     } else {
       notify({
         title: "Delivery Completion Failed!",
