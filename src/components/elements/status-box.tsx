@@ -50,7 +50,7 @@ function StatusBox({
           duration: 0.25,
         },
       }}
-      className="relative z-0 mx-auto my-20 flex w-full max-w-[412px] flex-col gap-4 px-5 md:mt-20 md:max-w-[560px]"
+      className="relative z-0 mx-auto flex w-full max-w-[412px] flex-col gap-4 px-5 md:mt-20 md:max-w-[560px]"
     >
       <span
         className={cn(
@@ -73,7 +73,7 @@ function StatusBox({
           loop
           animationData={lottieFile}
           play
-          style={{ width: 220, height: 220 }}
+          style={{ width: 180, height: 180 }}
         />
         {dismissText && (
           <>
@@ -88,10 +88,10 @@ function StatusBox({
               color={
                 String(status)?.toUpperCase() == "SUCCESS"
                   ? "success"
-                  : "danger"
+                  : "primary"
               }
               className={cn("my-4 w-full")}
-              startContent={<RotateCcwIcon className="h-4 w-4"></RotateCcwIcon>}
+              startContent={<RotateCcwIcon className="h-4 w-4" />}
             >
               Reload
             </Button>

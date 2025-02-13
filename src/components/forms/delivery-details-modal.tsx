@@ -653,6 +653,7 @@ export default function CargoDetailsModal({
                   isOpen={showPaymentModal}
                   onOpen={openPaymentModal}
                   onClose={closePaymentModal}
+                  handleRefetch={() => showDetails(deliveryId)}
                   deliveryId={deliveryId}
                   setDeliveryId={setDeliveryId}
                 />

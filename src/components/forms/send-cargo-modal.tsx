@@ -24,14 +24,13 @@ import { NavIconButton, StatusBox } from "../elements";
 import useMainStore from "@/context/main-store";
 import { containerVariants, QUERY_KEYS } from "@/lib/constants";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ArrowLeftIcon } from "lucide-react";
 import { cn, notify } from "@/lib/utils";
 
 import SockJS from "sockjs-client";
 import { Client } from "@stomp/stompjs";
 import { BASE_URL } from "@/lib/api-config";
 import { createNewDelivery } from "@/app/_actions/delivery-actions";
-import { useCities } from "@/hooks/use-query-data";
 import { useQueryClient } from "@tanstack/react-query";
 import { getLocalTimeZone, today } from "@internationalized/date";
 
@@ -60,12 +59,15 @@ export default function SendCargoModal({
   });
 
   const { sendCargoFormData, user } = useMainStore((state) => state);
+  const [dismissText, setDismissText] = React.useState("");
+  const [count, setCount] = React.useState(60);
 
   const {
     currentTabIndex,
     activeTab,
     isFirstTab,
     isLastTab,
+    navigateTo,
     navigateForward,
     navigateBackwards,
   } = useCustomTabsHook([
@@ -75,9 +77,13 @@ export default function SendCargoModal({
   ]);
 
   function handleCloseModal() {
+    // INVALIDATE QUERIES - GET FRESH DATA
     queryClient.invalidateQueries();
     setIsPromptSent(false);
     setIsLoading(false);
+
+    // RETURN BACK TO THE STARTING POINT
+    navigateTo(0);
     onClose();
   }
 
@@ -213,6 +219,28 @@ export default function SendCargoModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [transactionId]);
 
+  // Render a text after 45 seconds later if isPromptSent is true
+
+  React.useEffect(() => {
+    if (!isPromptSent) return;
+
+    const interval = setInterval(() => {
+      setCount((prevCount) => {
+        if (prevCount <= 1) {
+          clearInterval(interval);
+          // setIsDownToZero(true);
+          setDismissText(
+            "Transaction may have completed already. If yes, please refresh the page."
+          );
+          return 0;
+        }
+        return prevCount - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [isPromptSent]);
+
   return (
     <Modal
       isOpen={isOpen}
@@ -226,7 +254,18 @@ export default function SendCargoModal({
     >
       <ModalContent>
         <>
-          <ModalHeader className="flex flex-col gap-1">
+          <ModalHeader className="flex items-center gap-2">
+            <NavIconButton
+              onClick={
+                isFirstTab
+                  ? handleCloseModal
+                  : isPromptSent
+                  ? () => setIsPromptSent(false)
+                  : navigateBackwards
+              }
+            >
+              <ArrowLeftIcon className="h-5 w-5"></ArrowLeftIcon>
+            </NavIconButton>
             Send a Package
           </ModalHeader>
           <ModalBody className="overflow-y-auto">
@@ -249,11 +288,6 @@ export default function SendCargoModal({
                             "bottom-0": isPromptSent,
                           }
                         )}
-                        onClick={
-                          isPromptSent
-                            ? () => setIsPromptSent(false)
-                            : navigateBackwards
-                        }
                       >
                         <ArrowLeft className="mr-1 aspect-square w-6" /> Back
                       </NavIconButton>
@@ -276,6 +310,7 @@ export default function SendCargoModal({
                           ? `${transaction?.message} - Try reloading and try again.`
                           : "A payment confirmation prompt has been sent to your mobile phone number for approval."
                       }
+                      dismissText={dismissText}
                     />
                   ) : (
                     activeTab

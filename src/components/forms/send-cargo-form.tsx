@@ -33,7 +33,7 @@ export function CargoDetailsForm() {
         defaultItems={(DISTRICTS || []) as OptionItem[]}
         placeholder="Select a city"
         className="max-w-md"
-        selectedKey={String(sendCargoFormData.pickUpCity)}
+        selectedKey={String(sendCargoFormData?.pickUpCity)}
         onSelectionChange={(city) =>
           updateSendCargoFormData({ pickUpCity: String(city) })
         }
@@ -56,7 +56,7 @@ export function CargoDetailsForm() {
         defaultItems={(DISTRICTS || []) as OptionItem[]}
         placeholder="Select a city"
         className="max-w-md"
-        selectedKey={String(sendCargoFormData.deliveryCity)}
+        selectedKey={String(sendCargoFormData?.deliveryCity)}
         onSelectionChange={(city) =>
           updateSendCargoFormData({ deliveryCity: String(city) })
         }

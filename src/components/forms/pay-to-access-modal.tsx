@@ -15,13 +15,11 @@ import {
   Transaction,
 } from "@/lib/types";
 import { PaymentDetailsForm } from "./send-cargo-form";
-import useCustomTabsHook from "@/hooks/use-custom-tabs";
-import { NavIconButton, StatusBox } from "../elements";
+import { StatusBox } from "../elements";
 import useMainStore from "@/context/main-store";
-import { containerVariants, QUERY_KEYS } from "@/lib/constants";
+import { containerVariants } from "@/lib/constants";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowLeft } from "lucide-react";
-import { cn, notify } from "@/lib/utils";
+import { notify } from "@/lib/utils";
 
 import SockJS from "sockjs-client";
 import { Client } from "@stomp/stompjs";
@@ -39,6 +37,7 @@ type CargoProps = {
   onClose: () => void;
   deliveryId?: string;
   setDeliveryId?: React.Dispatch<React.SetStateAction<string>>;
+  handleRefetch?: () => void;
 };
 
 export default function PayToAccessModal({
@@ -48,6 +47,7 @@ export default function PayToAccessModal({
   onClose,
   deliveryId,
   setDeliveryId,
+  handleRefetch,
 }: CargoProps) {
   const queryClient = useQueryClient();
   const socketRef = React.useRef<any>(null);
@@ -165,12 +165,8 @@ export default function PayToAccessModal({
         setTransactionStatus(response.status?.toUpperCase());
         setTransaction((prev) => ({ ...prev, ...response }));
 
-        queryClient.invalidateQueries({
-          queryKey: [QUERY_KEYS.DELIVERY_LISTINGS],
-        });
-        queryClient.invalidateQueries({
-          queryKey: [QUERY_KEYS.KATUNDU_DETAILS, deliveryId],
-        });
+        queryClient.invalidateQueries();
+        handleRefetch?.();
       }
     );
   }
@@ -243,24 +239,6 @@ export default function PayToAccessModal({
                 exit={"exit"}
                 className="relative"
               >
-                {isPromptSent && (
-                  <div className="flex w-full items-center justify-between">
-                    <NavIconButton
-                      className={cn(
-                        "absolute -bottom-14 left-2 border-foreground/10 max-w-40 max-h-10 aspect-video",
-                        {
-                          "bottom-0": isPromptSent,
-                          hidden:
-                            transactionStatus == "SUCCESS" ||
-                            transaction?.status == "SUCCESS",
-                        }
-                      )}
-                      onClick={() => setIsPromptSent(false)}
-                    >
-                      <ArrowLeft className="mr-1 aspect-square w-6" /> Back
-                    </NavIconButton>
-                  </div>
-                )}
                 {isPromptSent ? (
                   <StatusBox
                     status={transactionStatus}

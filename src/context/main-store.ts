@@ -4,14 +4,17 @@ import { create } from "zustand";
 export type MainStateStore = {
   user: Partial<User>;
 
-  sendCargoFormData: ShipmentRecord;
-  transportCargoFormData: ShipmentRecord;
+  sendCargoFormData: ShipmentRecord | null;
+  transportCargoFormData: ShipmentRecord | null;
 
   selectedShipment: Partial<ShipmentRecord> | null;
 
   // SETTERS
   setUser: (user: Partial<User>) => void; // user from session
   setSelectedShipment: (item: Partial<ShipmentRecord> | null) => void;
+
+  setSendCargoFormData: (data: ShipmentRecord | null) => void;
+  setTransportCargoFormData: (data: ShipmentRecord | null) => void;
 
   // ACTIONS
   updateSendCargoFormData: (data: Partial<ShipmentRecord>) => void;
@@ -58,23 +61,38 @@ const useMainStore = create<MainStateStore>((set, get) => ({
   ...INITIAL_STATE,
 
   setUser: (userDetails: Partial<User>) => set({ user: userDetails }),
+  setSendCargoFormData: (data: ShipmentRecord | null) =>
+    set({ sendCargoFormData: data }),
+
+  setTransportCargoFormData: (data: ShipmentRecord | null) =>
+    set({ sendCargoFormData: data }),
+
   setSelectedShipment: (item: Partial<ShipmentRecord> | null) =>
     set({ selectedShipment: item }),
 
   // ACTIONS
   updateSelectedShipment: (data: Partial<ShipmentRecord>) =>
     set((state) => ({
-      selectedShipment: { ...state.selectedShipment, ...data },
+      selectedShipment: {
+        ...state.selectedShipment,
+        ...data,
+      } as unknown as ShipmentRecord,
     })),
 
   updateSendCargoFormData: (data: Partial<ShipmentRecord>) =>
     set((state) => ({
-      sendCargoFormData: { ...state.sendCargoFormData, ...data },
+      sendCargoFormData: {
+        ...state.sendCargoFormData,
+        ...data,
+      } as unknown as ShipmentRecord,
     })),
 
   updateTransportCargoFormData: (data: Partial<ShipmentRecord>) =>
     set((state) => ({
-      transportCargoFormData: { ...state.transportCargoFormData, ...data },
+      transportCargoFormData: {
+        ...state.transportCargoFormData,
+        ...data,
+      } as unknown as ShipmentRecord,
     })),
 
   // CLEAR
