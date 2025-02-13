@@ -776,9 +776,7 @@ export function CargoDetails({
                 </TableCell>
               ) : (
                 <TableCell className="text-right font-bold capitalize">
-                  <span className="overflow-clip blur-sm">
-                    Pay4This Katundu
-                  </span>
+                  <span className="overflow-clip blur-sm">Pay4This</span>
                 </TableCell>
               )}
             </TableRow>
@@ -791,9 +789,7 @@ export function CargoDetails({
                 </TableCell>
               ) : (
                 <TableCell className="text-right font-bold capitalize">
-                  <span className="overflow-clip blur-sm">
-                    Pay4This Katundu
-                  </span>
+                  <span className="overflow-clip blur-sm">Pay4This</span>
                 </TableCell>
               )}
             </TableRow>
@@ -807,9 +803,7 @@ export function CargoDetails({
                 </TableCell>
               ) : (
                 <TableCell className="text-right font-bold capitalize">
-                  <span className="overflow-clip blur-sm">
-                    Pay4This Katundu
-                  </span>
+                  <span className="overflow-clip blur-sm">Pay4This</span>
                 </TableCell>
               )}
             </TableRow>
@@ -822,9 +816,7 @@ export function CargoDetails({
                 </TableCell>
               ) : (
                 <TableCell className="text-right font-bold capitalize">
-                  <span className="overflow-clip blur-sm">
-                    Pay4This Katundu
-                  </span>
+                  <span className="overflow-clip blur-sm">Pay4This</span>
                 </TableCell>
               )}
             </TableRow>
@@ -836,9 +828,7 @@ export function CargoDetails({
                 </TableCell>
               ) : (
                 <TableCell className="text-right font-bold capitalize">
-                  <span className="overflow-clip blur-sm">
-                    Pay4This Katundu
-                  </span>
+                  <span className="overflow-clip blur-sm">Pay4This</span>
                 </TableCell>
               )}
             </TableRow>
@@ -850,9 +840,7 @@ export function CargoDetails({
                 </TableCell>
               ) : (
                 <TableCell className="text-right font-bold capitalize">
-                  <span className="overflow-clip blur-sm">
-                    Pay4This Katundu
-                  </span>
+                  <span className="overflow-clip blur-sm">Pay4This</span>
                 </TableCell>
               )}
             </TableRow>
