@@ -62,7 +62,7 @@ function Home({ user }: { user: User }) {
 
   const { data: deliveriesResponse, isLoading: isLoaded } = useUserDeliveries(
     1,
-    3
+    2
   );
 
   const deliveryDetailsMutation = useMutation({

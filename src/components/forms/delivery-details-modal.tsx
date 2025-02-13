@@ -35,6 +35,7 @@ import {
   ArrowRightIcon,
   LockKeyholeOpenIcon,
   PackageCheck,
+  PackageCheckIcon,
   PackageXIcon,
   Trash2Icon,
   Truck,
@@ -143,12 +144,7 @@ export default function CargoDetailsModal({
       });
 
       // REFETCH DETAILS
-      queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.DELIVERY_LISTINGS],
-      });
-      queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.KATUNDU_DETAILS, deliveryId],
-      });
+      fetchDeliveryDetails(deliveryId);
     } else {
       notify({
         title: "Pick up Failed!",
@@ -176,13 +172,7 @@ export default function CargoDetailsModal({
       });
 
       // REFETCH DETAILS
-      queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.DELIVERY_LISTINGS],
-      });
-
-      queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.KATUNDU_DETAILS, deliveryId],
-      });
+      fetchDeliveryDetails(deliveryId);
     } else {
       notify({
         title: "Delivery Initialization Failed!",
@@ -211,12 +201,7 @@ export default function CargoDetailsModal({
       });
 
       // REFETCH DETAILS
-      queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.DELIVERY_LISTINGS],
-      });
-      queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.KATUNDU_DETAILS, deliveryId],
-      });
+      fetchDeliveryDetails(deliveryId);
     } else {
       notify({
         title: "Failed!",
@@ -244,12 +229,7 @@ export default function CargoDetailsModal({
         description: "Shipment deleted successfully!",
         variant: "success",
       });
-      queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.DELIVERY_LISTINGS],
-      });
-      queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.KATUNDU_DETAILS, deliveryId],
-      });
+      handleCloseModal();
     } else {
       notify({
         title: "Delete Failed!",
@@ -275,13 +255,8 @@ export default function CargoDetailsModal({
       });
 
       // REFETCH DETAILS
-      queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.DELIVERY_LISTINGS],
-      });
 
-      queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.KATUNDU_DETAILS, deliveryId],
-      });
+      fetchDeliveryDetails(deliveryId);
     } else {
       notify({
         title: "Delivery completion Failed!",
@@ -293,8 +268,9 @@ export default function CargoDetailsModal({
     setIsLoading(false);
   }
 
-  async function showDetails(ID: string) {
+  async function fetchDeliveryDetails(ID: string) {
     await deliveryDetails.mutateAsync(String(ID));
+    queryClient.invalidateQueries();
   }
 
   React.useEffect(() => {
@@ -303,7 +279,7 @@ export default function CargoDetailsModal({
       return;
     }
 
-    showDetails(deliveryId);
+    fetchDeliveryDetails(deliveryId);
 
     return () => {
       handleCloseModal();
@@ -328,8 +304,6 @@ export default function CargoDetailsModal({
       : selectedShipment?.deliveryStatus == "CANCELLED"
       ? "danger"
       : "default";
-
-  console.log("KATUNDU", { ...selectedShipment });
 
   return (
     <Modal
@@ -605,6 +579,7 @@ export default function CargoDetailsModal({
                         </Button>
                       </>
                     )}
+
                     {/* *************************************************** */}
 
                     {/* SENDER ACTION - PUBLISH */}
@@ -621,6 +596,27 @@ export default function CargoDetailsModal({
                           Publish
                         </Button>
                       )}
+
+                    {Boolean(
+                      selectedShipment?.deliveryStatus == "DELIVERED"
+                    ) && (
+                      <Button
+                        startContent={
+                          <PackageCheckIcon
+                            className={cn(
+                              "h-5 w-5 transition-all duration-200 ease-in-out"
+                            )}
+                          />
+                        }
+                        onPress={handleCloseModal}
+                        size="md"
+                        radius="sm"
+                        className="mt-2 text-sm"
+                        color="danger"
+                      >
+                        Close
+                      </Button>
+                    )}
 
                     {/* SENDER ACTION - DELETE */}
                     {user?.role === "SENDER" &&
@@ -653,7 +649,7 @@ export default function CargoDetailsModal({
                   isOpen={showPaymentModal}
                   onOpen={openPaymentModal}
                   onClose={closePaymentModal}
-                  handleRefetch={() => showDetails(deliveryId)}
+                  handleRefetch={() => fetchDeliveryDetails(deliveryId)}
                   deliveryId={deliveryId}
                   setDeliveryId={setDeliveryId}
                 />

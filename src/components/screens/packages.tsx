@@ -87,8 +87,6 @@ function Packages({ user }: { user: User }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage]);
 
-  console.log("filteredItems", filteredItems);
-
   return (
     <div className="flex w-full flex-col gap-4">
       <div className="flex w-full flex-col gap-4 p-4">
@@ -181,7 +179,7 @@ function Packages({ user }: { user: User }) {
           )}
         </div>
 
-        {(allUserDeliveries?.length > 3 || currentPage > 1) && (
+        {filteredItems?.length > size && (
           <div className="flex items-center justify-center gap-2">
             <Button
               isIconOnly
