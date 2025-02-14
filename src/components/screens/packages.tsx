@@ -54,7 +54,7 @@ function Packages({ user }: { user: User }) {
   );
 
   const listData = deliveriesResponse?.data;
-  const allUserDeliveries = listData?.deliveries as Partial<ShipmentRecord>[];
+  // const allUserDeliveries = listData?.deliveries || [] as Partial<ShipmentRecord>[];
 
   async function showDetails(item: Partial<ShipmentRecord>) {
     openShowDetailsModal();
@@ -67,10 +67,12 @@ function Packages({ user }: { user: User }) {
   }
 
   const filteredItems = React.useMemo(() => {
-    let FilteredData = [...allUserDeliveries];
+    let FilteredData = [
+      ...(listData?.deliveries || ([] as Partial<ShipmentRecord>[])),
+    ];
 
-    if (currentTab !== "ALL" && allUserDeliveries?.length > 0) {
-      FilteredData = allUserDeliveries.filter((shipment) =>
+    if (currentTab !== "ALL" && FilteredData?.length > 0) {
+      FilteredData = FilteredData.filter((shipment) =>
         shipment?.deliveryStatus
           ?.toUpperCase()
           .includes(currentTab?.toString()?.toUpperCase())
@@ -78,7 +80,7 @@ function Packages({ user }: { user: User }) {
     }
 
     return FilteredData;
-  }, [allUserDeliveries, currentTab]);
+  }, [listData?.deliveries, currentTab]);
 
   React.useEffect(() => {
     queryClient.invalidateQueries({
