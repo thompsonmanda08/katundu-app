@@ -3,6 +3,7 @@ import {
   getAvailableDeliveries,
   getDeliveryDetails,
   getUserDeliveries,
+  getUserPaidDeliveries,
 } from "@/app/_actions/delivery-actions";
 import { getUserProfile } from "@/app/_actions/profile-actions";
 import { QUERY_KEYS } from "@/lib/constants";
@@ -30,19 +31,26 @@ export const useAvailableDeliveries = (
   useQuery({
     queryKey: [QUERY_KEYS.DELIVERY_LISTINGS, city],
     queryFn: async () => await getAvailableDeliveries(city, page, size),
-    staleTime: 30,
+    staleTime: 0,
   });
 
 export const useUserDeliveries = (page: number, size: number) =>
   useQuery({
     queryKey: [QUERY_KEYS.USER_DELIVERIES, page, size],
     queryFn: async () => await getUserDeliveries(page, size),
-    staleTime: Infinity,
+    staleTime: 0,
+  });
+
+export const usePaidForDeliveries = (enabled: boolean) =>
+  useQuery({
+    queryKey: [QUERY_KEYS.USER_DELIVERIES, enabled],
+    queryFn: async () => await getUserPaidDeliveries(enabled),
+    staleTime: 0,
   });
 
 export const useDeliveryDetails = (ID: string) =>
   useQuery({
     queryKey: [QUERY_KEYS.USER_DELIVERIES, ID],
     queryFn: async () => await getDeliveryDetails(ID),
-    staleTime: Infinity,
+    staleTime: 0,
   });

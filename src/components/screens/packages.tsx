@@ -22,7 +22,10 @@ import {
 import React, { Key } from "react";
 import { CargoDetailsModal, PayToAccessModal } from "../forms";
 import EmptyState from "../ui/empty-state";
-import { useUserDeliveries } from "@/hooks/use-query-data";
+import {
+  usePaidForDeliveries,
+  useUserDeliveries,
+} from "@/hooks/use-query-data";
 import { QUERY_KEYS } from "@/lib/constants";
 
 function Packages({ user }: { user: User }) {
@@ -53,8 +56,14 @@ function Packages({ user }: { user: User }) {
     size
   );
 
+  const { data: paidForResponse } = usePaidForDeliveries(
+    user?.role == "TRANSPORTER"
+  );
+
   const listData = deliveriesResponse?.data;
   // const allUserDeliveries = listData?.deliveries || [] as Partial<ShipmentRecord>[];
+
+  console.log("DELIVERIES: ", paidForResponse?.data?.deliveries);
 
   async function showDetails(item: Partial<ShipmentRecord>) {
     openShowDetailsModal();
@@ -67,12 +76,20 @@ function Packages({ user }: { user: User }) {
   }
 
   const filteredItems = React.useMemo(() => {
+    // combine all deliveries
     let FilteredData = [
+      ...(paidForResponse?.data?.deliveries ||
+        ([] as Partial<ShipmentRecord>[])),
       ...(listData?.deliveries || ([] as Partial<ShipmentRecord>[])),
     ];
 
+    // remove duplicates
+    FilteredData = [
+      ...new Map(FilteredData.map((item) => [item.id, item])).values(),
+    ];
+
     if (currentTab !== "ALL" && FilteredData?.length > 0) {
-      FilteredData = FilteredData.filter((shipment) =>
+      FilteredData = FilteredData?.filter((shipment) =>
         shipment?.deliveryStatus
           ?.toUpperCase()
           .includes(currentTab?.toString()?.toUpperCase())
@@ -80,7 +97,7 @@ function Packages({ user }: { user: User }) {
     }
 
     return FilteredData;
-  }, [listData?.deliveries, currentTab]);
+  }, [paidForResponse?.data?.deliveries, listData?.deliveries, currentTab]);
 
   React.useEffect(() => {
     queryClient.invalidateQueries({
