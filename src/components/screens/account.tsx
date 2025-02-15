@@ -10,23 +10,13 @@ import { Input } from "@/components/ui/input";
 import Loader from "@/components/ui/loader";
 import useMainStore from "@/context/main-store";
 import useCustomTabsHook from "@/hooks/use-custom-tabs";
-import {
-  containerVariants,
-  slideDownInView,
-  whileTabInView,
-} from "@/lib/constants";
+import { containerVariants, slideDownInView } from "@/lib/constants";
 import { User } from "@/lib/types";
-import { cn, compareObjects, formatDate, notify } from "@/lib/utils";
+import { cn, compareObjects, notify } from "@/lib/utils";
 
 // import { today, getLocalTimeZone } from "@internationalized/date";
 import {
-  Card,
-  CardHeader,
-  Checkbox,
-  Divider,
   Switch,
-  Tab,
-  Tabs,
   useDisclosure,
   Button as NextButton,
   Skeleton,
@@ -34,14 +24,7 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 
 import { AnimatePresence, motion } from "framer-motion";
-import {
-  CalendarHeartIcon,
-  CameraIcon,
-  MailIcon,
-  MessagesSquareIcon,
-  Smartphone,
-  UserIcon,
-} from "lucide-react";
+import { CameraIcon, MailIcon, Smartphone, UserIcon } from "lucide-react";
 import React from "react";
 
 const PROFILE_TABS = [

@@ -105,7 +105,9 @@ export async function getUserDeliveries(
 }
 
 export async function getUserPaidDeliveries(
-  enabled = false
+  enabled = false,
+  page: number = 1,
+  size: number = 10
 ): Promise<APIResponse> {
   if (!enabled) {
     return {
@@ -118,7 +120,7 @@ export async function getUserPaidDeliveries(
 
   try {
     const res = await authenticatedService({
-      url: `/user/deliveries/paid`,
+      url: `/user/deliveries/paid?page=${page}&size=${size}`,
     });
     const response = res.data;
 

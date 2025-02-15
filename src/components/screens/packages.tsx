@@ -17,6 +17,8 @@ import {
   BoxIcon,
   ChevronLeft,
   ChevronRight,
+  Coins,
+  CoinsIcon,
   PackageIcon,
 } from "lucide-react";
 import React, { Key } from "react";
@@ -57,13 +59,17 @@ function Packages({ user }: { user: User }) {
   );
 
   const { data: paidForResponse } = usePaidForDeliveries(
-    user?.role == "TRANSPORTER"
+    user?.role == "TRANSPORTER",
+    currentPage,
+    size
   );
 
   const listData = deliveriesResponse?.data;
-  // const allUserDeliveries = listData?.deliveries || [] as Partial<ShipmentRecord>[];
+  const paidData = paidForResponse?.data;
 
-  console.log("DELIVERIES: ", paidForResponse?.data?.deliveries);
+  const paidDeliveries = [
+    ...(paidData?.deliveries || ([] as Partial<ShipmentRecord>[])),
+  ];
 
   async function showDetails(item: Partial<ShipmentRecord>) {
     openShowDetailsModal();
@@ -78,8 +84,6 @@ function Packages({ user }: { user: User }) {
   const filteredItems = React.useMemo(() => {
     // combine all deliveries
     let FilteredData = [
-      ...(paidForResponse?.data?.deliveries ||
-        ([] as Partial<ShipmentRecord>[])),
       ...(listData?.deliveries || ([] as Partial<ShipmentRecord>[])),
     ];
 
@@ -96,15 +100,19 @@ function Packages({ user }: { user: User }) {
       );
     }
 
+    if (currentTab === "PAID" && paidDeliveries?.length > 0) {
+      FilteredData = [...paidDeliveries];
+    }
+
     return FilteredData;
-  }, [paidForResponse?.data?.deliveries, listData?.deliveries, currentTab]);
+  }, [listData?.deliveries, currentTab, paidDeliveries]);
 
   React.useEffect(() => {
-    queryClient.invalidateQueries({
-      queryKey: [QUERY_KEYS.USER_DELIVERIES, currentPage, size],
-    });
+    queryClient.invalidateQueries();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage]);
+
+  console.log("DELIVERIES: ", filteredItems);
 
   return (
     <div className="flex w-full flex-col gap-4">
@@ -160,6 +168,22 @@ function Packages({ user }: { user: User }) {
               </div>
             }
           />
+          {user?.role == "TRANSPORTER" && (
+            <Tab
+              key="PAID"
+              title={
+                <div className="flex items-center space-x-2">
+                  <CoinsIcon className="h-4 w-4" />
+                  <span>Paid</span>
+                  {paidDeliveries && currentTab == "PAID" && (
+                    <Chip size="sm" variant="faded" className="scale-75">
+                      {paidDeliveries?.length || 0}
+                    </Chip>
+                  )}
+                </div>
+              }
+            />
+          )}
         </Tabs>
         <Divider />
         <div className="flex w-full flex-col gap-4">
@@ -198,7 +222,7 @@ function Packages({ user }: { user: User }) {
           )}
         </div>
 
-        {filteredItems?.length > size && (
+        {(filteredItems?.length >= size || paidData?.length >= size) && (
           <div className="flex items-center justify-center gap-2">
             <Button
               isIconOnly

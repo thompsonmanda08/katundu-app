@@ -41,10 +41,14 @@ export const useUserDeliveries = (page: number, size: number) =>
     staleTime: 0,
   });
 
-export const usePaidForDeliveries = (enabled: boolean) =>
+export const usePaidForDeliveries = (
+  enabled: boolean,
+  page: number,
+  size: number
+) =>
   useQuery({
     queryKey: [QUERY_KEYS.USER_DELIVERIES, enabled],
-    queryFn: async () => await getUserPaidDeliveries(enabled),
+    queryFn: async () => await getUserPaidDeliveries(enabled, page, size),
     staleTime: 0,
   });
 
