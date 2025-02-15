@@ -67,10 +67,6 @@ function Packages({ user }: { user: User }) {
   const listData = deliveriesResponse?.data;
   const paidData = paidForResponse?.data;
 
-  const paidDeliveries = [
-    ...(paidData?.deliveries || ([] as Partial<ShipmentRecord>[])),
-  ];
-
   async function showDetails(item: Partial<ShipmentRecord>) {
     openShowDetailsModal();
     setSelectedDeliveryId(item?.id as string);
@@ -87,6 +83,10 @@ function Packages({ user }: { user: User }) {
       ...(listData?.deliveries || ([] as Partial<ShipmentRecord>[])),
     ];
 
+    let paidDeliveries = [
+      ...(paidData?.deliveries || ([] as Partial<ShipmentRecord>[])),
+    ];
+
     // remove duplicates
     FilteredData = [
       ...new Map(FilteredData.map((item) => [item.id, item])).values(),
@@ -101,18 +101,24 @@ function Packages({ user }: { user: User }) {
     }
 
     if (currentTab === "PAID" && paidDeliveries?.length > 0) {
+      // remove delivered and in transit
+      paidDeliveries = paidDeliveries?.filter(
+        (shipment) =>
+          !shipment?.deliveryStatus
+            ?.toUpperCase()
+            .includes("DELIVERED".toUpperCase())
+      );
+
       FilteredData = [...paidDeliveries];
     }
 
     return FilteredData;
-  }, [listData?.deliveries, currentTab, paidDeliveries]);
+  }, [listData?.deliveries, currentTab, paidData?.deliveries]);
 
   React.useEffect(() => {
     queryClient.invalidateQueries();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage]);
-
-  console.log("DELIVERIES: ", filteredItems);
 
   return (
     <div className="flex w-full flex-col gap-4">
@@ -175,9 +181,9 @@ function Packages({ user }: { user: User }) {
                 <div className="flex items-center space-x-2">
                   <CoinsIcon className="h-4 w-4" />
                   <span>Paid</span>
-                  {paidDeliveries && currentTab == "PAID" && (
+                  {filteredItems && currentTab == "PAID" && (
                     <Chip size="sm" variant="faded" className="scale-75">
-                      {paidDeliveries?.length || 0}
+                      {filteredItems?.length || 0}
                     </Chip>
                   )}
                 </div>
