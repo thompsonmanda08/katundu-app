@@ -11,7 +11,7 @@ import useMainStore from "@/context/main-store";
 import { useAccountProfile, useUserDeliveries } from "@/hooks/use-query-data";
 import { ShipmentRecord, User } from "@/lib/types";
 import { cn, notify } from "@/lib/utils";
-import { Divider, Image, Skeleton, useDisclosure } from "@heroui/react";
+import { Chip, Divider, Image, Skeleton, useDisclosure } from "@heroui/react";
 import React from "react";
 import EmptyState from "../ui/empty-state";
 
@@ -112,37 +112,55 @@ function Home({ user }: { user: User }) {
       </div>
 
       <div className="flex h-32 w-full items-center gap-4 px-5">
-        <Button
-          variant="bordered"
-          color="primary"
-          className="h-full flex-1 flex-col border bg-primary-50/20 p-4"
-          onPress={openSenderModal}
-        >
-          <div className="max-h-32 max-w-32 flex-1 overflow-clip">
-            <Image
-              alt="Cargo Image"
-              className="h-full w-full rounded-lg object-contain"
-              src={"/images/sender.svg"}
-            />
-          </div>
-          {/* <CarIcon className="h-12 w-12 text-foreground" /> */}
-          Send Katundu
-        </Button>
-        <Button
-          variant="bordered"
-          color="primary"
-          className="h-full flex-1 flex-col border bg-primary-50/20 p-4"
-          onPress={openTransporterModal}
-        >
-          <div className="max-h-32 max-w-32 flex-1 overflow-clip">
-            <Image
-              alt="Cargo Image"
-              className="h-full w-full rounded-lg object-contain"
-              src={"/images/transporter.svg"}
-            />
-          </div>
-          Transport Katundu
-        </Button>
+        {user.role === "SENDER" ? (
+          <Button
+            variant="bordered"
+            color="primary"
+            className="h-full flex-1 flex-col border bg-primary-50/20 p-4"
+            onPress={openSenderModal}
+          >
+            <div className="max-h-32 max-w-32 flex-1 overflow-clip">
+              <Image
+                alt="Cargo Image"
+                className="h-full w-full rounded-lg object-contain"
+                src={"/images/sender.svg"}
+              />
+            </div>
+            {/* <CarIcon className="h-12 w-12 text-foreground" /> */}
+            <Chip
+              color="primary"
+              classNames={{
+                content: "flex items-center gap-2 p-4 py-8",
+              }}
+            >
+              Send Katundu
+            </Chip>
+          </Button>
+        ) : (
+          <Button
+            variant="bordered"
+            color="primary"
+            className="h-full flex-1 flex-col border bg-primary-50/20 p-4"
+            onPress={openTransporterModal}
+          >
+            <div className="max-h-32 max-w-32 flex-1 overflow-clip">
+              <Image
+                alt="Cargo Image"
+                className="h-full w-full rounded-lg object-contain"
+                src={"/images/transporter.svg"}
+              />
+            </div>
+
+            <Chip
+              color="primary"
+              classNames={{
+                content: "flex items-center gap-2 p-4 py-8",
+              }}
+            >
+              Transport Katundu
+            </Chip>
+          </Button>
+        )}
       </div>
 
       {/* ************ A LIST OF RECENT SHIPMENTS ********************* */}

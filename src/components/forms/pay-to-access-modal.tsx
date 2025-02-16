@@ -247,14 +247,14 @@ export default function PayToAccessModal({
                         ? "Shipment Created Successfully!"
                         : transactionStatus == "FAILED"
                         ? "Shipment creation failed!"
-                        : "Transaction Pending Approval"
+                        : "Offline Payment"
                     }
                     description={
                       transactionStatus == "SUCCESS"
                         ? "You shipment has been created, transporters will now be able to see it and contact you."
                         : transactionStatus == "FAILED"
                         ? `${transaction?.message} - Try reloading and try again.`
-                        : "A payment confirmation prompt has been sent to your mobile phone number for approval."
+                        : "A confirmation prompt has been sent to your mobile phone number for approval. Complete the transaction and refresh the screen."
                     }
                     dismissText={dismissText}
                   />

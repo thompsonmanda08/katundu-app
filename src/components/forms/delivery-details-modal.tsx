@@ -93,16 +93,20 @@ export default function CargoDetailsModal({
     !selectedShipment || deliveryDetails.isPending
   );
 
-  const [isDelete, setIsDelete] = React.useState(false);
-  const [isPickUp, setIsPickUp] = React.useState(false);
-  const [isCancel, setIsCancel] = React.useState(false);
+  const [isDeleteDelivery, setIsDeleteDelivery] = React.useState(false);
+  const [isPickUpDelivery, setIsPickUpDelivery] = React.useState(false);
+  const [isStartDelivery, setIsStartDelivery] = React.useState(false);
+  const [isFinishDelivery, setIsFinishDelivery] = React.useState(false);
+  const [isCancelDelivery, setIsCancelDelivery] = React.useState(false);
 
   const [isLoading, setIsLoading] = React.useState(false);
   const [deleteLoading, setDeleteLoading] = React.useState(false);
 
-  const toggleDelete = () => setIsDelete(!isDelete);
-  const togglePickUp = () => setIsPickUp(!isPickUp);
-  const toggleCancel = () => setIsCancel(!isCancel);
+  const toggleDelete = () => setIsDeleteDelivery(!isDeleteDelivery);
+  const togglePickUp = () => setIsPickUpDelivery(!isPickUpDelivery);
+  const toggleCancel = () => setIsCancelDelivery(!isCancelDelivery);
+  const toggleStart = () => setIsStartDelivery(!isStartDelivery);
+  const toggleFinish = () => setIsFinishDelivery(!isFinishDelivery);
 
   const {
     isOpen: showPaymentModal,
@@ -118,9 +122,9 @@ export default function CargoDetailsModal({
   }
 
   function handleClosePrompts() {
-    setIsDelete(false);
-    setIsPickUp(false);
-    setIsCancel(false);
+    setIsDeleteDelivery(false);
+    setIsPickUpDelivery(false);
+    setIsCancelDelivery(false);
 
     setIsLoading(false);
     setDeleteLoading(false);
@@ -128,7 +132,7 @@ export default function CargoDetailsModal({
   }
 
   async function handlePickupDelivery() {
-    if (!isPickUp) {
+    if (!isPickUpDelivery) {
       togglePickUp();
       return;
     }
@@ -153,11 +157,11 @@ export default function CargoDetailsModal({
     }
 
     setIsLoading(false);
-    setIsPickUp(false);
+    setIsPickUpDelivery(false);
   }
   async function handleStartDelivery() {
-    if (!isPickUp) {
-      togglePickUp();
+    if (!isStartDelivery) {
+      toggleStart();
       return;
     }
 
@@ -181,11 +185,11 @@ export default function CargoDetailsModal({
     }
 
     setIsLoading(false);
-    setIsPickUp(false);
+    setIsPickUpDelivery(false);
   }
 
   async function handleCancelDelivery() {
-    if (!isCancel) {
+    if (!isCancelDelivery) {
       toggleCancel();
       return;
     }
@@ -210,11 +214,11 @@ export default function CargoDetailsModal({
     }
 
     setIsLoading(false);
-    setIsPickUp(false);
+    setIsPickUpDelivery(false);
   }
 
   async function handleDeleteDelivery() {
-    if (!isDelete) {
+    if (!isDeleteDelivery) {
       toggleDelete();
       return;
     }
@@ -240,10 +244,15 @@ export default function CargoDetailsModal({
     }
 
     setDeleteLoading(false);
-    setIsDelete(false);
+    setIsDeleteDelivery(false);
   }
 
   async function handleFinishDelivery() {
+    if (!isFinishDelivery) {
+      toggleFinish();
+      return;
+    }
+
     setIsLoading(true);
 
     const response = await finishDelivery(String(deliveryId));
@@ -657,29 +666,51 @@ export default function CargoDetailsModal({
                 {/* **************************************************** */}
 
                 <PromptModal
-                  isOpen={isDelete || isPickUp}
+                  isOpen={isDeleteDelivery || isPickUpDelivery}
                   onClose={handleClosePrompts}
                   placement="center"
                   isLoading={deleteLoading || isLoading}
                   title={
-                    isDelete
+                    isDeleteDelivery
                       ? "Delete Shipment"
-                      : isPickUp
+                      : isPickUpDelivery
                       ? " Pick Up Delivery"
-                      : ""
+                      : isStartDelivery
+                      ? "Start Delivery"
+                      : isFinishDelivery
+                      ? "Finish Delivery"
+                      : isCancelDelivery
+                      ? "Cancel Delivery"
+                      : "Action"
                   }
                   onConfirm={
-                    isDelete
+                    isDeleteDelivery
                       ? handleDeleteDelivery
-                      : isPickUp
+                      : isPickUpDelivery
                       ? handlePickupDelivery
+                      : isStartDelivery
+                      ? handleStartDelivery
+                      : isFinishDelivery
+                      ? handleFinishDelivery
+                      : isCancelDelivery
+                      ? handleCancelDelivery
                       : () => {}
                   }
                 >
                   <p>
                     Are you sure you want to{" "}
-                    {isDelete ? "delete" : isPickUp ? " pick up" : ""} this
-                    shipment?
+                    {isDeleteDelivery
+                      ? "delete"
+                      : isPickUpDelivery
+                      ? " pick up"
+                      : isStartDelivery
+                      ? "start"
+                      : isFinishDelivery
+                      ? "finish"
+                      : isCancelDelivery
+                      ? "cancel"
+                      : "perform this action on"}
+                    this shipment?
                   </p>
                 </PromptModal>
               </CardFooter>

@@ -279,20 +279,6 @@ export default function SendCargoModal({
                   exit={"exit"}
                   className="relative"
                 >
-                  {!isFirstTab && (
-                    <div className="flex w-full items-center justify-between">
-                      <NavIconButton
-                        className={cn(
-                          "absolute -bottom-14 left-2 border-foreground/10 max-w-40 max-h-10 aspect-video",
-                          {
-                            "bottom-0": isPromptSent,
-                          }
-                        )}
-                      >
-                        <ArrowLeft className="mr-1 aspect-square w-6" /> Back
-                      </NavIconButton>
-                    </div>
-                  )}
                   {isPromptSent ? (
                     <StatusBox
                       status={transactionStatus}
@@ -301,14 +287,14 @@ export default function SendCargoModal({
                           ? "Shipment Created Successfully!"
                           : transactionStatus == "FAILED"
                           ? "Shipment creation failed!"
-                          : "Transaction Pending Approval"
+                          : "Offline Payment"
                       }
                       description={
                         transactionStatus == "SUCCESS"
                           ? "You shipment has been created, transporters will now be able to see it and contact you."
                           : transactionStatus == "FAILED"
                           ? `${transaction?.message} - Try reloading and try again.`
-                          : "A payment confirmation prompt has been sent to your mobile phone number for approval."
+                          : "A confirmation prompt has been sent to your mobile phone number for approval. Complete the transaction and refresh the screen."
                       }
                       dismissText={dismissText}
                     />
