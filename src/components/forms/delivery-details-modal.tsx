@@ -230,6 +230,7 @@ export default function CargoDetailsModal({
         variant: "success",
       });
       handleCloseModal();
+      queryClient.invalidateQueries();
     } else {
       notify({
         title: "Delete Failed!",

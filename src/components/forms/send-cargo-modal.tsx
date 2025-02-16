@@ -60,7 +60,7 @@ export default function SendCargoModal({
 
   const { sendCargoFormData, user } = useMainStore((state) => state);
   const [dismissText, setDismissText] = React.useState("");
-  const [count, setCount] = React.useState(60);
+  const [count, setCount] = React.useState(30);
 
   const {
     currentTabIndex,

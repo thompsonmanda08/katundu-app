@@ -60,7 +60,7 @@ export default function PayToAccessModal({
   const [transactionId, setTransactionId] = React.useState("");
   const [transactionStatus, setTransactionStatus] = React.useState("PENDING");
   const [dismissText, setDismissText] = React.useState("");
-  const [count, setCount] = React.useState(60);
+  const [count, setCount] = React.useState(30);
 
   const [transaction, setTransaction] = React.useState<Partial<Transaction>>({
     status: "PENDING",

@@ -126,7 +126,7 @@ function Home({ user }: { user: User }) {
             />
           </div>
           {/* <CarIcon className="h-12 w-12 text-foreground" /> */}
-          Send Cargo
+          Send Katundu
         </Button>
         <Button
           variant="bordered"
@@ -141,7 +141,7 @@ function Home({ user }: { user: User }) {
               src={"/images/transporter.svg"}
             />
           </div>
-          Transport Cargo
+          Transport Katundu
         </Button>
       </div>
 

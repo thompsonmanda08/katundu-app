@@ -25,11 +25,7 @@ import {
 import React from "react";
 import { Button } from "../ui/button";
 import { AnimatePresence, motion } from "framer-motion";
-import {
-  DELIVERY_STATUSES,
-  QUERY_KEYS,
-  slideDownInView,
-} from "@/lib/constants";
+import { DELIVERY_STATUSES, slideDownInView } from "@/lib/constants";
 import { cn, formatDate, notify } from "@/lib/utils";
 import useMainStore from "@/context/main-store";
 import NavIconButton from "./nav-icon-button";
@@ -454,7 +450,7 @@ function ShipmentCard({
         )}
 
         {/* SEE MORE DETAILS */}
-        {displayDetails && hasMoreInfo && (
+        {displayDetails && (
           <Button
             variant="light"
             endContent={
