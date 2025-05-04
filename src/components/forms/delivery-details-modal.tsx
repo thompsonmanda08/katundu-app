@@ -733,6 +733,8 @@ export function CargoDetails({
 }) {
   const { user } = useMainStore((state) => state);
 
+  const shipmentDate = new Date(Number(selectedShipment?.transportDate));
+
   return (
     <Table hideHeader removeWrapper aria-label="Katundu specifications data">
       <TableHeader>
@@ -788,7 +790,7 @@ export function CargoDetails({
         <TableRow key="date">
           <TableCell>Transport Date </TableCell>
           <TableCell className="text-right font-bold capitalize">
-            {`${formatDate(new Date(Number(selectedShipment?.transportDate)))}`}
+            {`${formatDate(shipmentDate)}`}
           </TableCell>
         </TableRow>
 
