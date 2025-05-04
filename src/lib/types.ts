@@ -83,7 +83,6 @@ type OptionItem = {
   name: string;
   label?: string;
   value?: string;
-  code?: string;
   [x: string]: unknown;
 };
 

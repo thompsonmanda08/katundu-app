@@ -24,8 +24,13 @@ const Input = React.forwardRef<HTMLInputElement, UIInputProps>(
       return validateEmail(value) ? false : true;
     }, [value, type]);
 
+    React.useEffect(() => {
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isVisible]);
+
     return (
       <NextInput
+        key={String(Math.random() + (type || "input"))}
         type={isVisible && type == "password" ? "text" : type}
         className={cn("", className)}
         variant={variant || "bordered"}

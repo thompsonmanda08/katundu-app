@@ -5,6 +5,7 @@ import { Input } from "../ui/input";
 import useMainStore from "@/context/main-store";
 import { useCities } from "@/hooks/use-query-data";
 import { getLocalTimeZone, parseDate, today } from "@internationalized/date";
+import SelectField from "../ui/select-field";
 
 export function CargoDetailsForm() {
   const { data: DISTRICTS } = useCities(100);
@@ -29,6 +30,7 @@ export function CargoDetailsForm() {
       </div>
       <Autocomplete
         label="From"
+        isRequired
         variant="bordered"
         defaultItems={(DISTRICTS || []) as OptionItem[]}
         placeholder="Select a city"
@@ -44,6 +46,7 @@ export function CargoDetailsForm() {
       </Autocomplete>
       <Input
         label="Pickup point"
+        isRequired
         value={sendCargoFormData?.pickUpLocation}
         onChange={(e) => {
           updateSendCargoFormData({ pickUpLocation: e.target.value });
@@ -52,6 +55,7 @@ export function CargoDetailsForm() {
       />
       <Autocomplete
         label="Destination"
+        isRequired
         variant="bordered"
         defaultItems={(DISTRICTS || []) as OptionItem[]}
         placeholder="Select a city"
@@ -67,6 +71,7 @@ export function CargoDetailsForm() {
       </Autocomplete>
       <Input
         label="Drop Off point"
+        isRequired
         value={sendCargoFormData?.deliveryLocation}
         onChange={(e) => {
           updateSendCargoFormData({ deliveryLocation: e.target.value });
@@ -75,6 +80,7 @@ export function CargoDetailsForm() {
 
       <DatePicker
         className=""
+        isRequired
         label="Transport Date"
         variant="bordered"
         minValue={today(getLocalTimeZone())}
@@ -93,37 +99,86 @@ export function CargoDetailsForm() {
 
       <div className="flex w-full flex-1 gap-4">
         <Input
-          label="Package Type"
-          value={sendCargoFormData?.packaging}
-          onChange={(e) => {
-            updateSendCargoFormData({ packaging: e.target.value });
-          }}
-        />
-        <Input
           label="Quantity"
+          type="number"
+          min={1}
+          isRequired
           value={sendCargoFormData?.quantity}
           onChange={(e) => {
             updateSendCargoFormData({ quantity: e.target.value });
           }}
         />
+        <SelectField
+          label="Type"
+          isRequired
+          options={
+            [
+              { name: "Boxes", id: "Boxes" },
+              { name: "Sack Bags", id: "Sack Bags" },
+              { name: "Containers", id: "Containers" },
+              { name: "Bales", id: "Bales" },
+              { name: "Pallets", id: "Pallets" },
+              { name: "Bags", id: "Bags" },
+              { name: "Bundles", id: "Bundles" },
+              { name: "Cartons", id: "Cartons" },
+              { name: "Crates", id: "Crates" },
+              { name: "Drums", id: "Drums" },
+              { name: "Rolls", id: "Rolls" },
+              { name: "Trays", id: "Trays" },
+              { name: "Other", id: "Other" },
+            ] as OptionItem[]
+          }
+          // className="max-w-md"
+          value={String(sendCargoFormData?.packaging)}
+          onChange={(type) =>
+            updateSendCargoFormData({ packaging: String(type) })
+          }
+        />
+        {/* <Input
+          label="Package Type"
+          value={sendCargoFormData?.packaging}
+          onChange={(e) => {
+            updateSendCargoFormData({ packaging: e.target.value });
+          }}
+        /> */}
       </div>
       <div className="flex w-full flex-1 gap-4">
         <Input
           label="Size"
+          isRequired
           type="number"
           value={sendCargoFormData?.containerSize}
           onChange={(e) => {
             updateSendCargoFormData({ containerSize: String(e.target.value) });
           }}
         />
-        <Input
+        <SelectField
+          label="Units"
+          isRequired
+          options={
+            [
+              { name: "Kg", id: "Kg" },
+              { name: "Tons", id: "Ton" },
+              { name: "Liters", id: "L" },
+              { name: "Cubic Meters", id: "m3" },
+              { name: "Pounds", id: "lb" },
+              { name: "Gallons", id: "gal" },
+            ] as OptionItem[]
+          }
+          // className="max-w-md"
+          value={String(sendCargoFormData?.unit)}
+          onChange={(unit) =>
+            updateSendCargoFormData({ cargoMeasure: String(unit) })
+          }
+        />
+        {/* <Input
           label="Measurement Units"
           value={sendCargoFormData?.cargoMeasure}
           onChange={(e) => {
             updateSendCargoFormData({ cargoMeasure: String(e.target.value) });
           }}
           className="mt-px"
-        />
+        /> */}
       </div>
 
       <Input
