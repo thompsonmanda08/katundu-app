@@ -3,9 +3,11 @@
 import { Input } from "@/components/ui/input";
 import { AuthFormData } from "@/lib/types";
 import { Radio, RadioGroup } from "@heroui/react";
+import { EyeIcon, EyeOffIcon } from "lucide-react";
+import React from "react";
 
 type AuthFormProps = {
-  formData: AuthFormData;
+  formData: Partial<AuthFormData>;
   updateFormData: (fields: Partial<AuthFormData>) => void;
 };
 
@@ -13,6 +15,10 @@ export default function SignUpForm({
   updateFormData,
   formData,
 }: AuthFormProps) {
+  const [isVisible, setIsVisible] = React.useState(false);
+
+  const toggleVisibility = () => setIsVisible(!isVisible);
+
   return (
     <div className="flex flex-col gap-y-4">
       <div className="flex flex-col gap-4 md:flex-row">
@@ -77,28 +83,65 @@ export default function SignUpForm({
         name="password"
         required
         label="Password"
-        type="password"
+        type={isVisible ? "text" : "password"}
         value={formData.password}
         onChange={(e) =>
           updateFormData({
             password: e.target.value,
           })
         }
+        endContent={
+          Number(formData.password?.length) > 6 ? (
+            <button
+              className="focus:outline-none"
+              type="button"
+              onClick={toggleVisibility}
+              aria-label="Toggle password visibility"
+            >
+              {isVisible ? (
+                <EyeOffIcon className="pointer-events-none aspect-square h-6 w-6 text-foreground/40" />
+              ) : (
+                <EyeIcon className="pointer-events-none aspect-square h-6 w-6 text-foreground/40" />
+              )}
+            </button>
+          ) : (
+            <></>
+          )
+        }
       />
       <Input
         required
         label="Confirm Password"
-        type="password"
-        isInvalid={
-          formData.password.length > 5 &&
-          formData.password !== formData.confirmPassword
-        }
+        type={isVisible ? "text" : "password"}
+        isInvalid={Boolean(
+          formData?.password &&
+            formData?.password.length > 5 &&
+            formData?.password !== formData.confirmPassword
+        )}
         errorMessage="Passwords do not match"
         value={formData.confirmPassword}
         onChange={(e) =>
           updateFormData({
             confirmPassword: e.target.value,
           })
+        }
+        endContent={
+          Number(formData.password?.length) > 6 ? (
+            <button
+              className="focus:outline-none"
+              type="button"
+              onClick={toggleVisibility}
+              aria-label="Toggle password visibility"
+            >
+              {isVisible ? (
+                <EyeOffIcon className="pointer-events-none aspect-square h-6 w-6 text-foreground/40" />
+              ) : (
+                <EyeIcon className="pointer-events-none aspect-square h-6 w-6 text-foreground/40" />
+              )}
+            </button>
+          ) : (
+            <></>
+          )
         }
       />
     </div>

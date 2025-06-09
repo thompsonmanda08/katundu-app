@@ -1,3 +1,4 @@
+"use client";
 import { APIResponse, ShipmentRecord } from "@/lib/types";
 import {
   Card,

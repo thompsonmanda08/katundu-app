@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React from "react";
 import {
   Modal,
   ModalContent,
@@ -22,13 +22,12 @@ import {
   useDisclosure,
 } from "@heroui/react";
 import { NavIconButton } from "../elements";
-import useCustomTabsHook from "@/hooks/use-custom-tabs";
 import {
   containerVariants,
   DELIVERY_STATUSES,
   QUERY_KEYS,
 } from "@/lib/constants";
-import { APIResponse, ShipmentRecord } from "@/lib/types";
+import { ShipmentRecord } from "@/lib/types";
 import {} from "@heroui/react";
 import {
   ArrowLeftIcon,
@@ -44,7 +43,6 @@ import {
 import { Button } from "../ui/button";
 import { cn, formatDate, notify } from "@/lib/utils";
 import useMainStore from "@/context/main-store";
-import Loader from "../ui/loader";
 
 import { AnimatePresence, motion } from "framer-motion";
 import PayToAccessModal from "./pay-to-access-modal";
@@ -57,11 +55,7 @@ import {
   pickUpDelivery,
   startDelivery,
 } from "@/app/_actions/delivery-actions";
-import {
-  UseBaseMutationResult,
-  useMutation,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 type CargoProps = Partial<ShipmentRecord> & {
   isOpen: boolean;

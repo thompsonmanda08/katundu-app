@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { APIResponse, AuthFormData, ErrorState } from "@/lib/types";
 
 import useCustomTabsHook from "@/hooks/use-custom-tabs";
-import { Logo, StatusMessage } from "@/components/elements";
+import { StatusMessage } from "@/components/elements";
 import { Button } from "@/components/ui/button";
 import { SignUpForm, LoginForm } from "@/components/forms";
 import { cn, notify } from "@/lib/utils";
@@ -34,7 +34,7 @@ const AUTH_TABS = [
 
 export default function AuthPage() {
   // INITIALIZE STATE
-  const [formData, setFormData] = useState<AuthFormData>({
+  const [formData, setFormData] = useState<Partial<AuthFormData>>({
     firstName: "",
     lastName: "",
     phone: "",
@@ -77,10 +77,6 @@ export default function AuthPage() {
       updateFormData={updateFormData}
     />,
   ]);
-
-  function setLoadingState(x: boolean) {
-    setIsLoading(x);
-  }
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();

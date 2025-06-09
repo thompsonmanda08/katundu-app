@@ -9,7 +9,6 @@ import {
   type CarouselApi,
 } from "@/components/ui/carousel";
 import { AnimatePresence, motion } from "framer-motion";
-import Image from "next/image";
 import { useEffect, useState } from "react";
 import { Slide } from "@/lib/types";
 

@@ -1,26 +1,26 @@
-type APIResponse = {
+export type APIResponse = {
   success: boolean;
   message: string;
-  data: any;
+  data: DataResponse | any;
   status: number;
   [x: string]: unknown;
 };
 
-type ErrorState = {
+export type ErrorState = {
   status: boolean;
   message: string;
   type?: "error" | "success" | "info" | "warning";
   [x: string]: unknown;
 };
 
-type Slide = {
+export type Slide = {
   title: string;
   description: string;
   image: string;
   [x: string]: unknown;
 };
 
-type User = {
+export type User = {
   firstName: string;
   lastName: string;
   phone: string;
@@ -30,17 +30,17 @@ type User = {
   [x: string]: unknown;
 };
 
-type Sender = User & {
+export type Sender = User & {
   type: "SENDER"; // Indicates this is a sender
   pickUpLocation: string; // Starting point of the shipment
   deliveryLocation: string; // Destination of the shipment
 };
 
-type Transporter = User & {
+export type Transporter = User & {
   type: "TRANSPORTER"; // Indicates this is a transporter
 };
 
-type Cargo = {
+export type Cargo = {
   description: string; // Description of the cargo
   measure: string; // Quantity (liters/Kgs/Tons)
   packaging: string; // Type of packaging (bags, drums, pellets, etc.)
@@ -48,12 +48,12 @@ type Cargo = {
   deliveryStatus: string; // Status of the delivery (e.g., Delivered, Pending)
 };
 
-type AuthFormData = User & {
+export type AuthFormData = User & {
   password: string;
   confirmPassword?: string;
 };
 
-type passwordResetProps = {
+export type passwordResetProps = {
   email?: string;
   otp?: string;
   currentPassword?: string;
@@ -61,13 +61,13 @@ type passwordResetProps = {
   confirmPassword: string;
 };
 
-type ResetPasswordFormProps = {
+export type ResetPasswordFormProps = {
   formData: passwordResetProps;
   handleInputChange: (e: any, fields?: unknown) => void;
   updateFormData: (fields: { [key: string]: unknown }) => void;
 };
 
-type Address = {
+export type Address = {
   lineOne: string;
   lineTwo?: string;
   street: string;
@@ -78,7 +78,7 @@ type Address = {
   [x: string]: any;
 };
 
-type OptionItem = {
+export type OptionItem = {
   id: string | number;
   name: string;
   label?: string;
@@ -86,7 +86,7 @@ type OptionItem = {
   [x: string]: unknown;
 };
 
-type ShipmentRecord = {
+export type ShipmentRecord = {
   // SHIPPER DETAILS
 
   contacts?: {
@@ -146,39 +146,31 @@ type ShipmentRecord = {
   [x: string]: unknown;
 };
 
-type PaymentDetails = {
+export type PaymentDetails = {
   phone: string;
   amount?: string;
   reference?: string;
 };
 
-type Delivery = {
+export type Delivery = {
   cargoDetails: ShipmentRecord;
   paymentDetails: PaymentDetails;
 };
 
-type Transaction = {
+export type Transaction = {
   status: "PENDING" | "SUCCESS" | "FAILED";
   message: string;
   data?: unknown;
   [x: string]: unknown;
 };
 
-export type {
-  Address,
-  APIResponse,
-  User,
-  ErrorState,
-  Slide,
-  ResetPasswordFormProps,
-  ShipmentRecord,
-  Sender,
-  Transporter,
-  Cargo,
-  OptionItem,
-  passwordResetProps,
-  AuthFormData,
-  Delivery,
-  Transaction,
-  PaymentDetails,
+export type DataResponse = {
+  hasNext: boolean;
+  hasPrevious: boolean;
+  numberOfElements: number;
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+  [x: string]: unknown;
 };

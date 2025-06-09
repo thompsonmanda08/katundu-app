@@ -7,15 +7,19 @@ import { AuthFormData, ErrorState } from "@/lib/types";
 import { useRouter } from "next/navigation";
 import { StatusMessage } from "@/components/elements";
 import { Input } from "@/components/ui/input";
-import { LockIcon, Smartphone } from "lucide-react";
+import { EyeIcon, EyeOffIcon, LockIcon, Smartphone } from "lucide-react";
 
 type AuthFormProps = {
-  formData: AuthFormData;
+  formData: Partial<AuthFormData>;
   updateFormData: (fields: Partial<AuthFormData>) => void;
 };
 
 function LoginForm({ formData, updateFormData }: AuthFormProps) {
   const { push } = useRouter();
+
+  const [isVisible, setIsVisible] = React.useState(false);
+
+  const toggleVisibility = () => setIsVisible(!isVisible);
 
   const [error, setError] = React.useState<ErrorState>({
     status: false,
@@ -40,9 +44,9 @@ function LoginForm({ formData, updateFormData }: AuthFormProps) {
           endContent={
             <Smartphone className="pointer-events-none aspect-square h-6 w-6 text-default-400" />
           }
-          onChange={(e) =>
+          onValueChange={(string) =>
             updateFormData({
-              phone: String(e.target.value),
+              phone: string,
             })
           }
         />
@@ -55,7 +59,22 @@ function LoginForm({ formData, updateFormData }: AuthFormProps) {
           value={formData.password}
           onChange={(e) => updateFormData({ password: e.target.value })}
           endContent={
-            <LockIcon className="pointer-events-none aspect-square h-6 w-6 text-default-400" />
+            Number(formData.password?.length) > 6 ? (
+              <button
+                className="focus:outline-none"
+                type="button"
+                onClick={toggleVisibility}
+                aria-label="Toggle password visibility"
+              >
+                {isVisible ? (
+                  <EyeOffIcon className="pointer-events-none aspect-square h-6 w-6 text-foreground/40" />
+                ) : (
+                  <EyeIcon className="pointer-events-none aspect-square h-6 w-6 text-foreground/40" />
+                )}
+              </button>
+            ) : (
+              <LockIcon className="pointer-events-none aspect-square h-6 w-6 text-default-400" />
+            )
           }
         />
         <Link
